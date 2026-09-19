@@ -4,6 +4,7 @@
 * Adds filter-aware loaders and automatic filter texture resolution with a `filterRasterScale` override.
 * Adds SVG `feOffset` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feColorMatrix` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feFlood` support with parameter, pixel, and visual reference tests.
 
 ## 2.3.0
 

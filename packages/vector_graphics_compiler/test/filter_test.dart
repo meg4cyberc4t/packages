@@ -26,6 +26,29 @@ void main() {
       }
     }
   });
+  const floodSvg =
+      '<svg width="128" height="128"> '
+      '<defs><filter id="f"><feFlood id="ink" flood-color="currentColor"/></filter></defs> '
+      '<rect width="32" height="32" filter="url(#f)"/></svg>';
+  test('flood currentColor uses the compiler theme', () {
+    final VectorInstructions instructions = parseWithoutOptimizers(
+      floodSvg,
+      theme: const SvgTheme(currentColor: Color(0xff123456)),
+    );
+    expect(
+      instructions.commands.first.filter!.children.single.attributes['flood-color-argb'],
+      0xff123456.toString(),
+    );
+  });
+  test('flood ColorMapper receives element, property, id, and resolved color', () {
+    final mapper = _FilterColorMapper();
+    final VectorInstructions instructions = parseWithoutOptimizers(floodSvg, colorMapper: mapper);
+    expect(mapper.floodCall, ('ink', 'feFlood', 'flood-color', Color.opaqueBlack));
+    expect(
+      instructions.commands.first.filter!.children.single.attributes['flood-color-argb'],
+      0x80402010.toString(),
+    );
+  });
   for (final (String attribute, String expected) in <(String, String)>[
     ('', 'sRGB'),
     ('inherit', 'sRGB'),
@@ -119,4 +142,17 @@ void main() {
     expect(compile('<rect width="10" height="10"/>')[4], 1);
     expect(compile('$definition$shape')[4], 2);
   });
+}
+
+class _FilterColorMapper extends ColorMapper {
+  (String?, String, String, Color)? floodCall;
+
+  @override
+  Color substitute(String? id, String elementName, String attributeName, Color color) {
+    if (elementName == 'feFlood') {
+      floodCall = (id, elementName, attributeName, color);
+      return const Color(0x80402010);
+    }
+    return color;
+  }
 }

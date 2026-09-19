@@ -6,6 +6,7 @@
 * Adds versioned filter decoding, bounded resource ownership, correct opacity, mask, and pattern composition.
 * Adds SVG `feOffset` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feColorMatrix` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feFlood` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

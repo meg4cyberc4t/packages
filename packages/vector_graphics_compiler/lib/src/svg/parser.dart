@@ -627,7 +627,21 @@ class SvgParser {
   /// Creates a new [SvgParser].
   SvgParser(String xml, this.theme, this._key, this._warningsAsErrors, this._colorMapper)
     : _eventIterator = parseEvents(xml).iterator {
-    _definitions.filters.addAll(readFilterDefinitions(xml, theme: theme));
+    _definitions.filters.addAll(
+      readFilterDefinitions(xml, resolveColor: _resolveFilterColor, theme: theme),
+    );
+  }
+
+  int _resolveFilterColor({
+    required String value,
+    required String? currentColor,
+    required String? id,
+    required String element,
+    required String attribute,
+  }) {
+    final Color color =
+        _parseColor(value, currentColor: _parseColor(currentColor)) ?? const Color(0x00000000);
+    return (_colorMapper?.substitute(id, element, attribute, color) ?? color).value;
   }
 
   /// The theme used when parsing SVG elements.

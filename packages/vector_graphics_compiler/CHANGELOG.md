@@ -4,6 +4,7 @@
 * Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
 * Adds isolated SVG filter commands, bounded image resources, and correct opacity, mask, and text composition.
 * Resolves inherited filter color spaces for feColorMatrix.
+* Resolves feFlood colors through styles, themes, and ColorMapper.
 
 ## 1.3.0
 

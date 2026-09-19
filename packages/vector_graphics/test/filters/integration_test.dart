@@ -13,6 +13,78 @@ import 'helpers.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
+    referenceDescription('integration_flood_clip'),
+    () => expectBrowserReference('integration_flood_clip'),
+  );
+  test(
+    referenceDescription('integration_flood_mask'),
+    () => expectBrowserReference('integration_flood_mask'),
+  );
+  test(
+    referenceDescription('integration_flood_shape_opacity'),
+    () => expectBrowserReference('integration_flood_shape_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_group_opacity'),
+    () => expectBrowserReference('integration_flood_group_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_ancestor_opacity'),
+    () => expectBrowserReference('integration_flood_ancestor_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_ancestor_zero'),
+    () => expectBrowserReference('integration_flood_ancestor_zero'),
+  );
+  test(
+    referenceDescription('integration_flood_nested'),
+    () => expectBrowserReference('integration_flood_nested'),
+  );
+  test(
+    referenceDescription('integration_flood_pattern'),
+    () => expectBrowserReference('integration_flood_pattern'),
+  );
+  test(
+    referenceDescription('integration_flood_pattern_opacity'),
+    () => expectBrowserReference('integration_flood_pattern_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_root'),
+    () => expectBrowserReference('integration_flood_root'),
+  );
+  test(
+    referenceDescription('integration_flood_root_opacity'),
+    () => expectBrowserReference('integration_flood_root_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_use'),
+    () => expectBrowserReference('integration_flood_use'),
+  );
+  test(
+    referenceDescription('integration_flood_use_opacity'),
+    () => expectBrowserReference('integration_flood_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_flood_filtered_use_opacity'),
+    () => expectBrowserReference('integration_flood_filtered_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_mask_red'),
+    () => expectBrowserReference('integration_mask_red'),
+  );
+  test(
+    referenceDescription('integration_mask_green'),
+    () => expectBrowserReference('integration_mask_green'),
+  );
+  test(
+    referenceDescription('integration_mask_blue'),
+    () => expectBrowserReference('integration_mask_blue'),
+  );
+  test(
+    referenceDescription('integration_mask_hex808080'),
+    () => expectBrowserReference('integration_mask_hex808080'),
+  );
+  test(
     referenceDescription('integration_mask_inside_filter'),
     () => expectBrowserReference('integration_mask_inside_filter'),
   );
@@ -23,6 +95,10 @@ void main() {
   test(
     referenceDescription('integration_nested_masks'),
     () => expectBrowserReference('integration_nested_masks'),
+  );
+  test(
+    referenceDescription('integration_filtered_mask'),
+    () => expectBrowserReference('integration_filtered_mask'),
   );
   test(
     referenceDescription('integration_mask_clip_layers'),
@@ -48,6 +124,31 @@ void main() {
           expect(data[(32 * 128 + 64) * 4 + 3], closeTo((2 * a - a * a) * opacity * 255, 2));
         },
       );
+    }
+  }
+  for (final color in <String>['white', 'black', 'red', 'lime', 'blue', '#808080']) {
+    for (final alpha in <double>[0, .25, .5, 1]) {
+      for (final filtered in <bool>[false, true]) {
+        test('mask alpha multiplies luminance $color $alpha filtered=$filtered', () async {
+          final filter = filtered
+              ? '<filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="128" height="128"><feFlood flood-color="red"/></filter>'
+              : '';
+          final ui.Image image = await renderSvg(
+            '<svg width="128" height="128"><defs>$filter<mask id="m"><rect width="128" height="128" fill="$color" fill-opacity="$alpha"/></mask></defs><rect width="128" height="128" fill="red" mask="url(#m)" ${filtered ? 'filter="url(#f)"' : ''}/></svg>',
+          );
+          final Uint8List data = await pixels(image);
+          image.dispose();
+          final double luminance = switch (color) {
+            'white' => 1,
+            'black' => 0,
+            'red' => .2126,
+            'lime' => .7152,
+            'blue' => .0722,
+            _ => 128 / 255,
+          };
+          expect(data[(64 * 128 + 64) * 4 + 3], closeTo(luminance * alpha * 255, 2));
+        });
+      }
     }
   }
   for (final opacity in <double>[.25, .5, 1]) {
@@ -81,6 +182,16 @@ void main() {
     expect(await pixels(a), await pixels(b));
     a.dispose();
     b.dispose();
+  });
+  test('mask bounds do not enlarge the geometry used by a surrounding filter', () async {
+    final ui.Image image = await renderSvg(
+      '<svg width="128" height="128"><defs><filter id="f"><feFlood flood-color="red"/></filter><mask id="m"><rect width="128" height="128" fill="white"/></mask></defs><g filter="url(#f)"><rect x="32" y="32" width="32" height="32" mask="url(#m)"/></g></svg>',
+    );
+    final Uint8List data = await pixels(image);
+    image.dispose();
+    expect(data[(16 * 128 + 16) * 4 + 3], 0);
+    expect(data[(40 * 128 + 40) * 4 + 3], 255);
+    expect(data[(80 * 128 + 80) * 4 + 3], 0);
   });
   test('aborting open nested mask recorders is idempotent', () {
     final listener = FlutterVectorGraphicsListener();

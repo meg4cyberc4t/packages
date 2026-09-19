@@ -8,9 +8,20 @@ import 'package:xml/xml.dart';
 import 'numbers.dart';
 import 'theme.dart';
 
+/// Resolves a filter color using the compiler's theme and color mapper.
+typedef FilterColorResolver =
+    int Function({
+      required String value,
+      required String? currentColor,
+      required String? id,
+      required String element,
+      required String attribute,
+    });
+
 /// Reads filter definitions separately so forward references work.
 Map<String, VectorFilter> readFilterDefinitions(
   String source, {
+  FilterColorResolver? resolveColor,
   SvgTheme theme = const SvgTheme(),
 }) {
   if (!source.contains('filter')) {
@@ -30,6 +41,25 @@ Map<String, VectorFilter> readFilterDefinitions(
       }
     }
     return attributes;
+  }
+
+  String property(XmlElement element, String name, String initial, {bool inherited = false}) {
+    var computed = initial;
+    for (final ancestor in <XmlElement>[
+      ...element.ancestors.whereType<XmlElement>().toList().reversed,
+      element,
+    ]) {
+      final String? value = attributesOf(ancestor)[name];
+      if (value == 'inherit' || (name == 'color' && value?.toLowerCase() == 'currentcolor')) {
+        continue;
+      }
+      if (value == 'initial' || ((!inherited) && (value == null || value == 'unset'))) {
+        computed = initial;
+      } else if (value != null && value != 'unset') {
+        computed = value;
+      }
+    }
+    return computed;
   }
 
   VectorFilter read(XmlElement element) {
@@ -91,6 +121,16 @@ Map<String, VectorFilter> readFilterDefinitions(
       attributes['color-interpolation-filters'] = colorSpace;
     } else {
       attributes.remove('color-interpolation-filters');
+    }
+    if (element.name.local == 'feFlood' && resolveColor != null) {
+      attributes['flood-color-argb'] = resolveColor(
+        value: property(element, 'flood-color', 'black'),
+        currentColor: property(element, 'color', 'currentColor', inherited: true),
+        id: attributes['id'],
+        element: element.name.local,
+        attribute: 'flood-color',
+      ).toString();
+      attributes['flood-opacity'] = property(element, 'flood-opacity', '1');
     }
     return VectorFilter(element.name.local, attributes, <VectorFilter>[
       for (final XmlElement child in element.childElements)
