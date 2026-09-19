@@ -21,6 +21,7 @@ import 'merge.dart';
 import 'morphology.dart';
 import 'offset.dart';
 import 'tile.dart';
+import 'turbulence.dart';
 
 /// Evaluates a definition in document order, preserving named intermediate results.
 FilterImage executeFilter(FilterContext context) {
@@ -64,6 +65,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return displacementMap(context, primitive);
     case 'feImage':
       return filterImage(context, primitive);
+    case 'feTurbulence':
+      return turbulence(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }

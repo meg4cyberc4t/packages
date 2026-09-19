@@ -2220,6 +2220,258 @@
     "kind": "browser",
     "input": "transfer_zero_region.svg"
   },
+  "turbulence_fractalNoise_bbox": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_bbox.svg"
+  },
+  "turbulence_fractalNoise_blend": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_blend.svg"
+  },
+  "turbulence_fractalNoise_clipped_stitch": {
+    "kind": "analytic",
+    "input": "turbulence_fractalNoise_clipped_stitch.reference.svg",
+    "generator": "turbulence_references.py"
+  },
+  "turbulence_fractalNoise_default": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_default.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_0_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_0_1.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_0_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_0_3.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_13p75_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_13p75_1.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_13p75_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_13p75_3.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_1_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_1_1.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_1_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_1_3.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_neg4_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_neg4_1.svg"
+  },
+  "turbulence_fractalNoise_linearRGB_neg4_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_linearRGB_neg4_3.svg"
+  },
+  "turbulence_fractalNoise_nine_octaves": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_nine_octaves.svg"
+  },
+  "turbulence_fractalNoise_one_axis": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_one_axis.svg"
+  },
+  "turbulence_fractalNoise_other_axis": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_other_axis.svg"
+  },
+  "turbulence_fractalNoise_sRGB_0_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_0_1.svg"
+  },
+  "turbulence_fractalNoise_sRGB_0_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_0_3.svg"
+  },
+  "turbulence_fractalNoise_sRGB_13p75_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_13p75_1.svg"
+  },
+  "turbulence_fractalNoise_sRGB_13p75_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_13p75_3.svg"
+  },
+  "turbulence_fractalNoise_sRGB_1_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_1_1.svg"
+  },
+  "turbulence_fractalNoise_sRGB_1_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_1_3.svg"
+  },
+  "turbulence_fractalNoise_sRGB_neg4_1": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_neg4_1.svg"
+  },
+  "turbulence_fractalNoise_sRGB_neg4_3": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_sRGB_neg4_3.svg"
+  },
+  "turbulence_fractalNoise_stitch": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_stitch.svg"
+  },
+  "turbulence_fractalNoise_stitch_tiny": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_stitch_tiny.svg"
+  },
+  "turbulence_fractalNoise_subregion": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_subregion.svg"
+  },
+  "turbulence_fractalNoise_subregion_stitch": {
+    "kind": "analytic",
+    "input": "turbulence_fractalNoise_subregion_stitch.reference.svg",
+    "generator": "turbulence_references.py"
+  },
+  "turbulence_fractalNoise_tile": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_tile.svg"
+  },
+  "turbulence_fractalNoise_transform": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_transform.svg"
+  },
+  "turbulence_fractalNoise_zero_octaves": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_zero_octaves.svg"
+  },
+  "turbulence_fractalNoise_zero_region": {
+    "kind": "browser",
+    "input": "turbulence_fractalNoise_zero_region.svg"
+  },
+  "turbulence_turbulence_bbox": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_bbox.svg"
+  },
+  "turbulence_turbulence_blend": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_blend.svg"
+  },
+  "turbulence_turbulence_clipped_stitch": {
+    "kind": "analytic",
+    "input": "turbulence_turbulence_clipped_stitch.reference.svg",
+    "generator": "turbulence_references.py"
+  },
+  "turbulence_turbulence_default": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_default.svg"
+  },
+  "turbulence_turbulence_linearRGB_0_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_0_1.svg"
+  },
+  "turbulence_turbulence_linearRGB_0_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_0_3.svg"
+  },
+  "turbulence_turbulence_linearRGB_13p75_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_13p75_1.svg"
+  },
+  "turbulence_turbulence_linearRGB_13p75_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_13p75_3.svg"
+  },
+  "turbulence_turbulence_linearRGB_1_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_1_1.svg"
+  },
+  "turbulence_turbulence_linearRGB_1_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_1_3.svg"
+  },
+  "turbulence_turbulence_linearRGB_neg4_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_neg4_1.svg"
+  },
+  "turbulence_turbulence_linearRGB_neg4_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_linearRGB_neg4_3.svg"
+  },
+  "turbulence_turbulence_nine_octaves": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_nine_octaves.svg"
+  },
+  "turbulence_turbulence_one_axis": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_one_axis.svg"
+  },
+  "turbulence_turbulence_other_axis": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_other_axis.svg"
+  },
+  "turbulence_turbulence_sRGB_0_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_0_1.svg"
+  },
+  "turbulence_turbulence_sRGB_0_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_0_3.svg"
+  },
+  "turbulence_turbulence_sRGB_13p75_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_13p75_1.svg"
+  },
+  "turbulence_turbulence_sRGB_13p75_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_13p75_3.svg"
+  },
+  "turbulence_turbulence_sRGB_1_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_1_1.svg"
+  },
+  "turbulence_turbulence_sRGB_1_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_1_3.svg"
+  },
+  "turbulence_turbulence_sRGB_neg4_1": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_neg4_1.svg"
+  },
+  "turbulence_turbulence_sRGB_neg4_3": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_sRGB_neg4_3.svg"
+  },
+  "turbulence_turbulence_stitch": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_stitch.svg"
+  },
+  "turbulence_turbulence_stitch_tiny": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_stitch_tiny.svg"
+  },
+  "turbulence_turbulence_subregion": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_subregion.svg"
+  },
+  "turbulence_turbulence_subregion_stitch": {
+    "kind": "analytic",
+    "input": "turbulence_turbulence_subregion_stitch.reference.svg",
+    "generator": "turbulence_references.py"
+  },
+  "turbulence_turbulence_tile": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_tile.svg"
+  },
+  "turbulence_turbulence_transform": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_transform.svg"
+  },
+  "turbulence_turbulence_zero_octaves": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_zero_octaves.svg"
+  },
+  "turbulence_turbulence_zero_region": {
+    "kind": "browser",
+    "input": "turbulence_turbulence_zero_region.svg"
+  },
   "unfiltered": {
     "kind": "browser",
     "input": "unfiltered.svg"

@@ -95,6 +95,8 @@ class FilterShaders {
             names.add('displacement_map');
           case 'feImage':
             names.add('image');
+          case 'feTurbulence':
+            names.add('turbulence');
         }
       }
     }

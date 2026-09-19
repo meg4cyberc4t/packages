@@ -18,6 +18,7 @@
 * Adds SVG `feConvolveMatrix` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feDisplacementMap` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feImage` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feTurbulence` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 
