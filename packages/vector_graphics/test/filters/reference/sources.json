@@ -1,4 +1,160 @@
 {
+  "blend_chain": {
+    "kind": "browser",
+    "input": "blend_chain.svg"
+  },
+  "blend_color-burn_linearRGB": {
+    "kind": "browser",
+    "input": "blend_color-burn_linearRGB.svg"
+  },
+  "blend_color-burn_sRGB": {
+    "kind": "browser",
+    "input": "blend_color-burn_sRGB.svg"
+  },
+  "blend_color-dodge_linearRGB": {
+    "kind": "browser",
+    "input": "blend_color-dodge_linearRGB.svg"
+  },
+  "blend_color-dodge_sRGB": {
+    "kind": "browser",
+    "input": "blend_color-dodge_sRGB.svg"
+  },
+  "blend_color_linearRGB": {
+    "kind": "browser",
+    "input": "blend_color_linearRGB.svg"
+  },
+  "blend_color_sRGB": {
+    "kind": "browser",
+    "input": "blend_color_sRGB.svg"
+  },
+  "blend_darken_linearRGB": {
+    "kind": "browser",
+    "input": "blend_darken_linearRGB.svg"
+  },
+  "blend_darken_sRGB": {
+    "kind": "browser",
+    "input": "blend_darken_sRGB.svg"
+  },
+  "blend_default_in": {
+    "kind": "browser",
+    "input": "blend_default_in.svg"
+  },
+  "blend_default_in2": {
+    "kind": "browser",
+    "input": "blend_default_in2.svg"
+  },
+  "blend_defaults": {
+    "kind": "browser",
+    "input": "blend_defaults.svg"
+  },
+  "blend_difference_linearRGB": {
+    "kind": "browser",
+    "input": "blend_difference_linearRGB.svg"
+  },
+  "blend_difference_sRGB": {
+    "kind": "browser",
+    "input": "blend_difference_sRGB.svg"
+  },
+  "blend_exclusion_linearRGB": {
+    "kind": "browser",
+    "input": "blend_exclusion_linearRGB.svg"
+  },
+  "blend_exclusion_sRGB": {
+    "kind": "browser",
+    "input": "blend_exclusion_sRGB.svg"
+  },
+  "blend_hard-light_linearRGB": {
+    "kind": "browser",
+    "input": "blend_hard-light_linearRGB.svg"
+  },
+  "blend_hard-light_sRGB": {
+    "kind": "browser",
+    "input": "blend_hard-light_sRGB.svg"
+  },
+  "blend_hue_linearRGB": {
+    "kind": "browser",
+    "input": "blend_hue_linearRGB.svg"
+  },
+  "blend_hue_sRGB": {
+    "kind": "browser",
+    "input": "blend_hue_sRGB.svg"
+  },
+  "blend_lighten_linearRGB": {
+    "kind": "browser",
+    "input": "blend_lighten_linearRGB.svg"
+  },
+  "blend_lighten_sRGB": {
+    "kind": "browser",
+    "input": "blend_lighten_sRGB.svg"
+  },
+  "blend_luminosity_linearRGB": {
+    "kind": "browser",
+    "input": "blend_luminosity_linearRGB.svg"
+  },
+  "blend_luminosity_sRGB": {
+    "kind": "browser",
+    "input": "blend_luminosity_sRGB.svg"
+  },
+  "blend_multiply_linearRGB": {
+    "kind": "browser",
+    "input": "blend_multiply_linearRGB.svg"
+  },
+  "blend_multiply_sRGB": {
+    "kind": "browser",
+    "input": "blend_multiply_sRGB.svg"
+  },
+  "blend_normal_linearRGB": {
+    "kind": "browser",
+    "input": "blend_normal_linearRGB.svg"
+  },
+  "blend_normal_sRGB": {
+    "kind": "browser",
+    "input": "blend_normal_sRGB.svg"
+  },
+  "blend_overlay_linearRGB": {
+    "kind": "browser",
+    "input": "blend_overlay_linearRGB.svg"
+  },
+  "blend_overlay_sRGB": {
+    "kind": "browser",
+    "input": "blend_overlay_sRGB.svg"
+  },
+  "blend_saturation_linearRGB": {
+    "kind": "browser",
+    "input": "blend_saturation_linearRGB.svg"
+  },
+  "blend_saturation_sRGB": {
+    "kind": "browser",
+    "input": "blend_saturation_sRGB.svg"
+  },
+  "blend_screen_linearRGB": {
+    "kind": "browser",
+    "input": "blend_screen_linearRGB.svg"
+  },
+  "blend_screen_sRGB": {
+    "kind": "browser",
+    "input": "blend_screen_sRGB.svg"
+  },
+  "blend_soft-light_linearRGB": {
+    "kind": "browser",
+    "input": "blend_soft-light_linearRGB.svg"
+  },
+  "blend_soft-light_sRGB": {
+    "kind": "browser",
+    "input": "blend_soft-light_sRGB.svg"
+  },
+  "blend_source_alpha": {
+    "kind": "browser",
+    "input": "blend_source_alpha.svg"
+  },
+  "blend_subregion": {
+    "kind": "browser",
+    "input": "blend_subregion.svg"
+  },
+  "blend_unknown_inputs": {
+    "kind": "browser",
+    "input": "blend_unknown_inputs.svg"
+  },
   "blur_anisotropic": {
     "kind": "browser",
     "input": "blur_anisotropic.svg"

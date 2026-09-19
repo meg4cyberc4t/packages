@@ -9,6 +9,7 @@
 * Adds SVG `feFlood` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feGaussianBlur` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feMerge` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feBlend` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 
+import 'blend.dart';
 import 'color_matrix.dart';
 import 'filter_context.dart';
 import 'flood.dart';
@@ -37,6 +38,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return gaussianBlur(context, primitive);
     case 'feMerge':
       return merge(context, primitive);
+    case 'feBlend':
+      return blend(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
