@@ -819,6 +819,130 @@
     "kind": "browser",
     "input": "merge_zero.svg"
   },
+  "morphology_chain": {
+    "kind": "browser",
+    "input": "morphology_chain.svg"
+  },
+  "morphology_defaults": {
+    "kind": "browser",
+    "input": "morphology_defaults.svg"
+  },
+  "morphology_dilate_anisotropic": {
+    "kind": "browser",
+    "input": "morphology_dilate_anisotropic.svg"
+  },
+  "morphology_dilate_bbox": {
+    "kind": "browser",
+    "input": "morphology_dilate_bbox.svg"
+  },
+  "morphology_dilate_edge": {
+    "kind": "browser",
+    "input": "morphology_dilate_edge.svg"
+  },
+  "morphology_dilate_fractional": {
+    "kind": "browser",
+    "input": "morphology_dilate_fractional.svg"
+  },
+  "morphology_dilate_horizontal": {
+    "kind": "browser",
+    "input": "morphology_dilate_horizontal.svg"
+  },
+  "morphology_dilate_isotropic": {
+    "kind": "browser",
+    "input": "morphology_dilate_isotropic.svg"
+  },
+  "morphology_dilate_large": {
+    "kind": "browser",
+    "input": "morphology_dilate_large.svg"
+  },
+  "morphology_dilate_linear": {
+    "kind": "browser",
+    "input": "morphology_dilate_linear.svg"
+  },
+  "morphology_dilate_negative": {
+    "kind": "browser",
+    "input": "morphology_dilate_negative.svg"
+  },
+  "morphology_dilate_negative_axis": {
+    "kind": "equivalent-svg",
+    "input": "morphology_dilate_negative_axis.reference.svg"
+  },
+  "morphology_dilate_source_alpha": {
+    "kind": "browser",
+    "input": "morphology_dilate_source_alpha.svg"
+  },
+  "morphology_dilate_subregion": {
+    "kind": "browser",
+    "input": "morphology_dilate_subregion.svg"
+  },
+  "morphology_dilate_vertical": {
+    "kind": "browser",
+    "input": "morphology_dilate_vertical.svg"
+  },
+  "morphology_dilate_zero": {
+    "kind": "browser",
+    "input": "morphology_dilate_zero.svg"
+  },
+  "morphology_erode_anisotropic": {
+    "kind": "browser",
+    "input": "morphology_erode_anisotropic.svg"
+  },
+  "morphology_erode_bbox": {
+    "kind": "browser",
+    "input": "morphology_erode_bbox.svg"
+  },
+  "morphology_erode_edge": {
+    "kind": "browser",
+    "input": "morphology_erode_edge.svg"
+  },
+  "morphology_erode_fractional": {
+    "kind": "browser",
+    "input": "morphology_erode_fractional.svg"
+  },
+  "morphology_erode_horizontal": {
+    "kind": "browser",
+    "input": "morphology_erode_horizontal.svg"
+  },
+  "morphology_erode_isotropic": {
+    "kind": "browser",
+    "input": "morphology_erode_isotropic.svg"
+  },
+  "morphology_erode_large": {
+    "kind": "browser",
+    "input": "morphology_erode_large.svg"
+  },
+  "morphology_erode_linear": {
+    "kind": "browser",
+    "input": "morphology_erode_linear.svg"
+  },
+  "morphology_erode_negative": {
+    "kind": "browser",
+    "input": "morphology_erode_negative.svg"
+  },
+  "morphology_erode_negative_axis": {
+    "kind": "equivalent-svg",
+    "input": "morphology_erode_negative_axis.reference.svg"
+  },
+  "morphology_erode_source_alpha": {
+    "kind": "browser",
+    "input": "morphology_erode_source_alpha.svg"
+  },
+  "morphology_erode_subregion": {
+    "kind": "browser",
+    "input": "morphology_erode_subregion.svg"
+  },
+  "morphology_erode_vertical": {
+    "kind": "browser",
+    "input": "morphology_erode_vertical.svg"
+  },
+  "morphology_erode_zero": {
+    "kind": "browser",
+    "input": "morphology_erode_zero.svg"
+  },
+  "morphology_transform": {
+    "kind": "browser",
+    "input": "morphology_transform.svg"
+  },
   "offset_alpha": {
     "kind": "browser",
     "input": "offset_alpha.svg"

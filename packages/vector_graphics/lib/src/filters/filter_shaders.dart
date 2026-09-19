@@ -75,6 +75,14 @@ class FilterShaders {
             if (primitive.attributes['operator'] == 'arithmetic') {
               names.add('composite');
             }
+          case 'feMorphology':
+            final List<String> radius = (primitive.attributes['radius'] ?? '0').trim().split(
+              RegExp(r'[\s,]+'),
+            );
+            if (radius.length == 2 &&
+                ((double.tryParse(radius[0]) == 0) != (double.tryParse(radius[1]) == 0))) {
+              names.add('morphology_axis');
+            }
         }
       }
     }

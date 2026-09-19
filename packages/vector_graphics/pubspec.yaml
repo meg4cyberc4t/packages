@@ -23,6 +23,7 @@ flutter:
   shaders:
     - shaders/filter_passthrough.frag
     - shaders/filter_composite.frag
+    - shaders/filter_morphology_axis.frag
 
 platforms:
   android:
