@@ -26,6 +26,7 @@ flutter:
     - shaders/filter_morphology_axis.frag
     - shaders/filter_component_transfer.frag
     - shaders/filter_convolve_matrix.frag
+    - shaders/filter_displacement_map.frag
 
 platforms:
   android:

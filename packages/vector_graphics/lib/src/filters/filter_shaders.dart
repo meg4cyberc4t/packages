@@ -91,6 +91,8 @@ class FilterShaders {
             }
           case 'feConvolveMatrix':
             names.add('convolve_matrix');
+          case 'feDisplacementMap':
+            names.add('displacement_map');
         }
       }
     }

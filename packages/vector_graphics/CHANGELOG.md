@@ -16,6 +16,7 @@
 * Adds SVG `feComponentTransfer` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feTile` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feConvolveMatrix` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feDisplacementMap` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

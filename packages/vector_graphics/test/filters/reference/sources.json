@@ -732,6 +732,258 @@
     "kind": "browser",
     "input": "convolve_zero_region_sRGB.svg"
   },
+  "displacement_AA_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_AA_linearRGB.svg"
+  },
+  "displacement_AA_sRGB": {
+    "kind": "browser",
+    "input": "displacement_AA_sRGB.svg"
+  },
+  "displacement_AB_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_AB_linearRGB.svg"
+  },
+  "displacement_AB_sRGB": {
+    "kind": "browser",
+    "input": "displacement_AB_sRGB.svg"
+  },
+  "displacement_AG_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_AG_linearRGB.svg"
+  },
+  "displacement_AG_sRGB": {
+    "kind": "browser",
+    "input": "displacement_AG_sRGB.svg"
+  },
+  "displacement_AR_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_AR_linearRGB.svg"
+  },
+  "displacement_AR_sRGB": {
+    "kind": "browser",
+    "input": "displacement_AR_sRGB.svg"
+  },
+  "displacement_BA_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_BA_linearRGB.svg"
+  },
+  "displacement_BA_sRGB": {
+    "kind": "browser",
+    "input": "displacement_BA_sRGB.svg"
+  },
+  "displacement_BB_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_BB_linearRGB.svg"
+  },
+  "displacement_BB_sRGB": {
+    "kind": "browser",
+    "input": "displacement_BB_sRGB.svg"
+  },
+  "displacement_BG_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_BG_linearRGB.svg"
+  },
+  "displacement_BG_sRGB": {
+    "kind": "browser",
+    "input": "displacement_BG_sRGB.svg"
+  },
+  "displacement_BR_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_BR_linearRGB.svg"
+  },
+  "displacement_BR_sRGB": {
+    "kind": "browser",
+    "input": "displacement_BR_sRGB.svg"
+  },
+  "displacement_GA_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_GA_linearRGB.svg"
+  },
+  "displacement_GA_sRGB": {
+    "kind": "browser",
+    "input": "displacement_GA_sRGB.svg"
+  },
+  "displacement_GB_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_GB_linearRGB.svg"
+  },
+  "displacement_GB_sRGB": {
+    "kind": "browser",
+    "input": "displacement_GB_sRGB.svg"
+  },
+  "displacement_GG_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_GG_linearRGB.svg"
+  },
+  "displacement_GG_sRGB": {
+    "kind": "browser",
+    "input": "displacement_GG_sRGB.svg"
+  },
+  "displacement_GR_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_GR_linearRGB.svg"
+  },
+  "displacement_GR_sRGB": {
+    "kind": "browser",
+    "input": "displacement_GR_sRGB.svg"
+  },
+  "displacement_RA_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_RA_linearRGB.svg"
+  },
+  "displacement_RA_sRGB": {
+    "kind": "browser",
+    "input": "displacement_RA_sRGB.svg"
+  },
+  "displacement_RB_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_RB_linearRGB.svg"
+  },
+  "displacement_RB_sRGB": {
+    "kind": "browser",
+    "input": "displacement_RB_sRGB.svg"
+  },
+  "displacement_RG_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_RG_linearRGB.svg"
+  },
+  "displacement_RG_sRGB": {
+    "kind": "browser",
+    "input": "displacement_RG_sRGB.svg"
+  },
+  "displacement_RR_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_RR_linearRGB.svg"
+  },
+  "displacement_RR_sRGB": {
+    "kind": "browser",
+    "input": "displacement_RR_sRGB.svg"
+  },
+  "displacement_alpha_defaults_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_alpha_defaults_linearRGB.svg"
+  },
+  "displacement_alpha_defaults_sRGB": {
+    "kind": "browser",
+    "input": "displacement_alpha_defaults_sRGB.svg"
+  },
+  "displacement_alpha_input_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_alpha_input_linearRGB.svg"
+  },
+  "displacement_alpha_input_sRGB": {
+    "kind": "browser",
+    "input": "displacement_alpha_input_sRGB.svg"
+  },
+  "displacement_chain_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_chain_linearRGB.svg"
+  },
+  "displacement_chain_sRGB": {
+    "kind": "browser",
+    "input": "displacement_chain_sRGB.svg"
+  },
+  "displacement_cropped_input_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_cropped_input_linearRGB.svg"
+  },
+  "displacement_cropped_input_sRGB": {
+    "kind": "browser",
+    "input": "displacement_cropped_input_sRGB.svg"
+  },
+  "displacement_cropped_map_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_cropped_map_linearRGB.svg"
+  },
+  "displacement_cropped_map_sRGB": {
+    "kind": "browser",
+    "input": "displacement_cropped_map_sRGB.svg"
+  },
+  "displacement_defaults_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_defaults_linearRGB.svg"
+  },
+  "displacement_defaults_sRGB": {
+    "kind": "browser",
+    "input": "displacement_defaults_sRGB.svg"
+  },
+  "displacement_empty_input": {
+    "kind": "browser",
+    "input": "displacement_empty_input.svg"
+  },
+  "displacement_empty_map": {
+    "kind": "equivalent-svg",
+    "input": "displacement_empty_map.reference.svg"
+  },
+  "displacement_fractional": {
+    "kind": "equivalent-svg",
+    "input": "displacement_fractional.reference.svg"
+  },
+  "displacement_gradient_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_gradient_linearRGB.svg"
+  },
+  "displacement_gradient_sRGB": {
+    "kind": "browser",
+    "input": "displacement_gradient_sRGB.svg"
+  },
+  "displacement_negative_fractional": {
+    "kind": "equivalent-svg",
+    "input": "displacement_negative_fractional.reference.svg"
+  },
+  "displacement_negative_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_negative_linearRGB.svg"
+  },
+  "displacement_negative_sRGB": {
+    "kind": "browser",
+    "input": "displacement_negative_sRGB.svg"
+  },
+  "displacement_object_units": {
+    "kind": "browser",
+    "input": "displacement_object_units.svg"
+  },
+  "displacement_source_outside": {
+    "kind": "browser",
+    "input": "displacement_source_outside.svg"
+  },
+  "displacement_subregion_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_subregion_linearRGB.svg"
+  },
+  "displacement_subregion_sRGB": {
+    "kind": "browser",
+    "input": "displacement_subregion_sRGB.svg"
+  },
+  "displacement_transform": {
+    "kind": "browser",
+    "input": "displacement_transform.svg"
+  },
+  "displacement_transparent_map_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_transparent_map_linearRGB.svg"
+  },
+  "displacement_transparent_map_sRGB": {
+    "kind": "browser",
+    "input": "displacement_transparent_map_sRGB.svg"
+  },
+  "displacement_unknown_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_unknown_linearRGB.svg"
+  },
+  "displacement_unknown_sRGB": {
+    "kind": "browser",
+    "input": "displacement_unknown_sRGB.svg"
+  },
+  "displacement_zero_linearRGB": {
+    "kind": "browser",
+    "input": "displacement_zero_linearRGB.svg"
+  },
+  "displacement_zero_sRGB": {
+    "kind": "browser",
+    "input": "displacement_zero_sRGB.svg"
+  },
   "empty": {
     "kind": "browser",
     "input": "empty.svg"
