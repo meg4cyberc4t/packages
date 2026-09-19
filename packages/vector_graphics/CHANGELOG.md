@@ -20,6 +20,7 @@
 * Adds SVG `feImage` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feTurbulence` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feDiffuseLighting` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feSpecularLighting` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

@@ -99,6 +99,8 @@ class FilterShaders {
             names.add('turbulence');
           case 'feDiffuseLighting':
             names.add('diffuse_lighting');
+          case 'feSpecularLighting':
+            names.add('specular_lighting');
         }
       }
     }

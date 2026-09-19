@@ -1808,6 +1808,62 @@
     "kind": "browser",
     "input": "integration_flood_use_opacity.svg"
   },
+  "integration_lighting_ancestor_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_ancestor_opacity.svg"
+  },
+  "integration_lighting_ancestor_zero": {
+    "kind": "browser",
+    "input": "integration_lighting_ancestor_zero.svg"
+  },
+  "integration_lighting_clip": {
+    "kind": "browser",
+    "input": "integration_lighting_clip.svg"
+  },
+  "integration_lighting_filtered_use_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_filtered_use_opacity.svg"
+  },
+  "integration_lighting_group_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_group_opacity.svg"
+  },
+  "integration_lighting_mask": {
+    "kind": "browser",
+    "input": "integration_lighting_mask.svg"
+  },
+  "integration_lighting_nested": {
+    "kind": "browser",
+    "input": "integration_lighting_nested.svg"
+  },
+  "integration_lighting_pattern": {
+    "kind": "browser",
+    "input": "integration_lighting_pattern.svg"
+  },
+  "integration_lighting_pattern_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_pattern_opacity.svg"
+  },
+  "integration_lighting_root": {
+    "kind": "browser",
+    "input": "integration_lighting_root.svg"
+  },
+  "integration_lighting_root_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_root_opacity.svg"
+  },
+  "integration_lighting_shape_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_shape_opacity.svg"
+  },
+  "integration_lighting_use": {
+    "kind": "browser",
+    "input": "integration_lighting_use.svg"
+  },
+  "integration_lighting_use_opacity": {
+    "kind": "browser",
+    "input": "integration_lighting_use_opacity.svg"
+  },
   "integration_mask_blue": {
     "kind": "browser",
     "input": "integration_mask_blue.svg"
@@ -1835,6 +1891,10 @@
   "integration_mask_red": {
     "kind": "browser",
     "input": "integration_mask_red.svg"
+  },
+  "integration_material": {
+    "kind": "browser",
+    "input": "integration_material.svg"
   },
   "integration_nested_masks": {
     "kind": "browser",
@@ -2319,6 +2379,482 @@
   "shadow_zero_region": {
     "kind": "browser",
     "input": "shadow_zero_region.svg"
+  },
+  "specular_behind": {
+    "kind": "browser",
+    "input": "specular_behind.svg"
+  },
+  "specular_black": {
+    "kind": "browser",
+    "input": "specular_black.svg"
+  },
+  "specular_currentcolor": {
+    "kind": "browser",
+    "input": "specular_currentcolor.svg"
+  },
+  "specular_distant_alpha_ramp": {
+    "kind": "analytic",
+    "input": "specular_distant_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_distant_blur": {
+    "kind": "browser",
+    "input": "specular_distant_blur.svg"
+  },
+  "specular_distant_combined": {
+    "kind": "browser",
+    "input": "specular_distant_combined.svg"
+  },
+  "specular_distant_constant_half": {
+    "kind": "browser",
+    "input": "specular_distant_constant_half.svg"
+  },
+  "specular_distant_constant_large": {
+    "kind": "browser",
+    "input": "specular_distant_constant_large.svg"
+  },
+  "specular_distant_constant_zero": {
+    "kind": "equivalent-svg",
+    "input": "specular_distant_constant_zero.reference.svg"
+  },
+  "specular_distant_default": {
+    "kind": "browser",
+    "input": "specular_distant_default.svg"
+  },
+  "specular_distant_kernel_four": {
+    "kind": "analytic",
+    "input": "specular_distant_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_distant_kernel_negative": {
+    "kind": "browser",
+    "input": "specular_distant_kernel_negative.svg"
+  },
+  "specular_distant_kernel_x": {
+    "kind": "analytic",
+    "input": "specular_distant_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_distant_kernel_y": {
+    "kind": "analytic",
+    "input": "specular_distant_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_distant_kernel_zero": {
+    "kind": "browser",
+    "input": "specular_distant_kernel_zero.svg"
+  },
+  "specular_distant_linearRGB_0": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_0.svg"
+  },
+  "specular_distant_linearRGB_1": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_1.svg"
+  },
+  "specular_distant_linearRGB_8": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_8.svg"
+  },
+  "specular_distant_linearRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_exponent_1.svg"
+  },
+  "specular_distant_linearRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_exponent_128.svg"
+  },
+  "specular_distant_linearRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_exponent_16.svg"
+  },
+  "specular_distant_linearRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_exponent_4.svg"
+  },
+  "specular_distant_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_distant_linearRGB_neg4.svg"
+  },
+  "specular_distant_merge": {
+    "kind": "browser",
+    "input": "specular_distant_merge.svg"
+  },
+  "specular_distant_one_pixel": {
+    "kind": "browser",
+    "input": "specular_distant_one_pixel.svg"
+  },
+  "specular_distant_sRGB_0": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_0.svg"
+  },
+  "specular_distant_sRGB_1": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_1.svg"
+  },
+  "specular_distant_sRGB_8": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_8.svg"
+  },
+  "specular_distant_sRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_exponent_1.svg"
+  },
+  "specular_distant_sRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_exponent_128.svg"
+  },
+  "specular_distant_sRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_exponent_16.svg"
+  },
+  "specular_distant_sRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_exponent_4.svg"
+  },
+  "specular_distant_sRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_distant_sRGB_neg4.svg"
+  },
+  "specular_distant_subregion": {
+    "kind": "browser",
+    "input": "specular_distant_subregion.svg"
+  },
+  "specular_distant_transform": {
+    "kind": "browser",
+    "input": "specular_distant_transform.svg"
+  },
+  "specular_distant_transparent": {
+    "kind": "browser",
+    "input": "specular_distant_transparent.svg"
+  },
+  "specular_distant_transparent_color": {
+    "kind": "browser",
+    "input": "specular_distant_transparent_color.svg"
+  },
+  "specular_distant_zero_region": {
+    "kind": "browser",
+    "input": "specular_distant_zero_region.svg"
+  },
+  "specular_first_light": {
+    "kind": "browser",
+    "input": "specular_first_light.svg"
+  },
+  "specular_missing_light": {
+    "kind": "browser",
+    "input": "specular_missing_light.svg"
+  },
+  "specular_point_alpha_ramp": {
+    "kind": "analytic",
+    "input": "specular_point_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_point_bbox": {
+    "kind": "browser",
+    "input": "specular_point_bbox.svg"
+  },
+  "specular_point_blur": {
+    "kind": "browser",
+    "input": "specular_point_blur.svg"
+  },
+  "specular_point_combined": {
+    "kind": "browser",
+    "input": "specular_point_combined.svg"
+  },
+  "specular_point_constant_half": {
+    "kind": "browser",
+    "input": "specular_point_constant_half.svg"
+  },
+  "specular_point_constant_large": {
+    "kind": "browser",
+    "input": "specular_point_constant_large.svg"
+  },
+  "specular_point_constant_zero": {
+    "kind": "equivalent-svg",
+    "input": "specular_point_constant_zero.reference.svg"
+  },
+  "specular_point_default": {
+    "kind": "browser",
+    "input": "specular_point_default.svg"
+  },
+  "specular_point_kernel_four": {
+    "kind": "analytic",
+    "input": "specular_point_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_point_kernel_negative": {
+    "kind": "browser",
+    "input": "specular_point_kernel_negative.svg"
+  },
+  "specular_point_kernel_x": {
+    "kind": "analytic",
+    "input": "specular_point_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_point_kernel_y": {
+    "kind": "analytic",
+    "input": "specular_point_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_point_kernel_zero": {
+    "kind": "browser",
+    "input": "specular_point_kernel_zero.svg"
+  },
+  "specular_point_linearRGB_0": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_0.svg"
+  },
+  "specular_point_linearRGB_1": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_1.svg"
+  },
+  "specular_point_linearRGB_8": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_8.svg"
+  },
+  "specular_point_linearRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_exponent_1.svg"
+  },
+  "specular_point_linearRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_exponent_128.svg"
+  },
+  "specular_point_linearRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_exponent_16.svg"
+  },
+  "specular_point_linearRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_exponent_4.svg"
+  },
+  "specular_point_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_point_linearRGB_neg4.svg"
+  },
+  "specular_point_merge": {
+    "kind": "browser",
+    "input": "specular_point_merge.svg"
+  },
+  "specular_point_one_pixel": {
+    "kind": "browser",
+    "input": "specular_point_one_pixel.svg"
+  },
+  "specular_point_sRGB_0": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_0.svg"
+  },
+  "specular_point_sRGB_1": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_1.svg"
+  },
+  "specular_point_sRGB_8": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_8.svg"
+  },
+  "specular_point_sRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_exponent_1.svg"
+  },
+  "specular_point_sRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_exponent_128.svg"
+  },
+  "specular_point_sRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_exponent_16.svg"
+  },
+  "specular_point_sRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_exponent_4.svg"
+  },
+  "specular_point_sRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_point_sRGB_neg4.svg"
+  },
+  "specular_point_subregion": {
+    "kind": "browser",
+    "input": "specular_point_subregion.svg"
+  },
+  "specular_point_transform": {
+    "kind": "browser",
+    "input": "specular_point_transform.svg"
+  },
+  "specular_point_transparent": {
+    "kind": "browser",
+    "input": "specular_point_transparent.svg"
+  },
+  "specular_point_transparent_color": {
+    "kind": "browser",
+    "input": "specular_point_transparent_color.svg"
+  },
+  "specular_point_zero_region": {
+    "kind": "browser",
+    "input": "specular_point_zero_region.svg"
+  },
+  "specular_spot_alpha_ramp": {
+    "kind": "analytic",
+    "input": "specular_spot_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_spot_away": {
+    "kind": "browser",
+    "input": "specular_spot_away.svg"
+  },
+  "specular_spot_bbox": {
+    "kind": "browser",
+    "input": "specular_spot_bbox.svg"
+  },
+  "specular_spot_blur": {
+    "kind": "browser",
+    "input": "specular_spot_blur.svg"
+  },
+  "specular_spot_combined": {
+    "kind": "browser",
+    "input": "specular_spot_combined.svg"
+  },
+  "specular_spot_cone": {
+    "kind": "browser",
+    "input": "specular_spot_cone.svg"
+  },
+  "specular_spot_constant_half": {
+    "kind": "browser",
+    "input": "specular_spot_constant_half.svg"
+  },
+  "specular_spot_constant_large": {
+    "kind": "browser",
+    "input": "specular_spot_constant_large.svg"
+  },
+  "specular_spot_constant_zero": {
+    "kind": "equivalent-svg",
+    "input": "specular_spot_constant_zero.reference.svg"
+  },
+  "specular_spot_default": {
+    "kind": "browser",
+    "input": "specular_spot_default.svg"
+  },
+  "specular_spot_equal": {
+    "kind": "browser",
+    "input": "specular_spot_equal.svg"
+  },
+  "specular_spot_kernel_four": {
+    "kind": "analytic",
+    "input": "specular_spot_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_spot_kernel_negative": {
+    "kind": "browser",
+    "input": "specular_spot_kernel_negative.svg"
+  },
+  "specular_spot_kernel_x": {
+    "kind": "analytic",
+    "input": "specular_spot_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_spot_kernel_y": {
+    "kind": "analytic",
+    "input": "specular_spot_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "specular_spot_kernel_zero": {
+    "kind": "browser",
+    "input": "specular_spot_kernel_zero.svg"
+  },
+  "specular_spot_linearRGB_0": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_0.svg"
+  },
+  "specular_spot_linearRGB_1": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_1.svg"
+  },
+  "specular_spot_linearRGB_8": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_8.svg"
+  },
+  "specular_spot_linearRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_exponent_1.svg"
+  },
+  "specular_spot_linearRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_exponent_128.svg"
+  },
+  "specular_spot_linearRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_exponent_16.svg"
+  },
+  "specular_spot_linearRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_exponent_4.svg"
+  },
+  "specular_spot_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_spot_linearRGB_neg4.svg"
+  },
+  "specular_spot_merge": {
+    "kind": "browser",
+    "input": "specular_spot_merge.svg"
+  },
+  "specular_spot_one_pixel": {
+    "kind": "browser",
+    "input": "specular_spot_one_pixel.svg"
+  },
+  "specular_spot_sRGB_0": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_0.svg"
+  },
+  "specular_spot_sRGB_1": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_1.svg"
+  },
+  "specular_spot_sRGB_8": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_8.svg"
+  },
+  "specular_spot_sRGB_exponent_1": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_exponent_1.svg"
+  },
+  "specular_spot_sRGB_exponent_128": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_exponent_128.svg"
+  },
+  "specular_spot_sRGB_exponent_16": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_exponent_16.svg"
+  },
+  "specular_spot_sRGB_exponent_4": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_exponent_4.svg"
+  },
+  "specular_spot_sRGB_neg4": {
+    "kind": "browser",
+    "input": "specular_spot_sRGB_neg4.svg"
+  },
+  "specular_spot_subregion": {
+    "kind": "browser",
+    "input": "specular_spot_subregion.svg"
+  },
+  "specular_spot_transform": {
+    "kind": "browser",
+    "input": "specular_spot_transform.svg"
+  },
+  "specular_spot_transparent": {
+    "kind": "browser",
+    "input": "specular_spot_transparent.svg"
+  },
+  "specular_spot_transparent_color": {
+    "kind": "browser",
+    "input": "specular_spot_transparent_color.svg"
+  },
+  "specular_spot_zero_region": {
+    "kind": "browser",
+    "input": "specular_spot_zero_region.svg"
+  },
+  "specular_style": {
+    "kind": "browser",
+    "input": "specular_style.svg"
   },
   "tile_alpha_linearRGB": {
     "kind": "browser",

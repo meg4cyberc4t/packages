@@ -69,6 +69,7 @@ const String themed =
 void main() {
   setUp(() => svg.cache.clear());
   for (final name in <String>[
+    'integration_material',
     'integration_flood_group_opacity',
     'integration_pattern_contains_mask',
   ]) {

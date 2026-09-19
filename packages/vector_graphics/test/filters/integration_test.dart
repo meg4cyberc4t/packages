@@ -188,6 +188,70 @@ void main() {
     () => expectBrowserReference('integration_transfer_filtered_use_opacity'),
   );
   test(
+    referenceDescription('integration_lighting_clip'),
+    () => expectBrowserReference('integration_lighting_clip'),
+  );
+  test(
+    referenceDescription('integration_lighting_mask'),
+    () => expectBrowserReference('integration_lighting_mask'),
+  );
+  test(
+    referenceDescription('integration_lighting_shape_opacity'),
+    () => expectBrowserReference('integration_lighting_shape_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_group_opacity'),
+    () => expectBrowserReference('integration_lighting_group_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_ancestor_opacity'),
+    () => expectBrowserReference('integration_lighting_ancestor_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_ancestor_zero'),
+    () => expectBrowserReference('integration_lighting_ancestor_zero'),
+  );
+  test(
+    referenceDescription('integration_lighting_nested'),
+    () => expectBrowserReference('integration_lighting_nested'),
+  );
+  test(
+    referenceDescription('integration_lighting_pattern'),
+    () => expectBrowserReference('integration_lighting_pattern'),
+  );
+  test(
+    referenceDescription('integration_lighting_pattern_opacity'),
+    () => expectBrowserReference('integration_lighting_pattern_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_root'),
+    () => expectBrowserReference('integration_lighting_root'),
+  );
+  test(
+    referenceDescription('integration_lighting_root_opacity'),
+    () => expectBrowserReference('integration_lighting_root_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_use'),
+    () => expectBrowserReference('integration_lighting_use'),
+  );
+  test(
+    referenceDescription('integration_lighting_use_opacity'),
+    () => expectBrowserReference('integration_lighting_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_lighting_filtered_use_opacity'),
+    () => expectBrowserReference('integration_lighting_filtered_use_opacity'),
+  );
+  test(
+    // Discrete transfer turns one-byte noise rounding differences into full
+    // displacement steps. Scalar noise/transfer tests check each stage; this
+    // composition permits at most 1% of pixels beyond the usual 20/255 delta.
+    referenceDescription('integration_material'),
+    () => expectBrowserReference('integration_material', badPixelFraction: .01),
+  );
+
+  test(
     referenceDescription('integration_mask_red'),
     () => expectBrowserReference('integration_mask_red'),
   );

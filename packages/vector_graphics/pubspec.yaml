@@ -30,6 +30,7 @@ flutter:
     - shaders/filter_image.frag
     - shaders/filter_turbulence.frag
     - shaders/filter_diffuse_lighting.frag
+    - shaders/filter_specular_lighting.frag
 
 platforms:
   android:

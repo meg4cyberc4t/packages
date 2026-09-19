@@ -21,6 +21,7 @@ import 'image.dart';
 import 'merge.dart';
 import 'morphology.dart';
 import 'offset.dart';
+import 'specular_lighting.dart';
 import 'tile.dart';
 import 'turbulence.dart';
 
@@ -70,6 +71,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return turbulence(context, primitive);
     case 'feDiffuseLighting':
       return diffuseLighting(context, primitive);
+    case 'feSpecularLighting':
+      return specularLighting(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
