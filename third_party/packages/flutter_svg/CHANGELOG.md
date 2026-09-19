@@ -12,6 +12,7 @@
 * Adds SVG `feDropShadow` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feMorphology` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feComponentTransfer` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feTile` support with parameter, pixel, and visual reference tests.
 
 ## 2.3.0
 

@@ -1223,6 +1223,114 @@
     "kind": "browser",
     "input": "shadow_zero_region.svg"
   },
+  "tile_alpha_linearRGB": {
+    "kind": "browser",
+    "input": "tile_alpha_linearRGB.svg"
+  },
+  "tile_alpha_sRGB": {
+    "kind": "browser",
+    "input": "tile_alpha_sRGB.svg"
+  },
+  "tile_chain_linearRGB": {
+    "kind": "browser",
+    "input": "tile_chain_linearRGB.svg"
+  },
+  "tile_chain_sRGB": {
+    "kind": "browser",
+    "input": "tile_chain_sRGB.svg"
+  },
+  "tile_crop_linearRGB": {
+    "kind": "browser",
+    "input": "tile_crop_linearRGB.svg"
+  },
+  "tile_crop_sRGB": {
+    "kind": "browser",
+    "input": "tile_crop_sRGB.svg"
+  },
+  "tile_fractional": {
+    "kind": "browser",
+    "input": "tile_fractional.svg"
+  },
+  "tile_named_linearRGB": {
+    "kind": "browser",
+    "input": "tile_named_linearRGB.svg"
+  },
+  "tile_named_sRGB": {
+    "kind": "browser",
+    "input": "tile_named_sRGB.svg"
+  },
+  "tile_negative": {
+    "kind": "browser",
+    "input": "tile_negative.svg"
+  },
+  "tile_object_units": {
+    "kind": "browser",
+    "input": "tile_object_units.svg"
+  },
+  "tile_one_pixel_linearRGB": {
+    "kind": "browser",
+    "input": "tile_one_pixel_linearRGB.svg"
+  },
+  "tile_one_pixel_sRGB": {
+    "kind": "browser",
+    "input": "tile_one_pixel_sRGB.svg"
+  },
+  "tile_repeat_repeat": {
+    "kind": "browser",
+    "input": "tile_repeat_repeat.svg"
+  },
+  "tile_source_linearRGB": {
+    "kind": "browser",
+    "input": "tile_source_linearRGB.svg"
+  },
+  "tile_source_sRGB": {
+    "kind": "browser",
+    "input": "tile_source_sRGB.svg"
+  },
+  "tile_subregion_linearRGB": {
+    "kind": "browser",
+    "input": "tile_subregion_linearRGB.svg"
+  },
+  "tile_subregion_sRGB": {
+    "kind": "browser",
+    "input": "tile_subregion_sRGB.svg"
+  },
+  "tile_transform": {
+    "kind": "browser",
+    "input": "tile_transform.svg"
+  },
+  "tile_transparent_linearRGB": {
+    "kind": "browser",
+    "input": "tile_transparent_linearRGB.svg"
+  },
+  "tile_transparent_sRGB": {
+    "kind": "browser",
+    "input": "tile_transparent_sRGB.svg"
+  },
+  "tile_unknown_linearRGB": {
+    "kind": "browser",
+    "input": "tile_unknown_linearRGB.svg"
+  },
+  "tile_unknown_sRGB": {
+    "kind": "browser",
+    "input": "tile_unknown_sRGB.svg"
+  },
+  "tile_zero_input_linearRGB": {
+    "kind": "browser",
+    "input": "tile_zero_input_linearRGB.svg"
+  },
+  "tile_zero_input_sRGB": {
+    "kind": "browser",
+    "input": "tile_zero_input_sRGB.svg"
+  },
+  "tile_zero_output_linearRGB": {
+    "kind": "browser",
+    "input": "tile_zero_output_linearRGB.svg"
+  },
+  "tile_zero_output_sRGB": {
+    "kind": "equivalent-svg",
+    "input": "tile_zero_output_sRGB.reference.svg"
+  },
   "transfer_alpha_create_linearRGB": {
     "kind": "browser",
     "input": "transfer_alpha_create_linearRGB.svg"

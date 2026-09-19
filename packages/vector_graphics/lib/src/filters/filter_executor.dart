@@ -17,6 +17,7 @@ import 'gaussian_blur.dart';
 import 'merge.dart';
 import 'morphology.dart';
 import 'offset.dart';
+import 'tile.dart';
 
 /// Evaluates a definition in document order, preserving named intermediate results.
 FilterImage executeFilter(FilterContext context) {
@@ -52,6 +53,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return morphology(context, primitive);
     case 'feComponentTransfer':
       return componentTransfer(context, primitive);
+    case 'feTile':
+      return tile(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
