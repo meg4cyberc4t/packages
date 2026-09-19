@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_graphics/src/filters/filter_shaders.dart';
 import 'package:vector_graphics/src/listener.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
@@ -22,6 +23,7 @@ Future<ui.Image> renderSvg(
   double scale = 1,
   double? filterRasterScale,
 }) async {
+  FilterShaders.debugAssetPrefix = '';
   final Uint8List bytes = encodeSvg(
     xml: svg,
     debugName: 'filter test',

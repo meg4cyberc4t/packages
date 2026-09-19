@@ -6,6 +6,8 @@ import 'dart:ui';
 
 import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 
+import 'filter_shaders.dart';
+
 /// A picture and the finite region in which its pixels are defined.
 class FilterImage {
   /// Creates a filter intermediate. Its context owns the picture.
@@ -46,7 +48,9 @@ class FilterContext {
     this.objectBounds,
     this.viewport, {
     this.rasterScale = 1,
-  }) {
+    this.shaders,
+    FilterRasterBudget? rasterBudget,
+  }) : _rasterBudget = rasterBudget ?? FilterRasterBudget() {
     try {
       if (!rasterScale.isFinite || rasterScale <= 0) {
         throw ArgumentError.value(rasterScale, 'rasterScale', 'must be finite and positive');
@@ -75,8 +79,13 @@ class FilterContext {
   final double rasterScale;
 
   /// Whether executing this filter created intermediate raster images.
-  bool get requiresRasterResolution => false;
+  bool get requiresRasterResolution => _requiresRasterResolution;
+  bool _requiresRasterResolution = false;
 
+  /// Shader programs preloaded before synchronous command playback.
+  final FilterShaders? shaders;
+
+  final FilterRasterBudget _rasterBudget;
   bool _disposed = false;
 
   /// The original source graphic.
@@ -86,7 +95,131 @@ class FilterContext {
   late FilterImage previous;
   final Map<String, FilterImage> _results = <String, FilterImage>{};
   final List<Picture> _owned = <Picture>[];
+  final List<Image> _images = <Image>[];
+  final Map<(FilterImage, Rect, int, int), Image> _samples =
+      <(FilterImage, Rect, int, int), Image>{};
+  final List<FragmentShader> _shaders = <FragmentShader>[];
   FilterImage? _sourceAlpha;
+
+  /// Rasterizes a finite input domain, retaining ownership of the image handle.
+  Image sample(FilterImage input, Rect domain, {double? scale, Size? pixelSize}) {
+    _checkActive();
+    _requiresRasterResolution = true;
+    if (!domain.isFinite || domain.isEmpty) {
+      throw ArgumentError.value(domain, 'domain', 'must be finite and nonempty');
+    }
+    final double effectiveScale = scale ?? rasterScale;
+    if (!effectiveScale.isFinite || effectiveScale <= 0) {
+      throw ArgumentError.value(effectiveScale, 'scale', 'must be finite and positive');
+    }
+    if (pixelSize != null &&
+        (!pixelSize.width.isFinite ||
+            !pixelSize.height.isFinite ||
+            pixelSize.width <= 0 ||
+            pixelSize.height <= 0)) {
+      throw ArgumentError.value(pixelSize, 'pixelSize', 'must be finite and positive');
+    }
+    double scaledWidth = pixelSize == null
+        ? domain.width * effectiveScale
+        : domain.width / pixelSize.width;
+    double scaledHeight = pixelSize == null
+        ? domain.height * effectiveScale
+        : domain.height / pixelSize.height;
+    if (pixelSize != null) {
+      // A rectangle formed from N grid steps can divide back to N + epsilon.
+      // Ceil would then add a pixel and move every sample center. Snap only
+      // round-off at an integer (less than one ten-billionth of a pixel).
+      double snap(double value) {
+        if (!value.isFinite) {
+          return value;
+        }
+        final double rounded = value.roundToDouble();
+        return (value - rounded).abs() <= 1e-10 ? rounded : value;
+      }
+
+      scaledWidth = snap(scaledWidth);
+      scaledHeight = snap(scaledHeight);
+    }
+    // Bound allocation before converting untrusted SVG dimensions to integers.
+    if (!scaledWidth.isFinite ||
+        !scaledHeight.isFinite ||
+        scaledWidth > 8192 ||
+        scaledHeight > 8192) {
+      throw StateError('SVG filter texture exceeds 8192 pixels per dimension');
+    }
+    final int width = scaledWidth < 1 ? 1 : scaledWidth.ceil();
+    final int height = scaledHeight < 1 ? 1 : scaledHeight.ceil();
+    final key = (input, domain, width, height);
+    final Image? cached = _samples[key];
+    if (cached != null) {
+      return cached;
+    }
+    _rasterBudget.reserve(width * height);
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder)
+      ..scale(width / domain.width, height / domain.height)
+      ..translate(-domain.left, -domain.top)
+      ..clipRect(domain, doAntiAlias: false);
+    canvas.drawPicture(input.picture);
+    final Picture picture = recorder.endRecording();
+    try {
+      final Image image = picture.toImageSync(width, height);
+      _images.add(image);
+      _samples[key] = image;
+      return image;
+    } finally {
+      picture.dispose();
+    }
+  }
+
+  /// Records a shader with the shared origin/size uniform prefix (indices 0..3).
+  FilterImage shade(
+    String name,
+    Rect bounds,
+    void Function(FragmentShader) configure, {
+    bool rasterize = true,
+  }) {
+    _checkActive();
+    if (bounds.isEmpty) {
+      return record(bounds, (Canvas canvas) {});
+    }
+    final FragmentShader shader =
+        shaders?.create(name) ?? (throw StateError('SVG filter shaders were not preloaded'));
+    _shaders.add(shader);
+    shader
+      ..setFloat(0, bounds.left)
+      ..setFloat(1, bounds.top)
+      ..setFloat(2, bounds.width)
+      ..setFloat(3, bounds.height);
+    configure(shader);
+    final FilterImage result = record(bounds, (Canvas canvas) {
+      canvas.drawRect(
+        bounds,
+        Paint()
+          ..shader = shader
+          ..isAntiAlias = false,
+      );
+    });
+    // Evaluate at the chosen resolution once. Replaying a Picture under a large
+    // Canvas transform must not rerun an expensive kernel per screen fragment.
+    // Explicit kernel grids perform their own rasterization and interpolation.
+    return rasterize ? raster(result, bounds) : result;
+  }
+
+  /// Materializes an effect, preserving a reusable sample at this resolution.
+  FilterImage raster(FilterImage input, Rect bounds, {Size? pixelSize}) {
+    final Image image = sample(input, bounds, pixelSize: pixelSize);
+    final FilterImage result = record(bounds, (Canvas canvas) {
+      canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        bounds,
+        Paint()..filterQuality = FilterQuality.low,
+      );
+    });
+    _samples[(result, bounds, image.width, image.height)] = image;
+    return result;
+  }
 
   /// Whether this primitive computes RGB channels in linear light.
   bool linearColor(VectorFilter primitive) {
@@ -344,6 +477,15 @@ class FilterContext {
       picture.dispose();
     }
     _owned.clear();
+    for (final FragmentShader shader in _shaders) {
+      shader.dispose();
+    }
+    _shaders.clear();
+    for (final Image image in _images) {
+      image.dispose();
+    }
+    _images.clear();
+    _samples.clear();
   }
 
   void _checkActive() {

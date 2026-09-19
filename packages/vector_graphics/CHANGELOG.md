@@ -3,13 +3,14 @@
 * Preserves unpainted filter geometry and text layout, supports SVG region length units, and avoids resolution reloads for vector-only filters.
 * Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
 * Fixes deprecation lints.
-* Adds versioned filter decoding, bounded resource ownership, correct opacity, mask, and pattern composition.
+* Adds versioned filter decoding, bounded resource ownership, selective shader loading, cached intermediate textures, layout-aware filter resolution, and correct opacity, mask, and pattern composition.
 * Adds SVG `feOffset` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feColorMatrix` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feFlood` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feGaussianBlur` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feMerge` support with parameter, pixel, and visual reference tests.
 * Adds SVG `feBlend` support with parameter, pixel, and visual reference tests.
+* Adds SVG `feComposite` support with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

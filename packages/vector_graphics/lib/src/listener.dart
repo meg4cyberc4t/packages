@@ -20,6 +20,7 @@ import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 
 import 'filters/filter_context.dart';
 import 'filters/filter_executor.dart';
+import 'filters/filter_shaders.dart';
 import 'loader.dart';
 import 'vector_image.dart';
 
@@ -137,7 +138,7 @@ Future<PictureInfo> _decodeVectorGraphics(
     }());
 
     @pragma('vm:prefer-inline')
-    Future<PictureInfo> render() {
+    Future<PictureInfo> render([FilterShaders? shaders]) {
       final listener =
           FlutterVectorGraphicsListener(
               id: loader.hashCode,
@@ -146,6 +147,7 @@ Future<PictureInfo> _decodeVectorGraphics(
               clipViewbox: clipViewbox,
               onError: onError,
               filterRasterScale: filterRasterScale,
+              filterShaders: shaders,
             )
             .._budget = budget
             .._imageDepth = imageDepth
@@ -185,7 +187,32 @@ Future<PictureInfo> _decodeVectorGraphics(
       }
     }
 
-    Future<PictureInfo> process() => render();
+    Future<PictureInfo> process() {
+      if (data.lengthInBytes > 4 && data.getUint8(4) == 2) {
+        final VectorGraphicsMetadata metadata = _codec.readMetadata(data);
+        assert(() {
+          _pendingDecodes.putIfAbsent(pendingKey, Completer<void>.new);
+          return true;
+        }());
+        return FilterShaders.load(FilterShaders.requiredBy(metadata.filters))
+            .then(render)
+            .catchError((Object error, StackTrace stack) {
+              Error.throwWithStackTrace(
+                error is VectorGraphicsDecodeException
+                    ? error
+                    : VectorGraphicsDecodeException._(loader, error),
+                stack,
+              );
+            })
+            .whenComplete(() {
+              assert(() {
+                _pendingDecodes.remove(pendingKey)?.complete();
+                return true;
+              }());
+            });
+      }
+      return render();
+    }
 
     if (!kDebugMode || !useZone) {
       return process();
@@ -307,6 +334,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
     TextDirection? textDirection,
     bool clipViewbox = true,
     double filterRasterScale = 1,
+    FilterShaders? filterShaders,
     @visibleForTesting PictureFactory pictureFactory = const _DefaultPictureFactory(),
     VectorGraphicsErrorListener? onError,
   }) {
@@ -328,6 +356,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       clipViewbox,
       onError: onError,
       filterRasterScale: filterRasterScale,
+      filterShaders: filterShaders,
     );
   }
 
@@ -341,7 +370,9 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
     this._clipViewbox, {
     this.onError,
     double filterRasterScale = 1,
-  }) : _filterRasterScale = filterRasterScale;
+    FilterShaders? filterShaders,
+  }) : _filterRasterScale = filterRasterScale,
+       _filterShaders = filterShaders;
 
   final int _id;
 
@@ -351,6 +382,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
   final TextDirection? _textDirection;
   final bool _clipViewbox;
   final double _filterRasterScale;
+  final FilterShaders? _filterShaders;
   _DecodeBudget _budget = _DecodeBudget();
   int _imageDepth = 0;
   bool _limitImageResources = false;
@@ -441,6 +473,8 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       frame.bounds ?? Rect.zero,
       frame.viewport,
       rasterScale: _filterRasterScale * transformScale,
+      shaders: _filterShaders,
+      rasterBudget: _budget.raster,
     );
     try {
       final FilterImage result = executeFilter(context);

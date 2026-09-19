@@ -10,16 +10,33 @@ Draw SVG files using Flutter.
 
 ## SVG filters
 
-Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`.
+Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`.
 Existing `SvgPicture` loaders and both rendering strategies use the same compiler
 and renderer. Canvas fragment shaders work with both Skia and Impeller.
 
 BackgroundImage/BackgroundAlpha and FillPaint/StrokePaint inputs, filterRes,
 CSS filter functions, animation, and external SVG filter URLs are not implemented.
-Vector-only filters preserve picture commands and do not redecode for layout or
-DPR changes. Unsupported primitives fail decoding with an explicit diagnostic;
-use `errorBuilder` for an application fallback. Independent unfiltered subtrees
-retain compiler optimizations, and filter sources retain unpainted geometry.
+Filter texture resolution follows the widget's laid-out size, `BoxFit`, and
+DPR, rounded up to powers of two. A resize keeps the previous picture until the
+new resolution is ready. Set `filterRasterScale` (samples per SVG unit) explicitly
+when an ancestor `Transform` magnifies the image; transforms outside layout
+cannot be inferred. For a 24-unit image displayed at 240 logical pixels and DPR 3,
+automatic resolution uses 32 samples per unit (the next bucket above 30).
+
+Only programs required by the filter operations are loaded. Sampled inputs are
+shared within each filter invocation; shader outputs are materialized at the
+chosen resolution and reused during playback. These choices reduce repeated work but do not make
+first rendering cheap: complex chains still allocate intermediate surfaces.
+Allocation/work budgets apply during decoding, not as a universal frame-time
+limit. Independent unfiltered subtrees retain compiler optimizations; filter
+sources preserve their geometry, including shapes without fill or stroke.
+Vector-only filters such as `feOffset` do not redecode for layout or DPR changes.
+Unsupported primitives fail decoding with an explicit diagnostic; use
+`errorBuilder` to supply an application fallback.
+
+Checks cover software Skia, a macOS Impeller host, and the filter suites in
+Chrome/CanvasKit, including visual references and float-texture tests. See vector_graphics's test reference provenance
+and example integration test for the exact coverage and performance harness.
 
 ## Getting Started
 

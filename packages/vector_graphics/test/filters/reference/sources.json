@@ -363,6 +363,146 @@
     "kind": "browser",
     "input": "color_swap.svg"
   },
+  "composite_arithmetic_all_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_all_linearRGB.svg"
+  },
+  "composite_arithmetic_all_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_all_sRGB.svg"
+  },
+  "composite_arithmetic_backdrop_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_backdrop_linearRGB.svg"
+  },
+  "composite_arithmetic_backdrop_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_backdrop_sRGB.svg"
+  },
+  "composite_arithmetic_bias_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_bias_linearRGB.svg"
+  },
+  "composite_arithmetic_bias_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_bias_sRGB.svg"
+  },
+  "composite_arithmetic_clamp_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_clamp_linearRGB.svg"
+  },
+  "composite_arithmetic_clamp_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_clamp_sRGB.svg"
+  },
+  "composite_arithmetic_product_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_product_linearRGB.svg"
+  },
+  "composite_arithmetic_product_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_product_sRGB.svg"
+  },
+  "composite_arithmetic_source_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_source_linearRGB.svg"
+  },
+  "composite_arithmetic_source_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_source_sRGB.svg"
+  },
+  "composite_arithmetic_subtract_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_subtract_linearRGB.svg"
+  },
+  "composite_arithmetic_subtract_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_subtract_sRGB.svg"
+  },
+  "composite_arithmetic_sum_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_sum_linearRGB.svg"
+  },
+  "composite_arithmetic_sum_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_sum_sRGB.svg"
+  },
+  "composite_arithmetic_zero_linearRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_zero_linearRGB.svg"
+  },
+  "composite_arithmetic_zero_sRGB": {
+    "kind": "browser",
+    "input": "composite_arithmetic_zero_sRGB.svg"
+  },
+  "composite_atop_linearRGB": {
+    "kind": "browser",
+    "input": "composite_atop_linearRGB.svg"
+  },
+  "composite_atop_sRGB": {
+    "kind": "browser",
+    "input": "composite_atop_sRGB.svg"
+  },
+  "composite_chain": {
+    "kind": "browser",
+    "input": "composite_chain.svg"
+  },
+  "composite_default": {
+    "kind": "browser",
+    "input": "composite_default.svg"
+  },
+  "composite_in_linearRGB": {
+    "kind": "browser",
+    "input": "composite_in_linearRGB.svg"
+  },
+  "composite_in_sRGB": {
+    "kind": "browser",
+    "input": "composite_in_sRGB.svg"
+  },
+  "composite_lighter_linearRGB": {
+    "kind": "browser",
+    "input": "composite_lighter_linearRGB.svg"
+  },
+  "composite_lighter_sRGB": {
+    "kind": "browser",
+    "input": "composite_lighter_sRGB.svg"
+  },
+  "composite_out_linearRGB": {
+    "kind": "browser",
+    "input": "composite_out_linearRGB.svg"
+  },
+  "composite_out_sRGB": {
+    "kind": "browser",
+    "input": "composite_out_sRGB.svg"
+  },
+  "composite_over_linearRGB": {
+    "kind": "browser",
+    "input": "composite_over_linearRGB.svg"
+  },
+  "composite_over_sRGB": {
+    "kind": "browser",
+    "input": "composite_over_sRGB.svg"
+  },
+  "composite_source_alpha": {
+    "kind": "browser",
+    "input": "composite_source_alpha.svg"
+  },
+  "composite_subregion": {
+    "kind": "browser",
+    "input": "composite_subregion.svg"
+  },
+  "composite_xor_linearRGB": {
+    "kind": "browser",
+    "input": "composite_xor_linearRGB.svg"
+  },
+  "composite_xor_sRGB": {
+    "kind": "browser",
+    "input": "composite_xor_sRGB.svg"
+  },
+  "composite_zero_region": {
+    "kind": "browser",
+    "input": "composite_zero_region.svg"
+  },
   "empty": {
     "kind": "browser",
     "input": "empty.svg"

@@ -1,0 +1,159 @@
+// Copyright 2013 The Flutter Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_graphics/src/filters/filter_shaders.dart';
+import 'package:vector_graphics/src/listener.dart';
+import 'package:vector_graphics/src/render_vector_graphic.dart';
+import 'package:vector_graphics/vector_graphics_compat.dart';
+import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
+
+const source =
+    '<svg width="24" height="24"><defs><filter id="f" '
+    'filterUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" color-interpolation-filters="sRGB"> '
+    '<feComposite operator="arithmetic" k2=".5"/> '
+    '</filter></defs><g filter="url(#f)"><circle cx="12" cy="12" r="9" fill="red"/> '
+    '<path d="M 2 4 L 22 20" stroke="white" stroke-width=".15"/></g></svg>';
+
+void main() {
+  FilterShaders.debugAssetPrefix = '';
+  final loader = _Loader(
+    encodeSvg(
+      xml: source,
+      debugName: 'resolution',
+      enableClippingOptimizer: false,
+      enableMaskingOptimizer: false,
+      enableOverdrawOptimizer: false,
+    ).buffer.asByteData(),
+  );
+
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 4; i++) {
+      await tester.runAsync(() => vg.waitForPendingDecodes());
+      await tester.pumpAndSettle();
+    }
+    expect(tester.takeException(), isNull);
+  }
+
+  PictureInfo info(WidgetTester tester) {
+    final Finder finder = find.byElementPredicate(
+      (Element e) => e is RenderObjectElement && e.renderObject is RenderPictureVectorGraphic,
+    );
+    return tester.renderObject<RenderPictureVectorGraphic>(finder).pictureInfo;
+  }
+
+  Future<void> mount(
+    WidgetTester tester, {
+    required double width,
+    required double height,
+    double dpr = 1,
+    double? resolution,
+    BoxFit fit = BoxFit.contain,
+  }) async {
+    await tester.pumpWidget(
+      MediaQuery(
+        data: MediaQueryData(devicePixelRatio: dpr),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: createCompatVectorGraphic(
+                loader: loader,
+                fit: fit,
+                filterRasterScale: resolution,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await settle(tester);
+  }
+
+  Future<Uint8List> draw(PictureInfo info, double scale) async {
+    final recorder = ui.PictureRecorder();
+    ui.Canvas(recorder)
+      ..scale(scale)
+      ..drawPicture(info.picture);
+    final ui.Picture picture = recorder.endRecording();
+    final ui.Image image = await picture.toImage((24 * scale).round(), (24 * scale).round());
+    picture.dispose();
+    final Uint8List bytes = (await image.toByteData())!.buffer.asUint8List();
+    image.dispose();
+    return bytes;
+  }
+
+  for (final BoxFit fit in BoxFit.values) {
+    testWidgets('automatic filter resolution follows layout and $fit', (WidgetTester tester) async {
+      await mount(tester, width: 240, height: 120, dpr: 3, fit: fit);
+      final PictureInfo automatic = info(tester);
+      expect(automatic.requiresRasterResolution, isTrue);
+      final FittedSizes fitted = applyBoxFit(fit, const Size(24, 24), const Size(240, 120));
+      final double needed =
+          3 *
+          (fitted.destination.width / fitted.source.width >
+                  fitted.destination.height / fitted.source.height
+              ? fitted.destination.width / fitted.source.width
+              : fitted.destination.height / fitted.source.height);
+      var bucket = 1.0;
+      while (bucket < needed) {
+        bucket *= 2;
+      }
+      expect(automatic.filterRasterScale, bucket);
+      final PictureInfo expected = (await tester.runAsync(
+        () => decodeVectorGraphics(
+          loader.data,
+          locale: null,
+          textDirection: TextDirection.ltr,
+          clipViewbox: true,
+          loader: loader,
+          filterRasterScale: bucket,
+        ),
+      ))!;
+      final List<Uint8List> pixels = (await tester.runAsync(
+        () async => <Uint8List>[await draw(automatic, 30), await draw(expected, 30)],
+      ))!;
+      expected.picture.dispose();
+      expect(pixels[0], pixels[1]);
+    });
+  }
+
+  testWidgets('nearby layouts reuse a resolution bucket, larger layouts redecode', (
+    WidgetTester tester,
+  ) async {
+    await mount(tester, width: 100, height: 100);
+    final ui.Picture first = info(tester).picture;
+    await mount(tester, width: 110, height: 110);
+    expect(info(tester).picture, same(first));
+    await mount(tester, width: 240, height: 240);
+    expect(info(tester).picture, isNot(same(first)));
+    final ui.Picture larger = info(tester).picture;
+    await mount(tester, width: 240, height: 240, dpr: 3);
+    expect(info(tester).picture, isNot(same(larger)));
+  });
+
+  testWidgets('explicit resolution ignores layout but updates on configuration change', (
+    WidgetTester tester,
+  ) async {
+    await mount(tester, width: 100, height: 100, resolution: 4);
+    final ui.Picture first = info(tester).picture;
+    await mount(tester, width: 240, height: 240, dpr: 3, resolution: 4);
+    expect(info(tester).picture, same(first));
+    await mount(tester, width: 240, height: 240, dpr: 3, resolution: 32);
+    expect(info(tester).picture, isNot(same(first)));
+  });
+}
+
+class _Loader extends BytesLoader {
+  const _Loader(this.data);
+  final ByteData data;
+  @override
+  Future<ByteData> loadBytes(BuildContext? context) async => data;
+}

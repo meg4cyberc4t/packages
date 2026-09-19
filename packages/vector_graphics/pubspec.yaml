@@ -19,6 +19,11 @@ dev_dependencies:
     sdk: flutter
   vector_graphics_compiler: ^1.1.11+1
 
+flutter:
+  shaders:
+    - shaders/filter_passthrough.frag
+    - shaders/filter_composite.frag
+
 platforms:
   android:
   ios:

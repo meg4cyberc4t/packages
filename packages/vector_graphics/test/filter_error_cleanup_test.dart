@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_graphics/src/filters/filter_shaders.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
 
@@ -43,6 +44,7 @@ void main() {
       testWidgets(
         'failed ${decode ? 'filter decode' : 'loader'} with $copies subscribers is handled and retryable',
         (WidgetTester tester) async {
+          FilterShaders.debugAssetPrefix = '';
           final loader = RetryLoader(decode);
           Object? lastError;
           Widget widgets() => Directionality(
