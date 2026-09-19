@@ -10,6 +10,7 @@ import 'color_matrix.dart';
 import 'filter_context.dart';
 import 'flood.dart';
 import 'gaussian_blur.dart';
+import 'merge.dart';
 import 'offset.dart';
 
 /// Evaluates a definition in document order, preserving named intermediate results.
@@ -34,6 +35,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return flood(context, primitive);
     case 'feGaussianBlur':
       return gaussianBlur(context, primitive);
+    case 'feMerge':
+      return merge(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
