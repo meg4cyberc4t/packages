@@ -140,6 +140,16 @@ Map<String, VectorFilter> readFilterDefinitions(
       ).toString();
       attributes['flood-opacity'] = property(element, 'flood-opacity', '1');
     }
+    if ((element.name.local == 'feDiffuseLighting' || element.name.local == 'feSpecularLighting') &&
+        resolveColor != null) {
+      attributes['lighting-color-argb'] = resolveColor(
+        value: property(element, 'lighting-color', 'white'),
+        currentColor: property(element, 'color', 'currentColor', inherited: true),
+        id: attributes['id'],
+        element: element.name.local,
+        attribute: 'lighting-color',
+      ).toString();
+    }
     return VectorFilter(element.name.local, attributes, <VectorFilter>[
       for (final XmlElement child in element.childElements)
         if (!<String>{'title', 'desc', 'metadata'}.contains(child.name.local)) read(child),

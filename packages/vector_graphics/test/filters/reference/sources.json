@@ -732,6 +732,366 @@
     "kind": "browser",
     "input": "convolve_zero_region_sRGB.svg"
   },
+  "diffuse_currentcolor": {
+    "kind": "browser",
+    "input": "diffuse_currentcolor.svg"
+  },
+  "diffuse_distant_alpha_ramp": {
+    "kind": "analytic",
+    "input": "diffuse_distant_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_distant_blur": {
+    "kind": "browser",
+    "input": "diffuse_distant_blur.svg"
+  },
+  "diffuse_distant_constant_half": {
+    "kind": "browser",
+    "input": "diffuse_distant_constant_half.svg"
+  },
+  "diffuse_distant_constant_large": {
+    "kind": "browser",
+    "input": "diffuse_distant_constant_large.svg"
+  },
+  "diffuse_distant_constant_zero": {
+    "kind": "browser",
+    "input": "diffuse_distant_constant_zero.svg"
+  },
+  "diffuse_distant_default": {
+    "kind": "browser",
+    "input": "diffuse_distant_default.svg"
+  },
+  "diffuse_distant_kernel_four": {
+    "kind": "analytic",
+    "input": "diffuse_distant_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_distant_kernel_negative": {
+    "kind": "browser",
+    "input": "diffuse_distant_kernel_negative.svg"
+  },
+  "diffuse_distant_kernel_x": {
+    "kind": "analytic",
+    "input": "diffuse_distant_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_distant_kernel_y": {
+    "kind": "analytic",
+    "input": "diffuse_distant_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_distant_kernel_zero": {
+    "kind": "browser",
+    "input": "diffuse_distant_kernel_zero.svg"
+  },
+  "diffuse_distant_linearRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_distant_linearRGB_0.svg"
+  },
+  "diffuse_distant_linearRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_distant_linearRGB_1.svg"
+  },
+  "diffuse_distant_linearRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_distant_linearRGB_8.svg"
+  },
+  "diffuse_distant_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_distant_linearRGB_neg4.svg"
+  },
+  "diffuse_distant_merge": {
+    "kind": "browser",
+    "input": "diffuse_distant_merge.svg"
+  },
+  "diffuse_distant_one_pixel": {
+    "kind": "browser",
+    "input": "diffuse_distant_one_pixel.svg"
+  },
+  "diffuse_distant_sRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_distant_sRGB_0.svg"
+  },
+  "diffuse_distant_sRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_distant_sRGB_1.svg"
+  },
+  "diffuse_distant_sRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_distant_sRGB_8.svg"
+  },
+  "diffuse_distant_sRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_distant_sRGB_neg4.svg"
+  },
+  "diffuse_distant_subregion": {
+    "kind": "browser",
+    "input": "diffuse_distant_subregion.svg"
+  },
+  "diffuse_distant_transform": {
+    "kind": "browser",
+    "input": "diffuse_distant_transform.svg"
+  },
+  "diffuse_distant_transparent": {
+    "kind": "browser",
+    "input": "diffuse_distant_transparent.svg"
+  },
+  "diffuse_distant_transparent_color": {
+    "kind": "browser",
+    "input": "diffuse_distant_transparent_color.svg"
+  },
+  "diffuse_distant_zero_region": {
+    "kind": "browser",
+    "input": "diffuse_distant_zero_region.svg"
+  },
+  "diffuse_first_light": {
+    "kind": "browser",
+    "input": "diffuse_first_light.svg"
+  },
+  "diffuse_missing_light": {
+    "kind": "browser",
+    "input": "diffuse_missing_light.svg"
+  },
+  "diffuse_point_alpha_ramp": {
+    "kind": "analytic",
+    "input": "diffuse_point_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_point_bbox": {
+    "kind": "browser",
+    "input": "diffuse_point_bbox.svg"
+  },
+  "diffuse_point_blur": {
+    "kind": "browser",
+    "input": "diffuse_point_blur.svg"
+  },
+  "diffuse_point_constant_half": {
+    "kind": "browser",
+    "input": "diffuse_point_constant_half.svg"
+  },
+  "diffuse_point_constant_large": {
+    "kind": "browser",
+    "input": "diffuse_point_constant_large.svg"
+  },
+  "diffuse_point_constant_zero": {
+    "kind": "browser",
+    "input": "diffuse_point_constant_zero.svg"
+  },
+  "diffuse_point_default": {
+    "kind": "browser",
+    "input": "diffuse_point_default.svg"
+  },
+  "diffuse_point_kernel_four": {
+    "kind": "analytic",
+    "input": "diffuse_point_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_point_kernel_negative": {
+    "kind": "browser",
+    "input": "diffuse_point_kernel_negative.svg"
+  },
+  "diffuse_point_kernel_x": {
+    "kind": "analytic",
+    "input": "diffuse_point_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_point_kernel_y": {
+    "kind": "analytic",
+    "input": "diffuse_point_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_point_kernel_zero": {
+    "kind": "browser",
+    "input": "diffuse_point_kernel_zero.svg"
+  },
+  "diffuse_point_linearRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_point_linearRGB_0.svg"
+  },
+  "diffuse_point_linearRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_point_linearRGB_1.svg"
+  },
+  "diffuse_point_linearRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_point_linearRGB_8.svg"
+  },
+  "diffuse_point_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_point_linearRGB_neg4.svg"
+  },
+  "diffuse_point_merge": {
+    "kind": "browser",
+    "input": "diffuse_point_merge.svg"
+  },
+  "diffuse_point_one_pixel": {
+    "kind": "browser",
+    "input": "diffuse_point_one_pixel.svg"
+  },
+  "diffuse_point_sRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_point_sRGB_0.svg"
+  },
+  "diffuse_point_sRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_point_sRGB_1.svg"
+  },
+  "diffuse_point_sRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_point_sRGB_8.svg"
+  },
+  "diffuse_point_sRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_point_sRGB_neg4.svg"
+  },
+  "diffuse_point_subregion": {
+    "kind": "browser",
+    "input": "diffuse_point_subregion.svg"
+  },
+  "diffuse_point_transform": {
+    "kind": "browser",
+    "input": "diffuse_point_transform.svg"
+  },
+  "diffuse_point_transparent": {
+    "kind": "browser",
+    "input": "diffuse_point_transparent.svg"
+  },
+  "diffuse_point_transparent_color": {
+    "kind": "browser",
+    "input": "diffuse_point_transparent_color.svg"
+  },
+  "diffuse_point_zero_region": {
+    "kind": "browser",
+    "input": "diffuse_point_zero_region.svg"
+  },
+  "diffuse_spot_alpha_ramp": {
+    "kind": "analytic",
+    "input": "diffuse_spot_alpha_ramp.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_spot_away": {
+    "kind": "browser",
+    "input": "diffuse_spot_away.svg"
+  },
+  "diffuse_spot_bbox": {
+    "kind": "browser",
+    "input": "diffuse_spot_bbox.svg"
+  },
+  "diffuse_spot_blur": {
+    "kind": "browser",
+    "input": "diffuse_spot_blur.svg"
+  },
+  "diffuse_spot_cone": {
+    "kind": "browser",
+    "input": "diffuse_spot_cone.svg"
+  },
+  "diffuse_spot_constant_half": {
+    "kind": "browser",
+    "input": "diffuse_spot_constant_half.svg"
+  },
+  "diffuse_spot_constant_large": {
+    "kind": "browser",
+    "input": "diffuse_spot_constant_large.svg"
+  },
+  "diffuse_spot_constant_zero": {
+    "kind": "browser",
+    "input": "diffuse_spot_constant_zero.svg"
+  },
+  "diffuse_spot_default": {
+    "kind": "browser",
+    "input": "diffuse_spot_default.svg"
+  },
+  "diffuse_spot_equal": {
+    "kind": "browser",
+    "input": "diffuse_spot_equal.svg"
+  },
+  "diffuse_spot_kernel_four": {
+    "kind": "analytic",
+    "input": "diffuse_spot_kernel_four.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_spot_kernel_negative": {
+    "kind": "browser",
+    "input": "diffuse_spot_kernel_negative.svg"
+  },
+  "diffuse_spot_kernel_x": {
+    "kind": "analytic",
+    "input": "diffuse_spot_kernel_x.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_spot_kernel_y": {
+    "kind": "analytic",
+    "input": "diffuse_spot_kernel_y.reference.svg",
+    "generator": "lighting_references.py"
+  },
+  "diffuse_spot_kernel_zero": {
+    "kind": "browser",
+    "input": "diffuse_spot_kernel_zero.svg"
+  },
+  "diffuse_spot_linearRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_spot_linearRGB_0.svg"
+  },
+  "diffuse_spot_linearRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_spot_linearRGB_1.svg"
+  },
+  "diffuse_spot_linearRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_spot_linearRGB_8.svg"
+  },
+  "diffuse_spot_linearRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_spot_linearRGB_neg4.svg"
+  },
+  "diffuse_spot_merge": {
+    "kind": "browser",
+    "input": "diffuse_spot_merge.svg"
+  },
+  "diffuse_spot_one_pixel": {
+    "kind": "browser",
+    "input": "diffuse_spot_one_pixel.svg"
+  },
+  "diffuse_spot_sRGB_0": {
+    "kind": "browser",
+    "input": "diffuse_spot_sRGB_0.svg"
+  },
+  "diffuse_spot_sRGB_1": {
+    "kind": "browser",
+    "input": "diffuse_spot_sRGB_1.svg"
+  },
+  "diffuse_spot_sRGB_8": {
+    "kind": "browser",
+    "input": "diffuse_spot_sRGB_8.svg"
+  },
+  "diffuse_spot_sRGB_neg4": {
+    "kind": "browser",
+    "input": "diffuse_spot_sRGB_neg4.svg"
+  },
+  "diffuse_spot_subregion": {
+    "kind": "browser",
+    "input": "diffuse_spot_subregion.svg"
+  },
+  "diffuse_spot_transform": {
+    "kind": "browser",
+    "input": "diffuse_spot_transform.svg"
+  },
+  "diffuse_spot_transparent": {
+    "kind": "browser",
+    "input": "diffuse_spot_transparent.svg"
+  },
+  "diffuse_spot_transparent_color": {
+    "kind": "browser",
+    "input": "diffuse_spot_transparent_color.svg"
+  },
+  "diffuse_spot_zero_region": {
+    "kind": "browser",
+    "input": "diffuse_spot_zero_region.svg"
+  },
+  "diffuse_style": {
+    "kind": "browser",
+    "input": "diffuse_style.svg"
+  },
   "displacement_AA_linearRGB": {
     "kind": "browser",
     "input": "displacement_AA_linearRGB.svg"

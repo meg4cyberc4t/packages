@@ -11,6 +11,7 @@ import 'color_matrix.dart';
 import 'component_transfer.dart';
 import 'composite.dart';
 import 'convolve_matrix.dart';
+import 'diffuse_lighting.dart';
 import 'displacement_map.dart';
 import 'drop_shadow.dart';
 import 'filter_context.dart';
@@ -67,6 +68,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return filterImage(context, primitive);
     case 'feTurbulence':
       return turbulence(context, primitive);
+    case 'feDiffuseLighting':
+      return diffuseLighting(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }

@@ -97,6 +97,8 @@ class FilterShaders {
             names.add('image');
           case 'feTurbulence':
             names.add('turbulence');
+          case 'feDiffuseLighting':
+            names.add('diffuse_lighting');
         }
       }
     }

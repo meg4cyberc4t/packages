@@ -7,6 +7,7 @@
 * Resolves feFlood colors through styles, themes, and ColorMapper.
 * Resolves feDropShadow colors through styles, themes, and ColorMapper.
 * Resolves SVG 2 image href precedence for feImage.
+* Resolves feDiffuseLighting colors through styles, themes, and ColorMapper.
 
 ## 1.3.0
 
