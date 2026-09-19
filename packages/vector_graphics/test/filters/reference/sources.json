@@ -1,4 +1,100 @@
 {
+  "blur_anisotropic": {
+    "kind": "browser",
+    "input": "blur_anisotropic.svg"
+  },
+  "blur_bbox": {
+    "kind": "browser",
+    "input": "blur_bbox.svg"
+  },
+  "blur_chain": {
+    "kind": "browser",
+    "input": "blur_chain.svg"
+  },
+  "blur_color_chain": {
+    "kind": "browser",
+    "input": "blur_color_chain.svg"
+  },
+  "blur_comma": {
+    "kind": "browser",
+    "input": "blur_comma.svg"
+  },
+  "blur_defaults": {
+    "kind": "browser",
+    "input": "blur_defaults.svg"
+  },
+  "blur_edge_duplicate": {
+    "kind": "equivalent-svg",
+    "input": "blur_edge_duplicate.reference.svg"
+  },
+  "blur_edge_none": {
+    "kind": "browser",
+    "input": "blur_edge_none.svg"
+  },
+  "blur_edge_wrap": {
+    "kind": "equivalent-svg",
+    "input": "blur_edge_wrap.reference.svg"
+  },
+  "blur_flood_duplicate": {
+    "kind": "equivalent-svg",
+    "input": "blur_flood_duplicate.reference.svg"
+  },
+  "blur_flood_none": {
+    "kind": "browser",
+    "input": "blur_flood_none.svg"
+  },
+  "blur_flood_wrap": {
+    "kind": "equivalent-svg",
+    "input": "blur_flood_wrap.reference.svg"
+  },
+  "blur_horizontal": {
+    "kind": "browser",
+    "input": "blur_horizontal.svg"
+  },
+  "blur_isotropic": {
+    "kind": "browser",
+    "input": "blur_isotropic.svg"
+  },
+  "blur_large": {
+    "kind": "browser",
+    "input": "blur_large.svg"
+  },
+  "blur_linear": {
+    "kind": "browser",
+    "input": "blur_linear.svg"
+  },
+  "blur_negative": {
+    "kind": "browser",
+    "input": "blur_negative.svg"
+  },
+  "blur_negative_axis": {
+    "kind": "equivalent-svg",
+    "input": "blur_negative_axis.reference.svg"
+  },
+  "blur_small": {
+    "kind": "browser",
+    "input": "blur_small.svg"
+  },
+  "blur_source_alpha": {
+    "kind": "browser",
+    "input": "blur_source_alpha.svg"
+  },
+  "blur_subregion": {
+    "kind": "browser",
+    "input": "blur_subregion.svg"
+  },
+  "blur_transform": {
+    "kind": "browser",
+    "input": "blur_transform.svg"
+  },
+  "blur_vertical": {
+    "kind": "browser",
+    "input": "blur_vertical.svg"
+  },
+  "blur_zero": {
+    "kind": "browser",
+    "input": "blur_zero.svg"
+  },
   "color_alpha_bias": {
     "kind": "browser",
     "input": "color_alpha_bias.svg"
@@ -202,6 +298,62 @@
   "flood_zero_region": {
     "kind": "browser",
     "input": "flood_zero_region.svg"
+  },
+  "integration_blur_ancestor_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_ancestor_opacity.svg"
+  },
+  "integration_blur_ancestor_zero": {
+    "kind": "browser",
+    "input": "integration_blur_ancestor_zero.svg"
+  },
+  "integration_blur_clip": {
+    "kind": "browser",
+    "input": "integration_blur_clip.svg"
+  },
+  "integration_blur_filtered_use_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_filtered_use_opacity.svg"
+  },
+  "integration_blur_group_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_group_opacity.svg"
+  },
+  "integration_blur_mask": {
+    "kind": "browser",
+    "input": "integration_blur_mask.svg"
+  },
+  "integration_blur_nested": {
+    "kind": "browser",
+    "input": "integration_blur_nested.svg"
+  },
+  "integration_blur_pattern": {
+    "kind": "browser",
+    "input": "integration_blur_pattern.svg"
+  },
+  "integration_blur_pattern_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_pattern_opacity.svg"
+  },
+  "integration_blur_root": {
+    "kind": "browser",
+    "input": "integration_blur_root.svg"
+  },
+  "integration_blur_root_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_root_opacity.svg"
+  },
+  "integration_blur_shape_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_shape_opacity.svg"
+  },
+  "integration_blur_use": {
+    "kind": "browser",
+    "input": "integration_blur_use.svg"
+  },
+  "integration_blur_use_opacity": {
+    "kind": "browser",
+    "input": "integration_blur_use_opacity.svg"
   },
   "integration_filtered_mask": {
     "kind": "browser",

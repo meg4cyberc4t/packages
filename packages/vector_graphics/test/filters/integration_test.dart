@@ -12,6 +12,9 @@ import 'helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // Approximate Gaussian kernels differ between software Skia and CanvasKit.
+  // Affected fixtures allow mean error 2/255, with every channel bounded by
+  // 20/255. blur_kernel_test independently checks kernels and edge modes.
   test(
     referenceDescription('integration_flood_clip'),
     () => expectBrowserReference('integration_flood_clip'),
@@ -67,6 +70,66 @@ void main() {
   test(
     referenceDescription('integration_flood_filtered_use_opacity'),
     () => expectBrowserReference('integration_flood_filtered_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_clip'),
+    () => expectBrowserReference('integration_blur_clip'),
+  );
+  test(
+    referenceDescription('integration_blur_mask'),
+    () => expectBrowserReference('integration_blur_mask'),
+  );
+  test(
+    referenceDescription('integration_blur_shape_opacity'),
+    () => expectBrowserReference('integration_blur_shape_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_group_opacity'),
+    () => expectBrowserReference('integration_blur_group_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_ancestor_opacity'),
+    () => expectBrowserReference('integration_blur_ancestor_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_ancestor_zero'),
+    () => expectBrowserReference('integration_blur_ancestor_zero'),
+  );
+  test(
+    referenceDescription('integration_blur_nested'),
+    () => expectBrowserReference('integration_blur_nested'),
+  );
+  test(
+    referenceDescription('integration_blur_pattern'),
+    () => expectBrowserReference(
+      'integration_blur_pattern',
+      meanTolerance: 2,
+      maxChannelTolerance: 20,
+    ),
+  );
+  test(
+    referenceDescription('integration_blur_pattern_opacity'),
+    () => expectBrowserReference('integration_blur_pattern_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_root'),
+    () => expectBrowserReference('integration_blur_root'),
+  );
+  test(
+    referenceDescription('integration_blur_root_opacity'),
+    () => expectBrowserReference('integration_blur_root_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_use'),
+    () => expectBrowserReference('integration_blur_use'),
+  );
+  test(
+    referenceDescription('integration_blur_use_opacity'),
+    () => expectBrowserReference('integration_blur_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_blur_filtered_use_opacity'),
+    () => expectBrowserReference('integration_blur_filtered_use_opacity'),
   );
   test(
     referenceDescription('integration_mask_red'),

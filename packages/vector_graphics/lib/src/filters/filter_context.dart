@@ -103,6 +103,17 @@ class FilterContext {
     return true;
   }
 
+  /// Converts sRGB input to the operation's space and its output back to sRGB.
+  ImageFilter inColorSpace(VectorFilter primitive, ImageFilter operation) {
+    if (!linearColor(primitive)) {
+      return operation;
+    }
+    return ImageFilter.compose(
+      outer: const ColorFilter.linearToSrgbGamma(),
+      inner: ImageFilter.compose(outer: operation, inner: const ColorFilter.srgbToLinearGamma()),
+    );
+  }
+
   /// Records compositing in the chosen working color space.
   FilterImage recordColor(VectorFilter primitive, Rect bounds, void Function(Canvas, bool) paint) {
     final bool linear = linearColor(primitive);

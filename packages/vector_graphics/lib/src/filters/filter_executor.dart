@@ -9,6 +9,7 @@ import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 import 'color_matrix.dart';
 import 'filter_context.dart';
 import 'flood.dart';
+import 'gaussian_blur.dart';
 import 'offset.dart';
 
 /// Evaluates a definition in document order, preserving named intermediate results.
@@ -31,6 +32,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return colorMatrix(context, primitive);
     case 'feFlood':
       return flood(context, primitive);
+    case 'feGaussianBlur':
+      return gaussianBlur(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
