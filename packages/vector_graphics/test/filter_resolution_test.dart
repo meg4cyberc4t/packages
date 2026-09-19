@@ -16,7 +16,7 @@ import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
 const source =
     '<svg width="24" height="24"><defs><filter id="f" '
     'filterUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" color-interpolation-filters="sRGB"> '
-    '<feComposite operator="arithmetic" k2=".5"/> '
+    '<feComponentTransfer><feFuncR type="linear" slope=".5"/></feComponentTransfer> '
     '</filter></defs><g filter="url(#f)"><circle cx="12" cy="12" r="9" fill="red"/> '
     '<path d="M 2 4 L 22 20" stroke="white" stroke-width=".15"/></g></svg>';
 

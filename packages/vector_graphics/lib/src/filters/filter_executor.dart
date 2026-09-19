@@ -8,6 +8,7 @@ import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 
 import 'blend.dart';
 import 'color_matrix.dart';
+import 'component_transfer.dart';
 import 'composite.dart';
 import 'drop_shadow.dart';
 import 'filter_context.dart';
@@ -49,6 +50,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return dropShadow(context, primitive);
     case 'feMorphology':
       return morphology(context, primitive);
+    case 'feComponentTransfer':
+      return componentTransfer(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }

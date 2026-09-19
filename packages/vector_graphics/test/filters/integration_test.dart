@@ -132,6 +132,62 @@ void main() {
     () => expectBrowserReference('integration_blur_filtered_use_opacity'),
   );
   test(
+    referenceDescription('integration_transfer_clip'),
+    () => expectBrowserReference('integration_transfer_clip'),
+  );
+  test(
+    referenceDescription('integration_transfer_mask'),
+    () => expectBrowserReference('integration_transfer_mask'),
+  );
+  test(
+    referenceDescription('integration_transfer_shape_opacity'),
+    () => expectBrowserReference('integration_transfer_shape_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_group_opacity'),
+    () => expectBrowserReference('integration_transfer_group_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_ancestor_opacity'),
+    () => expectBrowserReference('integration_transfer_ancestor_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_ancestor_zero'),
+    () => expectBrowserReference('integration_transfer_ancestor_zero'),
+  );
+  test(
+    referenceDescription('integration_transfer_nested'),
+    () => expectBrowserReference('integration_transfer_nested'),
+  );
+  test(
+    referenceDescription('integration_transfer_pattern'),
+    () => expectBrowserReference('integration_transfer_pattern'),
+  );
+  test(
+    referenceDescription('integration_transfer_pattern_opacity'),
+    () => expectBrowserReference('integration_transfer_pattern_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_root'),
+    () => expectBrowserReference('integration_transfer_root'),
+  );
+  test(
+    referenceDescription('integration_transfer_root_opacity'),
+    () => expectBrowserReference('integration_transfer_root_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_use'),
+    () => expectBrowserReference('integration_transfer_use'),
+  );
+  test(
+    referenceDescription('integration_transfer_use_opacity'),
+    () => expectBrowserReference('integration_transfer_use_opacity'),
+  );
+  test(
+    referenceDescription('integration_transfer_filtered_use_opacity'),
+    () => expectBrowserReference('integration_transfer_filtered_use_opacity'),
+  );
+  test(
     referenceDescription('integration_mask_red'),
     () => expectBrowserReference('integration_mask_red'),
   );

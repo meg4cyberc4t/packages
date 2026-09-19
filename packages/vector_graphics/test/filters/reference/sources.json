@@ -755,6 +755,62 @@
     "kind": "browser",
     "input": "integration_pattern_contains_nested.svg"
   },
+  "integration_transfer_ancestor_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_ancestor_opacity.svg"
+  },
+  "integration_transfer_ancestor_zero": {
+    "kind": "browser",
+    "input": "integration_transfer_ancestor_zero.svg"
+  },
+  "integration_transfer_clip": {
+    "kind": "browser",
+    "input": "integration_transfer_clip.svg"
+  },
+  "integration_transfer_filtered_use_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_filtered_use_opacity.svg"
+  },
+  "integration_transfer_group_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_group_opacity.svg"
+  },
+  "integration_transfer_mask": {
+    "kind": "browser",
+    "input": "integration_transfer_mask.svg"
+  },
+  "integration_transfer_nested": {
+    "kind": "browser",
+    "input": "integration_transfer_nested.svg"
+  },
+  "integration_transfer_pattern": {
+    "kind": "browser",
+    "input": "integration_transfer_pattern.svg"
+  },
+  "integration_transfer_pattern_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_pattern_opacity.svg"
+  },
+  "integration_transfer_root": {
+    "kind": "browser",
+    "input": "integration_transfer_root.svg"
+  },
+  "integration_transfer_root_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_root_opacity.svg"
+  },
+  "integration_transfer_shape_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_shape_opacity.svg"
+  },
+  "integration_transfer_use": {
+    "kind": "browser",
+    "input": "integration_transfer_use.svg"
+  },
+  "integration_transfer_use_opacity": {
+    "kind": "browser",
+    "input": "integration_transfer_use_opacity.svg"
+  },
   "merge_alpha": {
     "kind": "browser",
     "input": "merge_alpha.svg"
@@ -1166,6 +1222,158 @@
   "shadow_zero_region": {
     "kind": "browser",
     "input": "shadow_zero_region.svg"
+  },
+  "transfer_alpha_create_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_create_linearRGB.svg"
+  },
+  "transfer_alpha_create_sRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_create_sRGB.svg"
+  },
+  "transfer_alpha_discrete_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_discrete_linearRGB.svg"
+  },
+  "transfer_alpha_discrete_sRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_discrete_sRGB.svg"
+  },
+  "transfer_alpha_gamma_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_gamma_linearRGB.svg"
+  },
+  "transfer_alpha_gamma_sRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_gamma_sRGB.svg"
+  },
+  "transfer_alpha_table_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_table_linearRGB.svg"
+  },
+  "transfer_alpha_table_sRGB": {
+    "kind": "browser",
+    "input": "transfer_alpha_table_sRGB.svg"
+  },
+  "transfer_chain": {
+    "kind": "browser",
+    "input": "transfer_chain.svg"
+  },
+  "transfer_defaults_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_defaults_linearRGB.svg"
+  },
+  "transfer_defaults_sRGB": {
+    "kind": "browser",
+    "input": "transfer_defaults_sRGB.svg"
+  },
+  "transfer_discrete_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_discrete_linearRGB.svg"
+  },
+  "transfer_discrete_sRGB": {
+    "kind": "browser",
+    "input": "transfer_discrete_sRGB.svg"
+  },
+  "transfer_discrete_single_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_discrete_single_linearRGB.svg"
+  },
+  "transfer_discrete_single_sRGB": {
+    "kind": "browser",
+    "input": "transfer_discrete_single_sRGB.svg"
+  },
+  "transfer_duplicate_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_duplicate_linearRGB.svg"
+  },
+  "transfer_duplicate_sRGB": {
+    "kind": "browser",
+    "input": "transfer_duplicate_sRGB.svg"
+  },
+  "transfer_empty": {
+    "kind": "browser",
+    "input": "transfer_empty.svg"
+  },
+  "transfer_gamma_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_linearRGB.svg"
+  },
+  "transfer_gamma_negative_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_negative_linearRGB.svg"
+  },
+  "transfer_gamma_negative_sRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_negative_sRGB.svg"
+  },
+  "transfer_gamma_sRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_sRGB.svg"
+  },
+  "transfer_gamma_zero_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_zero_linearRGB.svg"
+  },
+  "transfer_gamma_zero_sRGB": {
+    "kind": "browser",
+    "input": "transfer_gamma_zero_sRGB.svg"
+  },
+  "transfer_identity_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_identity_linearRGB.svg"
+  },
+  "transfer_identity_sRGB": {
+    "kind": "browser",
+    "input": "transfer_identity_sRGB.svg"
+  },
+  "transfer_linear_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_linear_linearRGB.svg"
+  },
+  "transfer_linear_sRGB": {
+    "kind": "browser",
+    "input": "transfer_linear_sRGB.svg"
+  },
+  "transfer_subregion": {
+    "kind": "browser",
+    "input": "transfer_subregion.svg"
+  },
+  "transfer_table_empty_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_table_empty_linearRGB.svg"
+  },
+  "transfer_table_empty_sRGB": {
+    "kind": "browser",
+    "input": "transfer_table_empty_sRGB.svg"
+  },
+  "transfer_table_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_table_linearRGB.svg"
+  },
+  "transfer_table_outside_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_table_outside_linearRGB.svg"
+  },
+  "transfer_table_outside_sRGB": {
+    "kind": "browser",
+    "input": "transfer_table_outside_sRGB.svg"
+  },
+  "transfer_table_sRGB": {
+    "kind": "browser",
+    "input": "transfer_table_sRGB.svg"
+  },
+  "transfer_table_single_linearRGB": {
+    "kind": "browser",
+    "input": "transfer_table_single_linearRGB.svg"
+  },
+  "transfer_table_single_sRGB": {
+    "kind": "browser",
+    "input": "transfer_table_single_sRGB.svg"
+  },
+  "transfer_zero_region": {
+    "kind": "browser",
+    "input": "transfer_zero_region.svg"
   },
   "unfiltered": {
     "kind": "browser",

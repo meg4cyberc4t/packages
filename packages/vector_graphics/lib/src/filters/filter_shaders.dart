@@ -83,6 +83,12 @@ class FilterShaders {
                 ((double.tryParse(radius[0]) == 0) != (double.tryParse(radius[1]) == 0))) {
               names.add('morphology_axis');
             }
+          case 'feComponentTransfer':
+            if (primitive.children.any(
+              (VectorFilter child) => (child.attributes['type'] ?? 'identity') != 'identity',
+            )) {
+              names.add('component_transfer');
+            }
         }
       }
     }

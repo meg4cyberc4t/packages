@@ -10,7 +10,7 @@ Draw SVG files using Flutter.
 
 ## SVG filters
 
-Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`, `feDropShadow`, `feMorphology`.
+Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`, `feDropShadow`, `feMorphology`, `feComponentTransfer`.
 Existing `SvgPicture` loaders and both rendering strategies use the same compiler
 and renderer. Canvas fragment shaders work with both Skia and Impeller.
 
@@ -25,7 +25,8 @@ automatic resolution uses 32 samples per unit (the next bucket above 30).
 
 Only programs required by the filter operations are loaded. Sampled inputs are
 shared within each filter invocation; shader outputs are materialized at the
-chosen resolution and reused during playback. These choices reduce repeated work but do not make
+chosen resolution and reused during playback. Identity component transfers keep
+the input vector commands. These choices reduce repeated work but do not make
 first rendering cheap: complex chains still allocate intermediate surfaces.
 Allocation/work budgets apply during decoding, not as a universal frame-time
 limit. Independent unfiltered subtrees retain compiler optimizations; filter
