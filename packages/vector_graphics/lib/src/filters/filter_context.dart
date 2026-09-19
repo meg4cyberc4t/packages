@@ -172,6 +172,14 @@ class FilterContext {
     }
   }
 
+  /// Aligns output bounds to the input grid without moving its sample centers.
+  static Rect alignToGrid(Rect bounds, Rect domain, Size step) => Rect.fromLTRB(
+    domain.left + ((bounds.left - domain.left) / step.width).floor() * step.width,
+    domain.top + ((bounds.top - domain.top) / step.height).floor() * step.height,
+    domain.left + ((bounds.right - domain.left) / step.width).ceil() * step.width,
+    domain.top + ((bounds.bottom - domain.top) / step.height).ceil() * step.height,
+  );
+
   /// Records a shader with the shared origin/size uniform prefix (indices 0..3).
   FilterImage shade(
     String name,

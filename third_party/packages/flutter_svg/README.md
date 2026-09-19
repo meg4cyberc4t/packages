@@ -10,7 +10,7 @@ Draw SVG files using Flutter.
 
 ## SVG filters
 
-Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`, `feDropShadow`, `feMorphology`, `feComponentTransfer`, `feTile`.
+Supported filter primitives: `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`, `feDropShadow`, `feMorphology`, `feComponentTransfer`, `feTile`, `feConvolveMatrix`.
 Existing `SvgPicture` loaders and both rendering strategies use the same compiler
 and renderer. Canvas fragment shaders work with both Skia and Impeller.
 

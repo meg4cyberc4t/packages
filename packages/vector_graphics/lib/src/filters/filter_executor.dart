@@ -10,6 +10,7 @@ import 'blend.dart';
 import 'color_matrix.dart';
 import 'component_transfer.dart';
 import 'composite.dart';
+import 'convolve_matrix.dart';
 import 'drop_shadow.dart';
 import 'filter_context.dart';
 import 'flood.dart';
@@ -55,6 +56,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return componentTransfer(context, primitive);
     case 'feTile':
       return tile(context, primitive);
+    case 'feConvolveMatrix':
+      return convolveMatrix(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }

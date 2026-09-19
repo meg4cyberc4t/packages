@@ -503,6 +503,235 @@
     "kind": "browser",
     "input": "composite_zero_region.svg"
   },
+  "convolve_alpha_create_linearRGB": {
+    "kind": "analytic",
+    "input": "convolve_alpha_create_linearRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_alpha_create_sRGB": {
+    "kind": "analytic",
+    "input": "convolve_alpha_create_sRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_asymmetric_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_asymmetric_linearRGB.svg"
+  },
+  "convolve_asymmetric_sRGB": {
+    "kind": "browser",
+    "input": "convolve_asymmetric_sRGB.svg"
+  },
+  "convolve_average_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_average_linearRGB.svg"
+  },
+  "convolve_average_sRGB": {
+    "kind": "browser",
+    "input": "convolve_average_sRGB.svg"
+  },
+  "convolve_bias_linearRGB": {
+    "kind": "analytic",
+    "input": "convolve_bias_linearRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_bias_sRGB": {
+    "kind": "analytic",
+    "input": "convolve_bias_sRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_chain": {
+    "kind": "browser",
+    "input": "convolve_chain.svg"
+  },
+  "convolve_crop_duplicate_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_duplicate_linearRGB.svg"
+  },
+  "convolve_crop_duplicate_sRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_duplicate_sRGB.svg"
+  },
+  "convolve_crop_none_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_none_linearRGB.svg"
+  },
+  "convolve_crop_none_sRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_none_sRGB.svg"
+  },
+  "convolve_crop_wrap_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_wrap_linearRGB.svg"
+  },
+  "convolve_crop_wrap_sRGB": {
+    "kind": "browser",
+    "input": "convolve_crop_wrap_sRGB.svg"
+  },
+  "convolve_edge_linearRGB": {
+    "kind": "analytic",
+    "input": "convolve_edge_linearRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_edge_sRGB": {
+    "kind": "analytic",
+    "input": "convolve_edge_sRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_emboss_linearRGB": {
+    "kind": "analytic",
+    "input": "convolve_emboss_linearRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_emboss_sRGB": {
+    "kind": "analytic",
+    "input": "convolve_emboss_sRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_fractional_order": {
+    "kind": "browser",
+    "input": "convolve_fractional_order.svg"
+  },
+  "convolve_horizontal_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_horizontal_linearRGB.svg"
+  },
+  "convolve_horizontal_sRGB": {
+    "kind": "browser",
+    "input": "convolve_horizontal_sRGB.svg"
+  },
+  "convolve_identity_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_identity_linearRGB.svg"
+  },
+  "convolve_identity_sRGB": {
+    "kind": "browser",
+    "input": "convolve_identity_sRGB.svg"
+  },
+  "convolve_mismatch": {
+    "kind": "equivalent-svg",
+    "input": "convolve_mismatch.reference.svg"
+  },
+  "convolve_missing": {
+    "kind": "equivalent-svg",
+    "input": "convolve_missing.reference.svg"
+  },
+  "convolve_named": {
+    "kind": "browser",
+    "input": "convolve_named.svg"
+  },
+  "convolve_negative_bias_linearRGB": {
+    "kind": "analytic",
+    "input": "convolve_negative_bias_linearRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_negative_bias_sRGB": {
+    "kind": "analytic",
+    "input": "convolve_negative_bias_sRGB.reference.svg",
+    "generator": "convolve_references.py"
+  },
+  "convolve_negative_divisor_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_negative_divisor_linearRGB.svg"
+  },
+  "convolve_negative_divisor_sRGB": {
+    "kind": "browser",
+    "input": "convolve_negative_divisor_sRGB.svg"
+  },
+  "convolve_object_units": {
+    "kind": "equivalent-svg",
+    "input": "convolve_object_units.reference.svg",
+    "interpolation": "browser temporary grid"
+  },
+  "convolve_preserve_alpha_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_preserve_alpha_linearRGB.svg"
+  },
+  "convolve_preserve_alpha_sRGB": {
+    "kind": "browser",
+    "input": "convolve_preserve_alpha_sRGB.svg"
+  },
+  "convolve_preserve_bias_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_preserve_bias_linearRGB.svg"
+  },
+  "convolve_preserve_bias_sRGB": {
+    "kind": "browser",
+    "input": "convolve_preserve_bias_sRGB.svg"
+  },
+  "convolve_sharpen_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_sharpen_linearRGB.svg"
+  },
+  "convolve_sharpen_sRGB": {
+    "kind": "browser",
+    "input": "convolve_sharpen_sRGB.svg"
+  },
+  "convolve_subregion_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_subregion_linearRGB.svg"
+  },
+  "convolve_subregion_sRGB": {
+    "kind": "browser",
+    "input": "convolve_subregion_sRGB.svg"
+  },
+  "convolve_target_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_target_linearRGB.svg"
+  },
+  "convolve_target_sRGB": {
+    "kind": "browser",
+    "input": "convolve_target_sRGB.svg"
+  },
+  "convolve_transform": {
+    "kind": "browser",
+    "input": "convolve_transform.svg"
+  },
+  "convolve_units_0": {
+    "kind": "browser",
+    "input": "convolve_units_0.svg"
+  },
+  "convolve_units_0_4": {
+    "kind": "browser",
+    "input": "convolve_units_0_4.svg"
+  },
+  "convolve_units_4": {
+    "kind": "equivalent-svg",
+    "input": "convolve_units_4.reference.svg",
+    "interpolation": "browser temporary grid"
+  },
+  "convolve_units_4_8": {
+    "kind": "equivalent-svg",
+    "input": "convolve_units_4_8.reference.svg",
+    "interpolation": "browser temporary grid"
+  },
+  "convolve_units_neg1": {
+    "kind": "browser",
+    "input": "convolve_units_neg1.svg"
+  },
+  "convolve_vertical_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_vertical_linearRGB.svg"
+  },
+  "convolve_vertical_sRGB": {
+    "kind": "browser",
+    "input": "convolve_vertical_sRGB.svg"
+  },
+  "convolve_zero_divisor_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_zero_divisor_linearRGB.svg"
+  },
+  "convolve_zero_divisor_sRGB": {
+    "kind": "browser",
+    "input": "convolve_zero_divisor_sRGB.svg"
+  },
+  "convolve_zero_region_linearRGB": {
+    "kind": "browser",
+    "input": "convolve_zero_region_linearRGB.svg"
+  },
+  "convolve_zero_region_sRGB": {
+    "kind": "browser",
+    "input": "convolve_zero_region_sRGB.svg"
+  },
   "empty": {
     "kind": "browser",
     "input": "empty.svg"

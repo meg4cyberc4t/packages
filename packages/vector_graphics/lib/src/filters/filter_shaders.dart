@@ -89,6 +89,8 @@ class FilterShaders {
             )) {
               names.add('component_transfer');
             }
+          case 'feConvolveMatrix':
+            names.add('convolve_matrix');
         }
       }
     }
