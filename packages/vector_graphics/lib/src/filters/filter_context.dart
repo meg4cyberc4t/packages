@@ -88,6 +88,51 @@ class FilterContext {
   final List<Picture> _owned = <Picture>[];
   FilterImage? _sourceAlpha;
 
+  /// Whether this primitive computes RGB channels in linear light.
+  bool linearColor(VectorFilter primitive) {
+    final String value =
+        primitive.attributes['color-interpolation-filters'] ??
+        definition.attributes['color-interpolation-filters'] ??
+        'linearRGB';
+    if (value == 'sRGB' || value == 'auto') {
+      return false;
+    }
+    if (value != 'linearRGB') {
+      throw FormatException('Invalid color-interpolation-filters: $value');
+    }
+    return true;
+  }
+
+  /// Records compositing in the chosen working color space.
+  FilterImage recordColor(VectorFilter primitive, Rect bounds, void Function(Canvas, bool) paint) {
+    final bool linear = linearColor(primitive);
+    return record(bounds, (Canvas canvas) {
+      if (linear) {
+        canvas.saveLayer(bounds, Paint()..colorFilter = const ColorFilter.linearToSrgbGamma());
+      }
+      paint(canvas, linear);
+      if (linear) {
+        canvas.restore();
+      }
+    });
+  }
+
+  /// Draws a single sRGB input into a compositing layer's working color space.
+  void drawInput(
+    Canvas canvas,
+    FilterImage input,
+    bool linear, {
+    BlendMode mode = BlendMode.srcOver,
+  }) {
+    final paint = Paint()..blendMode = mode;
+    if (linear) {
+      paint.colorFilter = const ColorFilter.srgbToLinearGamma();
+    }
+    canvas.saveLayer(region, paint);
+    canvas.drawPicture(input.picture);
+    canvas.restore();
+  }
+
   /// Whether primitive lengths are fractions of the geometry bounds.
   bool get usesObjectUnits => _units('primitiveUnits', 'userSpaceOnUse') == 'objectBoundingBox';
 

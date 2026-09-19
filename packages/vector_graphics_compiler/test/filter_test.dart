@@ -26,6 +26,26 @@ void main() {
       }
     }
   });
+  for (final (String attribute, String expected) in <(String, String)>[
+    ('', 'sRGB'),
+    ('inherit', 'sRGB'),
+    ('unset', 'sRGB'),
+    ('initial', 'linearRGB'),
+    ('linearRGB', 'linearRGB'),
+    ('auto', 'auto'),
+  ]) {
+    test('filter color space inheritance: $attribute', () {
+      final Map<String, VectorFilter> definitions = readFilterDefinitions(
+        '<svg style="color-interpolation-filters:sRGB"><defs><filter id="f"> '
+        '<feColorMatrix ${attribute.isEmpty ? '' : 'color-interpolation-filters="$attribute"'}/> '
+        '</filter></defs></svg>',
+      );
+      expect(
+        definitions.values.single.children.single.attributes['color-interpolation-filters'],
+        expected,
+      );
+    });
+  }
   const shape = '<rect x="10" y="20" width="30" height="40" filter="url(#f)"/>';
   const definition =
       '<defs><filter id="f"><feFuture in="SourceGraphic" result="x"/></filter></defs>';

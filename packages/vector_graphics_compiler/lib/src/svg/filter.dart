@@ -75,6 +75,23 @@ Map<String, VectorFilter> readFilterDefinitions(
         ).toString();
       }
     }
+    String? colorSpace;
+    for (final ancestor in <XmlElement>[
+      ...element.ancestors.whereType<XmlElement>().toList().reversed,
+      element,
+    ]) {
+      final String? value = attributesOf(ancestor)['color-interpolation-filters'];
+      if (value == 'initial') {
+        colorSpace = 'linearRGB';
+      } else if (value != null && value != 'inherit' && value != 'unset') {
+        colorSpace = value;
+      }
+    }
+    if (colorSpace != null) {
+      attributes['color-interpolation-filters'] = colorSpace;
+    } else {
+      attributes.remove('color-interpolation-filters');
+    }
     return VectorFilter(element.name.local, attributes, <VectorFilter>[
       for (final XmlElement child in element.childElements)
         if (!<String>{'title', 'desc', 'metadata'}.contains(child.name.local)) read(child),
