@@ -5,6 +5,7 @@
 * Adds isolated SVG filter commands, bounded image resources, and correct opacity, mask, and text composition.
 * Resolves inherited filter color spaces for feColorMatrix.
 * Resolves feFlood colors through styles, themes, and ColorMapper.
+* Resolves feDropShadow colors through styles, themes, and ColorMapper.
 
 ## 1.3.0
 

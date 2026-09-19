@@ -122,7 +122,8 @@ Map<String, VectorFilter> readFilterDefinitions(
     } else {
       attributes.remove('color-interpolation-filters');
     }
-    if (element.name.local == 'feFlood' && resolveColor != null) {
+    if ((element.name.local == 'feFlood' || element.name.local == 'feDropShadow') &&
+        resolveColor != null) {
       attributes['flood-color-argb'] = resolveColor(
         value: property(element, 'flood-color', 'black'),
         currentColor: property(element, 'color', 'currentColor', inherited: true),

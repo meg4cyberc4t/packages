@@ -963,6 +963,86 @@
     "kind": "browser",
     "input": "offset_zero_scale.svg"
   },
+  "shadow_alpha": {
+    "kind": "browser",
+    "input": "shadow_alpha.svg"
+  },
+  "shadow_anisotropic": {
+    "kind": "browser",
+    "input": "shadow_anisotropic.svg"
+  },
+  "shadow_bbox": {
+    "kind": "browser",
+    "input": "shadow_bbox.svg"
+  },
+  "shadow_chain": {
+    "kind": "browser",
+    "input": "shadow_chain.svg"
+  },
+  "shadow_colored": {
+    "kind": "browser",
+    "input": "shadow_colored.svg"
+  },
+  "shadow_current": {
+    "kind": "browser",
+    "input": "shadow_current.svg"
+  },
+  "shadow_defaults": {
+    "kind": "browser",
+    "input": "shadow_defaults.svg"
+  },
+  "shadow_fractional": {
+    "kind": "browser",
+    "input": "shadow_fractional.svg"
+  },
+  "shadow_horizontal": {
+    "kind": "browser",
+    "input": "shadow_horizontal.svg"
+  },
+  "shadow_linear": {
+    "kind": "browser",
+    "input": "shadow_linear.svg"
+  },
+  "shadow_negative_blur": {
+    "kind": "browser",
+    "input": "shadow_negative_blur.svg"
+  },
+  "shadow_negative_offset": {
+    "kind": "browser",
+    "input": "shadow_negative_offset.svg"
+  },
+  "shadow_sharp": {
+    "kind": "browser",
+    "input": "shadow_sharp.svg"
+  },
+  "shadow_source_alpha": {
+    "kind": "browser",
+    "input": "shadow_source_alpha.svg"
+  },
+  "shadow_style": {
+    "kind": "browser",
+    "input": "shadow_style.svg"
+  },
+  "shadow_subregion": {
+    "kind": "browser",
+    "input": "shadow_subregion.svg"
+  },
+  "shadow_transformed": {
+    "kind": "browser",
+    "input": "shadow_transformed.svg"
+  },
+  "shadow_transparent": {
+    "kind": "browser",
+    "input": "shadow_transparent.svg"
+  },
+  "shadow_vertical": {
+    "kind": "browser",
+    "input": "shadow_vertical.svg"
+  },
+  "shadow_zero_region": {
+    "kind": "browser",
+    "input": "shadow_zero_region.svg"
+  },
   "unfiltered": {
     "kind": "browser",
     "input": "unfiltered.svg"

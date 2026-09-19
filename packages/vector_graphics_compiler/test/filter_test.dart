@@ -49,6 +49,19 @@ void main() {
       0x80402010.toString(),
     );
   });
+  test('drop shadow resolves themed colors before ColorMapper substitution', () {
+    final mapper = _FilterColorMapper();
+    final VectorInstructions instructions = parseWithoutOptimizers(
+      floodSvg.replaceAll('feFlood', 'feDropShadow'),
+      theme: const SvgTheme(currentColor: Color(0xff123456)),
+      colorMapper: mapper,
+    );
+    expect(mapper.floodCall, ('ink', 'feDropShadow', 'flood-color', const Color(0xff123456)));
+    expect(
+      instructions.commands.first.filter!.children.single.attributes['flood-color-argb'],
+      0x80402010.toString(),
+    );
+  });
   for (final (String attribute, String expected) in <(String, String)>[
     ('', 'sRGB'),
     ('inherit', 'sRGB'),
@@ -149,7 +162,7 @@ class _FilterColorMapper extends ColorMapper {
 
   @override
   Color substitute(String? id, String elementName, String attributeName, Color color) {
-    if (elementName == 'feFlood') {
+    if (elementName == 'feFlood' || elementName == 'feDropShadow') {
       floodCall = (id, elementName, attributeName, color);
       return const Color(0x80402010);
     }

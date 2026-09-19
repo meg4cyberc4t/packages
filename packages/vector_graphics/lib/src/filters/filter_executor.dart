@@ -9,6 +9,7 @@ import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 import 'blend.dart';
 import 'color_matrix.dart';
 import 'composite.dart';
+import 'drop_shadow.dart';
 import 'filter_context.dart';
 import 'flood.dart';
 import 'gaussian_blur.dart';
@@ -43,6 +44,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return blend(context, primitive);
     case 'feComposite':
       return composite(context, primitive);
+    case 'feDropShadow':
+      return dropShadow(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }
