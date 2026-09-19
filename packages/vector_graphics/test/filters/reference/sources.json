@@ -1076,6 +1076,262 @@
     "kind": "browser",
     "input": "flood_zero_region.svg"
   },
+  "image_broken_raster": {
+    "kind": "browser",
+    "input": "image_broken_raster.svg"
+  },
+  "image_broken_svg": {
+    "kind": "browser",
+    "input": "image_broken_svg.svg"
+  },
+  "image_defer": {
+    "kind": "equivalent-svg",
+    "input": "image_defer.reference.svg"
+  },
+  "image_fragment": {
+    "kind": "browser",
+    "input": "image_fragment.svg"
+  },
+  "image_fragment_bbox": {
+    "kind": "equivalent-svg",
+    "input": "image_fragment_bbox.reference.svg"
+  },
+  "image_fragment_clip": {
+    "kind": "browser",
+    "input": "image_fragment_clip.svg"
+  },
+  "image_fragment_filter": {
+    "kind": "equivalent-svg",
+    "input": "image_fragment_filter.reference.svg"
+  },
+  "image_fragment_forward": {
+    "kind": "browser",
+    "input": "image_fragment_forward.svg"
+  },
+  "image_fragment_gradient": {
+    "kind": "browser",
+    "input": "image_fragment_gradient.svg"
+  },
+  "image_fragment_group": {
+    "kind": "browser",
+    "input": "image_fragment_group.svg"
+  },
+  "image_fragment_inheritance": {
+    "kind": "browser",
+    "input": "image_fragment_inheritance.svg"
+  },
+  "image_fragment_shift": {
+    "kind": "browser",
+    "input": "image_fragment_shift.svg"
+  },
+  "image_fragment_size": {
+    "kind": "browser",
+    "input": "image_fragment_size.svg"
+  },
+  "image_fragment_use": {
+    "kind": "browser",
+    "input": "image_fragment_use.svg"
+  },
+  "image_fragment_viewbox": {
+    "kind": "browser",
+    "input": "image_fragment_viewbox.svg"
+  },
+  "image_height_0": {
+    "kind": "browser",
+    "input": "image_height_0.svg"
+  },
+  "image_height_1": {
+    "kind": "browser",
+    "input": "image_height_1.svg"
+  },
+  "image_height_25pct": {
+    "kind": "browser",
+    "input": "image_height_25pct.svg"
+  },
+  "image_href_first": {
+    "kind": "browser",
+    "input": "image_href_first.svg"
+  },
+  "image_href_last": {
+    "kind": "browser",
+    "input": "image_href_last.svg"
+  },
+  "image_ignore_in": {
+    "kind": "browser",
+    "input": "image_ignore_in.svg"
+  },
+  "image_missing": {
+    "kind": "browser",
+    "input": "image_missing.svg"
+  },
+  "image_missing_fragment": {
+    "kind": "browser",
+    "input": "image_missing_fragment.svg"
+  },
+  "image_percent_encoded": {
+    "kind": "browser",
+    "input": "image_percent_encoded.svg"
+  },
+  "image_png_chain": {
+    "kind": "browser",
+    "input": "image_png_chain.svg"
+  },
+  "image_png_clipped": {
+    "kind": "browser",
+    "input": "image_png_clipped.svg"
+  },
+  "image_png_default": {
+    "kind": "browser",
+    "input": "image_png_default.svg"
+  },
+  "image_png_linear": {
+    "kind": "browser",
+    "input": "image_png_linear.svg"
+  },
+  "image_png_none": {
+    "kind": "browser",
+    "input": "image_png_none.svg"
+  },
+  "image_png_object_units": {
+    "kind": "browser",
+    "input": "image_png_object_units.svg"
+  },
+  "image_png_transform": {
+    "kind": "browser",
+    "input": "image_png_transform.svg"
+  },
+  "image_png_xMaxYMax_meet": {
+    "kind": "browser",
+    "input": "image_png_xMaxYMax_meet.svg"
+  },
+  "image_png_xMaxYMax_slice": {
+    "kind": "browser",
+    "input": "image_png_xMaxYMax_slice.svg"
+  },
+  "image_png_xMidYMid_meet": {
+    "kind": "browser",
+    "input": "image_png_xMidYMid_meet.svg"
+  },
+  "image_png_xMidYMid_slice": {
+    "kind": "browser",
+    "input": "image_png_xMidYMid_slice.svg"
+  },
+  "image_png_xMinYMin_meet": {
+    "kind": "browser",
+    "input": "image_png_xMinYMin_meet.svg"
+  },
+  "image_png_xMinYMin_slice": {
+    "kind": "browser",
+    "input": "image_png_xMinYMin_slice.svg"
+  },
+  "image_png_zero": {
+    "kind": "browser",
+    "input": "image_png_zero.svg"
+  },
+  "image_result": {
+    "kind": "browser",
+    "input": "image_result.svg"
+  },
+  "image_self_cycle": {
+    "kind": "equivalent-svg",
+    "input": "image_self_cycle.reference.svg"
+  },
+  "image_svg_chain": {
+    "kind": "browser",
+    "input": "image_svg_chain.svg"
+  },
+  "image_svg_clipped": {
+    "kind": "browser",
+    "input": "image_svg_clipped.svg"
+  },
+  "image_svg_default": {
+    "kind": "browser",
+    "input": "image_svg_default.svg"
+  },
+  "image_svg_linear": {
+    "kind": "browser",
+    "input": "image_svg_linear.svg"
+  },
+  "image_svg_none": {
+    "kind": "browser",
+    "input": "image_svg_none.svg"
+  },
+  "image_svg_object_units": {
+    "kind": "browser",
+    "input": "image_svg_object_units.svg"
+  },
+  "image_svg_transform": {
+    "kind": "browser",
+    "input": "image_svg_transform.svg"
+  },
+  "image_svg_xMaxYMax_meet": {
+    "kind": "browser",
+    "input": "image_svg_xMaxYMax_meet.svg"
+  },
+  "image_svg_xMaxYMax_slice": {
+    "kind": "browser",
+    "input": "image_svg_xMaxYMax_slice.svg"
+  },
+  "image_svg_xMidYMid_meet": {
+    "kind": "browser",
+    "input": "image_svg_xMidYMid_meet.svg"
+  },
+  "image_svg_xMidYMid_slice": {
+    "kind": "browser",
+    "input": "image_svg_xMidYMid_slice.svg"
+  },
+  "image_svg_xMinYMin_meet": {
+    "kind": "browser",
+    "input": "image_svg_xMinYMin_meet.svg"
+  },
+  "image_svg_xMinYMin_slice": {
+    "kind": "browser",
+    "input": "image_svg_xMinYMin_slice.svg"
+  },
+  "image_svg_zero": {
+    "kind": "browser",
+    "input": "image_svg_zero.svg"
+  },
+  "image_width_0": {
+    "kind": "browser",
+    "input": "image_width_0.svg"
+  },
+  "image_width_1": {
+    "kind": "browser",
+    "input": "image_width_1.svg"
+  },
+  "image_width_25pct": {
+    "kind": "browser",
+    "input": "image_width_25pct.svg"
+  },
+  "image_x_decimal": {
+    "kind": "browser",
+    "input": "image_x_decimal.svg"
+  },
+  "image_x_negative": {
+    "kind": "browser",
+    "input": "image_x_negative.svg"
+  },
+  "image_x_percent": {
+    "kind": "browser",
+    "input": "image_x_percent.svg"
+  },
+  "image_xlink": {
+    "kind": "browser",
+    "input": "image_xlink.svg"
+  },
+  "image_y_decimal": {
+    "kind": "browser",
+    "input": "image_y_decimal.svg"
+  },
+  "image_y_negative": {
+    "kind": "browser",
+    "input": "image_y_negative.svg"
+  },
+  "image_y_percent": {
+    "kind": "browser",
+    "input": "image_y_percent.svg"
+  },
   "integration_blur_ancestor_opacity": {
     "kind": "browser",
     "input": "integration_blur_ancestor_opacity.svg"

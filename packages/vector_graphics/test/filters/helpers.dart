@@ -22,6 +22,7 @@ Future<ui.Image> renderSvg(
   int size = 128,
   double scale = 1,
   double? filterRasterScale,
+  Map<String, Uint8List> imageSources = const <String, Uint8List>{},
 }) async {
   FilterShaders.debugAssetPrefix = '';
   final Uint8List bytes = encodeSvg(
@@ -31,6 +32,7 @@ Future<ui.Image> renderSvg(
     enableClippingOptimizer: false,
     enableMaskingOptimizer: false,
     enableOverdrawOptimizer: false,
+    imageSources: imageSources,
   );
   final PictureInfo info = await decodeVectorGraphics(
     bytes.buffer.asByteData(),

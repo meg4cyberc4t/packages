@@ -107,13 +107,19 @@ class _DelegateVgColorMapper extends vg.ColorMapper {
 @immutable
 abstract class SvgLoader<T> extends BytesLoader {
   /// See class doc.
-  const SvgLoader({this.theme, this.colorMapper});
+  const SvgLoader({this.theme, this.colorMapper, this.imageSources = const <String, Uint8List>{}});
 
   /// The theme to determine currentColor and font sizing attributes.
   final SvgTheme? theme;
 
   /// The [ColorMapper] used to transform colors from the SVG, if any.
   final ColorMapper? colorMapper;
+
+  /// Preloaded bytes for external feImage hrefs. Data URIs and local fragment
+  /// references are resolved without this map. No external image is fetched
+  /// implicitly. Treat the map and its bytes as immutable; provide a new map
+  /// when resources change so cached assets are invalidated.
+  final Map<String, Uint8List> imageSources;
 
   /// Will be called in [compute] with the result of [prepareMessage].
   @protected
@@ -150,6 +156,7 @@ abstract class SvgLoader<T> extends BytesLoader {
                 theme: theme.toVgTheme(),
                 colorMapper: colorMapper == null ? null : _DelegateVgColorMapper(colorMapper!),
                 debugName: 'Svg loader',
+                imageSources: imageSources,
                 enableClippingOptimizer: false,
                 enableMaskingOptimizer: false,
                 enableOverdrawOptimizer: false,
@@ -173,7 +180,12 @@ abstract class SvgLoader<T> extends BytesLoader {
   @override
   SvgCacheKey cacheKey(BuildContext? context) {
     final SvgTheme theme = getTheme(context);
-    return SvgCacheKey(keyData: this, theme: theme, colorMapper: colorMapper);
+    return SvgCacheKey(
+      keyData: this,
+      theme: theme,
+      colorMapper: colorMapper,
+      imageSources: imageSources,
+    );
   }
 }
 
@@ -184,7 +196,12 @@ abstract class SvgLoader<T> extends BytesLoader {
 @immutable
 class SvgCacheKey {
   /// See [SvgCacheKey].
-  const SvgCacheKey({required this.keyData, required this.colorMapper, this.theme});
+  const SvgCacheKey({
+    required this.keyData,
+    required this.colorMapper,
+    this.theme,
+    this.imageSources = const <String, Uint8List>{},
+  });
 
   /// The theme for this cached SVG.
   final SvgTheme? theme;
@@ -197,15 +214,19 @@ class SvgCacheKey {
   /// The color mapper for the SVG, if any.
   final ColorMapper? colorMapper;
 
+  /// External filter image resources, compared by map identity.
+  final Map<String, Uint8List> imageSources;
+
   @override
-  int get hashCode => Object.hash(theme, keyData, colorMapper);
+  int get hashCode => Object.hash(theme, keyData, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
     return other is SvgCacheKey &&
         other.theme == theme &&
         other.keyData == keyData &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 }
 
@@ -213,7 +234,7 @@ class SvgCacheKey {
 /// vector_graphics binary representation.
 class SvgStringLoader extends SvgLoader<void> {
   /// See class doc.
-  const SvgStringLoader(this._svg, {super.theme, super.colorMapper});
+  const SvgStringLoader(this._svg, {super.theme, super.colorMapper, super.imageSources});
 
   final String _svg;
 
@@ -223,14 +244,15 @@ class SvgStringLoader extends SvgLoader<void> {
   }
 
   @override
-  int get hashCode => Object.hash(_svg, theme, colorMapper);
+  int get hashCode => Object.hash(_svg, theme, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
     return other is SvgStringLoader &&
         other._svg == _svg &&
         other.theme == theme &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 }
 
@@ -239,7 +261,7 @@ class SvgStringLoader extends SvgLoader<void> {
 /// representation.
 class SvgBytesLoader extends SvgLoader<void> {
   /// See class doc.
-  const SvgBytesLoader(this.bytes, {super.theme, super.colorMapper});
+  const SvgBytesLoader(this.bytes, {super.theme, super.colorMapper, super.imageSources});
 
   /// The UTF-8 encoded XML bytes.
   final Uint8List bytes;
@@ -248,14 +270,15 @@ class SvgBytesLoader extends SvgLoader<void> {
   String provideSvg(void message) => utf8.decode(bytes, allowMalformed: true);
 
   @override
-  int get hashCode => Object.hash(bytes, theme, colorMapper);
+  int get hashCode => Object.hash(bytes, theme, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
     return other is SvgBytesLoader &&
         other.bytes == bytes &&
         other.theme == theme &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 }
 
@@ -263,7 +286,7 @@ class SvgBytesLoader extends SvgLoader<void> {
 /// a vector_graphics binary representation.
 class SvgFileLoader extends SvgLoader<void> {
   /// See class doc.
-  const SvgFileLoader(this.file, {super.theme, super.colorMapper});
+  const SvgFileLoader(this.file, {super.theme, super.colorMapper, super.imageSources});
 
   /// The file containing the SVG data to decode and render.
   final File file;
@@ -275,14 +298,15 @@ class SvgFileLoader extends SvgLoader<void> {
   }
 
   @override
-  int get hashCode => Object.hash(file, theme, colorMapper);
+  int get hashCode => Object.hash(file, theme, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
     return other is SvgFileLoader &&
         other.file == file &&
         other.theme == theme &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 }
 
@@ -324,6 +348,7 @@ class SvgAssetLoader extends SvgLoader<ByteData> {
     this.assetBundle,
     super.theme,
     super.colorMapper,
+    super.imageSources,
   });
 
   /// The name of the asset, e.g. foo.svg.
@@ -362,12 +387,14 @@ class SvgAssetLoader extends SvgLoader<ByteData> {
     return SvgCacheKey(
       theme: theme,
       colorMapper: colorMapper,
+      imageSources: imageSources,
       keyData: _AssetByteLoaderCacheKey(assetName, packageName, _resolveBundle(context)),
     );
   }
 
   @override
-  int get hashCode => Object.hash(assetName, packageName, assetBundle, theme, colorMapper);
+  int get hashCode =>
+      Object.hash(assetName, packageName, assetBundle, theme, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
@@ -376,7 +403,8 @@ class SvgAssetLoader extends SvgLoader<ByteData> {
         other.packageName == packageName &&
         other.assetBundle == assetBundle &&
         other.theme == theme &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 
   @override
@@ -392,6 +420,7 @@ class SvgNetworkLoader extends SvgLoader<Uint8List> {
     this.headers,
     super.theme,
     super.colorMapper,
+    super.imageSources,
     http.Client? httpClient,
   }) : _httpClient = httpClient;
 
@@ -417,7 +446,7 @@ class SvgNetworkLoader extends SvgLoader<Uint8List> {
   String provideSvg(Uint8List? message) => utf8.decode(message!, allowMalformed: true);
 
   @override
-  int get hashCode => Object.hash(url, headers, theme, colorMapper);
+  int get hashCode => Object.hash(url, headers, theme, colorMapper, imageSources);
 
   @override
   bool operator ==(Object other) {
@@ -425,7 +454,8 @@ class SvgNetworkLoader extends SvgLoader<Uint8List> {
         other.url == url &&
         other.headers == headers &&
         other.theme == theme &&
-        other.colorMapper == colorMapper;
+        other.colorMapper == colorMapper &&
+        other.imageSources == imageSources;
   }
 
   @override

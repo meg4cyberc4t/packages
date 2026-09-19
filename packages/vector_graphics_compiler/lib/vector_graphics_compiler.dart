@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:vector_graphics_codec/vector_graphics_codec.dart';
+import 'package:xml/xml.dart';
 
 import 'src/geometry/image.dart';
 import 'src/geometry/matrix.dart';
@@ -121,7 +123,11 @@ void _encodeShader(
 }
 
 /// String input, String filename
-/// Encode an SVG [input] string into a vector_graphics binary format.
+/// Encodes SVG [xml] into the vector_graphics binary format.
+///
+/// [imageSources] supplies bytes for external feImage references by their href.
+/// Embedded data URIs and local fragment references are resolved automatically.
+/// External resources are never fetched during synchronous compilation.
 Uint8List encodeSvg({
   required String xml,
   required String debugName,
@@ -132,9 +138,50 @@ Uint8List encodeSvg({
   bool warningsAsErrors = false,
   bool useHalfPrecisionControlPoints = false,
   ColorMapper? colorMapper,
-}) {
-  return _encodeInstructions(
-    parse(
+  Map<String, Uint8List> imageSources = const <String, Uint8List>{},
+}) => _SvgImageEncoder(
+  debugName: debugName,
+  theme: theme,
+  enableMaskingOptimizer: enableMaskingOptimizer,
+  enableClippingOptimizer: enableClippingOptimizer,
+  enableOverdrawOptimizer: enableOverdrawOptimizer,
+  warningsAsErrors: warningsAsErrors,
+  useHalfPrecisionControlPoints: useHalfPrecisionControlPoints,
+  colorMapper: colorMapper,
+  imageSources: imageSources,
+).encode(xml);
+
+// The runtime has no XML parser. Compile referenced SVGs into independent binary
+// image resources while preserving their native pictures at playback time.
+class _SvgImageEncoder {
+  _SvgImageEncoder({
+    required this.debugName,
+    required this.theme,
+    required this.enableMaskingOptimizer,
+    required this.enableClippingOptimizer,
+    required this.enableOverdrawOptimizer,
+    required this.warningsAsErrors,
+    required this.useHalfPrecisionControlPoints,
+    required this.colorMapper,
+    required this.imageSources,
+  });
+
+  final String debugName;
+  final SvgTheme theme;
+  final bool enableMaskingOptimizer;
+  final bool enableClippingOptimizer;
+  final bool enableOverdrawOptimizer;
+  final bool warningsAsErrors;
+  final bool useHalfPrecisionControlPoints;
+  final ColorMapper? colorMapper;
+  final Map<String, Uint8List> imageSources;
+  final Map<(String, String), (ImageData, bool)?> _cache = <(String, String), (ImageData, bool)?>{};
+  final Set<(String, String)> _active = <(String, String)>{};
+  int _bytes = 0;
+
+  Uint8List encode(String xml, {String? referenceSource}) {
+    final String document = referenceSource ?? xml;
+    final VectorInstructions instructions = parse(
       xml,
       key: debugName,
       theme: theme,
@@ -143,12 +190,239 @@ Uint8List encodeSvg({
       enableOverdrawOptimizer: enableOverdrawOptimizer,
       warningsAsErrors: warningsAsErrors,
       colorMapper: colorMapper,
-    ),
-    useHalfPrecisionControlPoints,
-  );
+    );
+    final images = <ImageData>[];
+    final ids = <(String, String), int>{};
+    VectorFilter prepare(VectorFilter filter) {
+      final attributes = Map<String, String>.of(filter.attributes);
+      if (filter.name == 'feImage') {
+        attributes.remove('vector-image-id');
+        attributes.remove('vector-image-fragment');
+        final String? href = attributes.remove('href');
+        if (href != null && href.isNotEmpty) {
+          final (String, String) key = (document, href);
+          final (ImageData, bool)? image = _image(document, href);
+          if (image != null) {
+            final int id = ids.putIfAbsent(key, () {
+              final int id = instructions.images.length + images.length;
+              images.add(image.$1);
+              return id;
+            });
+            attributes['vector-image-id'] = id.toString();
+            attributes['vector-image-fragment'] = image.$2.toString();
+          }
+        }
+      }
+      return VectorFilter(filter.name, attributes, filter.children.map(prepare).toList());
+    }
+
+    final filters = <VectorFilter, VectorFilter>{};
+    for (final DrawCommand command in instructions.commands) {
+      if (command.type == DrawCommandType.beginFilter) {
+        filters.putIfAbsent(command.filter!, () => prepare(command.filter!));
+      }
+    }
+    return _encodeInstructions(
+      instructions,
+      useHalfPrecisionControlPoints,
+      filterImages: images,
+      filters: filters,
+    );
+  }
+
+  (ImageData, bool)? _image(String document, String href) {
+    final key = (document, href);
+    if (_cache.containsKey(key)) {
+      return _cache[key];
+    }
+    // A cyclic reference is an invalid image.
+    if (_active.contains(key)) {
+      return null;
+    }
+    if (_active.length >= 8 || _cache.length >= 256) {
+      throw StateError('SVG filter image compilation exceeds 8 levels or 256 resources');
+    }
+    _active.add(key);
+    try {
+      var normalized = href;
+      final int base64Start = normalized.indexOf(';base64,');
+      if (normalized.startsWith('data:') && base64Start >= 0) {
+        normalized =
+            normalized.substring(0, base64Start + 8) +
+            Uri.decodeComponent(
+              normalized.substring(base64Start + 8),
+            ).replaceAll(RegExp(r'\s+'), '');
+      }
+      final Uri uri = Uri.parse(normalized);
+      final String fragment = uri.fragment;
+      String? svg;
+      Uint8List? data;
+      if (href.startsWith('#')) {
+        svg = document;
+      } else {
+        final location = uri.removeFragment().toString();
+        if (uri.scheme == 'data') {
+          data = UriData.parse(location).contentAsBytes();
+        } else {
+          data = imageSources[href] ?? imageSources[location];
+        }
+        if (data == null) {
+          return _cache[key] = null;
+        }
+        _bytes += data.length;
+        if (_bytes > 32 * 1024 * 1024) {
+          throw StateError('SVG filter images exceed 32 MiB');
+        }
+        // XML resources begin with '<' after a possible BOM and whitespace.
+        final String probe = utf8.decode(data.take(256).toList(), allowMalformed: true).trimLeft();
+        if (probe.startsWith('<')) {
+          svg = utf8.decode(data);
+        }
+      }
+      if (svg != null) {
+        if (XmlDocument.parse(svg).rootElement.name.local != 'svg') {
+          return _cache[key] = null;
+        }
+        if (fragment.isNotEmpty) {
+          final String? source = _fragment(svg, fragment);
+          if (source == null) {
+            return _cache[key] = null;
+          }
+          data = encode(source, referenceSource: svg);
+        } else {
+          data = encode(svg);
+        }
+        _bytes += data.length;
+        if (_bytes > 32 * 1024 * 1024) {
+          throw StateError('SVG filter images exceed 32 MiB');
+        }
+        return _cache[key] = (ImageData(data, ImageFormatTypes.vector), fragment.isNotEmpty);
+      }
+      return _cache[key] = (ImageData(data!, ImageFormatTypes.filterRaster), false);
+    } on FormatException {
+      return _cache[key] = null;
+    } on UnsupportedError {
+      return _cache[key] = null;
+    } on ArgumentError {
+      return _cache[key] = null;
+    } on XmlException {
+      return _cache[key] = null;
+    } finally {
+      _active.remove(key);
+    }
+  }
+
+  String? _fragment(String source, String id) {
+    final XmlElement root = XmlDocument.parse(source).rootElement;
+    final XmlElement? target = <XmlElement>[
+      root,
+      ...root.descendants.whereType<XmlElement>(),
+    ].where((XmlElement e) => e.getAttribute('id') == id).firstOrNull;
+    if (target == null) {
+      return null;
+    }
+    // Referenced graphics retain computed inherited paint/text properties from
+    // their original ancestry, but do not inherit ancestor transforms or opacity.
+    final properties = <String, String>{};
+    for (final element in <XmlElement>[
+      ...target.ancestors.whereType<XmlElement>().toList().reversed,
+      target,
+    ]) {
+      final attributes = <String, String>{
+        for (final XmlAttribute a in element.attributes) a.name.local: a.value,
+      };
+      for (final String declaration in (attributes['style'] ?? '').split(';')) {
+        final int colon = declaration.indexOf(':');
+        if (colon > 0) {
+          attributes[declaration.substring(0, colon).trim()] = declaration
+              .substring(colon + 1)
+              .trim();
+        }
+      }
+      for (final MapEntry<String, String> entry in attributes.entries) {
+        if (SvgAttributes.heritableProperties.contains(entry.key) &&
+            entry.value != 'inherit' &&
+            entry.value != 'unset') {
+          properties[entry.key] = entry.value;
+        }
+      }
+    }
+    for (final MapEntry<String, String> entry in properties.entries) {
+      target.setAttribute(entry.key, entry.value);
+    }
+    final String? targetStyle = target.getAttribute('style');
+    if (targetStyle != null) {
+      target.setAttribute(
+        'style',
+        targetStyle
+            .split(';')
+            .where(
+              (String declaration) =>
+                  !SvgAttributes.heritableProperties.contains(declaration.split(':').first.trim()),
+            )
+            .join(';'),
+      );
+    }
+    final XmlElement wrapper = root.copy();
+    wrapper.children.clear();
+    const excluded = <String>{
+      'id',
+      'filter',
+      'mask',
+      'clip-path',
+      'transform',
+      'opacity',
+      'x',
+      'y',
+      'viewBox',
+    };
+    wrapper.attributes.removeWhere((XmlAttribute a) => excluded.contains(a.name.local));
+    final String? style = wrapper.getAttribute('style');
+    if (style != null) {
+      wrapper.setAttribute(
+        'style',
+        style
+            .split(';')
+            .where((String value) => !excluded.contains(value.split(':').first.trim()))
+            .join(';'),
+      );
+    }
+    final List<double>? viewBox = root
+        .getAttribute('viewBox')
+        ?.trim()
+        .split(RegExp(r'[\s,]+'))
+        .map(double.parse)
+        .toList();
+    if (viewBox != null && viewBox.length == 4) {
+      wrapper.setAttribute('width', viewBox[2].toString());
+      wrapper.setAttribute('height', viewBox[3].toString());
+    }
+    wrapper.children.add(
+      XmlElement(
+        // XmlName is not const in supported xml 6.x releases.
+        // ignore: prefer_const_constructors
+        XmlName('defs'),
+        <XmlAttribute>[],
+        root.getAttribute('id') == id
+            ? <XmlNode>[root.copy()]
+            : root.children.map((XmlNode n) => n.copy()),
+      ),
+    );
+    wrapper.children.add(
+      // XmlName is not const in supported xml 6.x releases.
+      // ignore: prefer_const_constructors
+      XmlElement(XmlName('use'), <XmlAttribute>[XmlAttribute(XmlName('href'), '#$id')]),
+    );
+    return wrapper.toXmlString();
+  }
 }
 
-Uint8List _encodeInstructions(VectorInstructions instructions, bool useHalfPrecisionControlPoints) {
+Uint8List _encodeInstructions(
+  VectorInstructions instructions,
+  bool useHalfPrecisionControlPoints, {
+  List<ImageData> filterImages = const <ImageData>[],
+  Map<VectorFilter, VectorFilter> filters = const <VectorFilter, VectorFilter>{},
+}) {
   const codec = VectorGraphicsCodec();
   final buffer = VectorGraphicsBuffer();
 
@@ -158,7 +432,7 @@ Uint8List _encodeInstructions(VectorInstructions instructions, bool useHalfPreci
   final strokeIds = <int, int>{};
   final shaderIds = <Gradient, int>{};
 
-  for (final ImageData data in instructions.images) {
+  for (final data in <ImageData>[...instructions.images, ...filterImages]) {
     codec.writeImage(buffer, data.format, data.data);
   }
 
@@ -269,7 +543,7 @@ Uint8List _encodeInstructions(VectorInstructions instructions, bool useHalfPreci
       case DrawCommandType.beginFilter:
         codec.writeBeginFilter(
           buffer,
-          command.filter!,
+          filters[command.filter!] ?? command.filter!,
           command.filterTransform!.toMatrix4(),
           command.filterWidth!,
           command.filterHeight!,

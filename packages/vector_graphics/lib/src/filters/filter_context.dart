@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 
+import '../vector_image.dart';
 import 'filter_shaders.dart';
 
 /// A picture and the finite region in which its pixels are defined.
@@ -49,6 +50,7 @@ class FilterContext {
     this.viewport, {
     this.rasterScale = 1,
     this.shaders,
+    this.images = const <int, VectorImage>{},
     FilterRasterBudget? rasterBudget,
   }) : _rasterBudget = rasterBudget ?? FilterRasterBudget() {
     try {
@@ -85,6 +87,8 @@ class FilterContext {
   /// Shader programs preloaded before synchronous command playback.
   final FilterShaders? shaders;
 
+  /// Image resources whose handles remain owned by the containing decoder.
+  final Map<int, VectorImage> images;
   final FilterRasterBudget _rasterBudget;
   bool _disposed = false;
 

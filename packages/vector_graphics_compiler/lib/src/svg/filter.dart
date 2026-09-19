@@ -32,6 +32,13 @@ Map<String, VectorFilter> readFilterDefinitions(
       for (final XmlAttribute attribute in element.attributes)
         attribute.name.local: attribute.value,
     };
+    // SVG 2 href wins over xlink:href regardless of XML attribute order.
+    final XmlAttribute? href = element.attributes
+        .where((XmlAttribute a) => a.name.local == 'href' && a.name.prefix == null)
+        .firstOrNull;
+    if (href != null) {
+      attributes['href'] = href.value;
+    }
     for (final String declaration in (attributes['style'] ?? '').split(';')) {
       final int separator = declaration.indexOf(':');
       if (separator > 0) {

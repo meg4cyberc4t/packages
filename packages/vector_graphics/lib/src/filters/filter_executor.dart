@@ -16,6 +16,7 @@ import 'drop_shadow.dart';
 import 'filter_context.dart';
 import 'flood.dart';
 import 'gaussian_blur.dart';
+import 'image.dart';
 import 'merge.dart';
 import 'morphology.dart';
 import 'offset.dart';
@@ -61,6 +62,8 @@ FilterImage executePrimitive(FilterContext context, VectorFilter primitive) {
       return convolveMatrix(context, primitive);
     case 'feDisplacementMap':
       return displacementMap(context, primitive);
+    case 'feImage':
+      return filterImage(context, primitive);
     default:
       throw UnsupportedError('SVG filter primitive ${primitive.name} is not implemented');
   }

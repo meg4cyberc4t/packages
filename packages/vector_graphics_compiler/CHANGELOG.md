@@ -6,6 +6,7 @@
 * Resolves inherited filter color spaces for feColorMatrix.
 * Resolves feFlood colors through styles, themes, and ColorMapper.
 * Resolves feDropShadow colors through styles, themes, and ColorMapper.
+* Resolves SVG 2 image href precedence for feImage.
 
 ## 1.3.0
 

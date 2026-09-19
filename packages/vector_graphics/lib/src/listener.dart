@@ -475,6 +475,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       rasterScale: _filterRasterScale * transformScale,
       shaders: _filterShaders,
       rasterBudget: _budget.raster,
+      images: _images,
     );
     try {
       final FilterImage result = executeFilter(context);
