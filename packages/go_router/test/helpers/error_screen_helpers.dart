@@ -1,11 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../test_helpers.dart';
 
@@ -32,14 +32,11 @@ WidgetTesterCallback testClickingTheButtonRedirectsToRoot({
   Widget Function(GoRouter router) appRouterBuilder = materialAppRouterBuilder,
 }) {
   return (WidgetTester tester) async {
-    final GoRouter router = GoRouter(
+    final router = GoRouter(
       initialLocation: '/error',
       routes: <GoRoute>[
-        GoRoute(path: '/', builder: (_, __) => const DummyStatefulWidget()),
-        GoRoute(
-          path: '/error',
-          builder: (_, __) => widget,
-        ),
+        GoRoute(path: '/', builder: (_, _) => const DummyStatefulWidget()),
+        GoRoute(path: '/error', builder: (_, _) => widget),
       ],
     );
     addTearDown(router.dispose);
@@ -51,15 +48,9 @@ WidgetTesterCallback testClickingTheButtonRedirectsToRoot({
 }
 
 Widget materialAppRouterBuilder(GoRouter router) {
-  return MaterialApp.router(
-    routerConfig: router,
-    title: 'GoRouter Example',
-  );
+  return MaterialApp.router(routerConfig: router, title: 'GoRouter Example');
 }
 
 Widget cupertinoAppRouterBuilder(GoRouter router) {
-  return CupertinoApp.router(
-    routerConfig: router,
-    title: 'GoRouter Example',
-  );
+  return CupertinoApp.router(routerConfig: router, title: 'GoRouter Example');
 }

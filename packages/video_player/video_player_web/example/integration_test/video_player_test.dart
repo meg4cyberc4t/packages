@@ -1,8 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -27,68 +29,110 @@ void main() {
         ..playsInline = false;
     });
 
+    testWidgets('initialize() calls load', (WidgetTester _) async {
+      var loadCalled = false;
+
+      video['load'] = () {
+        loadCalled = true;
+      }.toJS;
+
+      VideoPlayer(videoElement: video).initialize();
+
+      expect(loadCalled, isTrue);
+    });
+
     testWidgets('fixes critical video element config', (WidgetTester _) async {
       VideoPlayer(videoElement: video).initialize();
 
-      expect(video.controls, isFalse,
-          reason: 'Video is controlled through code');
-      expect(video.autoplay, isFalse,
-          reason: 'autoplay attribute on HTMLVideoElement MUST be false');
+      expect(video.controls, isFalse, reason: 'Video is controlled through code');
+      expect(
+        video.autoplay,
+        isFalse,
+        reason: 'autoplay attribute on HTMLVideoElement MUST be false',
+      );
       // see: https://developer.mozilla.org/en-US/docs/Glossary/Boolean/HTML
-      expect(video.getAttribute('autoplay'), isNull,
-          reason: 'autoplay attribute on video tag must NOT be set');
+      expect(
+        video.getAttribute('autoplay'),
+        isNull,
+        reason: 'autoplay attribute on video tag must NOT be set',
+      );
       expect(video.playsInline, true, reason: 'Needed by safari iOS');
     });
 
     testWidgets('setVolume', (WidgetTester tester) async {
-      final VideoPlayer player = VideoPlayer(videoElement: video)..initialize();
+      final player = VideoPlayer(videoElement: video)..initialize();
 
       player.setVolume(0);
-
-      expect(video.volume, isZero, reason: 'Volume should be zero');
       expect(video.muted, isTrue, reason: 'muted attribute should be true');
+      // If the volume is set to zero, pressing unmute
+      // button may not restore the audio as expected.
+      expect(video.volume, greaterThan(0), reason: 'Volume should not be set to zero when muted');
+      player.setVolume(0.5);
+      expect(video.volume, 0.5, reason: 'Volume should be set to 0.5');
+      expect(video.muted, isFalse, reason: 'Muted attribute should be false');
 
-      expect(() {
-        player.setVolume(-0.0001);
-      }, throwsAssertionError, reason: 'Volume cannot be < 0');
+      expect(
+        () {
+          player.setVolume(-0.0001);
+        },
+        throwsAssertionError,
+        reason: 'Volume cannot be < 0',
+      );
 
-      expect(() {
-        player.setVolume(1.0001);
-      }, throwsAssertionError, reason: 'Volume cannot be > 1');
+      expect(
+        () {
+          player.setVolume(1.0001);
+        },
+        throwsAssertionError,
+        reason: 'Volume cannot be > 1',
+      );
     });
 
     testWidgets('setPlaybackSpeed', (WidgetTester tester) async {
-      final VideoPlayer player = VideoPlayer(videoElement: video)..initialize();
+      final player = VideoPlayer(videoElement: video)..initialize();
 
-      expect(() {
-        player.setPlaybackSpeed(-1);
-      }, throwsAssertionError, reason: 'Playback speed cannot be < 0');
+      expect(
+        () {
+          player.setPlaybackSpeed(-1);
+        },
+        throwsAssertionError,
+        reason: 'Playback speed cannot be < 0',
+      );
 
-      expect(() {
-        player.setPlaybackSpeed(0);
-      }, throwsAssertionError, reason: 'Playback speed cannot be == 0');
+      expect(
+        () {
+          player.setPlaybackSpeed(0);
+        },
+        throwsAssertionError,
+        reason: 'Playback speed cannot be == 0',
+      );
     });
 
     group('seekTo', () {
       testWidgets('negative time - throws assert', (WidgetTester tester) async {
-        final VideoPlayer player = VideoPlayer(videoElement: video)
-          ..initialize();
+        final player = VideoPlayer(videoElement: video)..initialize();
 
-        expect(() {
-          player.seekTo(const Duration(seconds: -1));
-        }, throwsAssertionError, reason: 'Cannot seek into negative numbers');
+        expect(
+          () {
+            player.seekTo(const Duration(seconds: -1));
+          },
+          throwsAssertionError,
+          reason: 'Cannot seek into negative numbers',
+        );
       });
 
-      testWidgets('setting currentTime to its current value - noop',
-          (WidgetTester tester) async {
+      testWidgets('setting currentTime to its current value - noop', (WidgetTester tester) async {
         makeSetCurrentTimeThrow(video);
-        final VideoPlayer player = VideoPlayer(videoElement: video)
-          ..initialize();
+        final player = VideoPlayer(videoElement: video)..initialize();
 
-        expect(() {
-          // Self-test...
-          video.currentTime = 123;
-        }, throwsException, reason: 'Setting currentTime must throw!');
+        expect(
+          () {
+            // Self-test...
+            video.currentTime = 123;
+          },
+          throwsException,
+          reason: 'Setting currentTime must throw!',
+        );
 
         expect(() {
           // Should not set currentTime (and throw) when seekTo current time.
@@ -105,16 +149,14 @@ void main() {
       late VideoPlayer player;
       late Stream<VideoEvent> timedStream;
 
-      final Set<VideoEventType> bufferingEvents = <VideoEventType>{
+      final bufferingEvents = <VideoEventType>{
         VideoEventType.bufferingStart,
         VideoEventType.bufferingEnd,
       };
 
       setUp(() {
         streamController = StreamController<VideoEvent>();
-        player =
-            VideoPlayer(videoElement: video, eventController: streamController)
-              ..initialize();
+        player = VideoPlayer(videoElement: video, eventController: streamController)..initialize();
 
         // This stream will automatically close after 100 ms without seeing any events
         timedStream = streamController.stream.timeout(
@@ -125,14 +167,16 @@ void main() {
         );
       });
 
-      testWidgets('buffering dispatches only when it changes',
-          (WidgetTester tester) async {
+      tearDown(() {
+        streamController.close();
+        player.dispose();
+      });
+
+      testWidgets('buffering dispatches only when it changes', (WidgetTester tester) async {
         // Take all the "buffering" events that we see during the next few seconds
         final Future<List<bool>> stream = timedStream
-            .where(
-                (VideoEvent event) => bufferingEvents.contains(event.eventType))
-            .map((VideoEvent event) =>
-                event.eventType == VideoEventType.bufferingStart)
+            .where((VideoEvent event) => bufferingEvents.contains(event.eventType))
+            .map((VideoEvent event) => event.eventType == VideoEventType.bufferingStart)
             .toList();
 
         // Simulate some events coming from the player...
@@ -152,14 +196,11 @@ void main() {
         expect(events, <bool>[true, false, true, false, true, false]);
       });
 
-      testWidgets('canplay event does not change buffering state',
-          (WidgetTester tester) async {
+      testWidgets('canplay event does not change buffering state', (WidgetTester tester) async {
         // Take all the "buffering" events that we see during the next few seconds
         final Future<List<bool>> stream = timedStream
-            .where(
-                (VideoEvent event) => bufferingEvents.contains(event.eventType))
-            .map((VideoEvent event) =>
-                event.eventType == VideoEventType.bufferingStart)
+            .where((VideoEvent event) => bufferingEvents.contains(event.eventType))
+            .map((VideoEvent event) => event.eventType == VideoEventType.bufferingStart)
             .toList();
 
         player.setBuffering(true);
@@ -173,14 +214,11 @@ void main() {
         expect(events, <bool>[true]);
       });
 
-      testWidgets('canplaythrough event does change buffering state',
-          (WidgetTester tester) async {
+      testWidgets('canplaythrough event does change buffering state', (WidgetTester tester) async {
         // Take all the "buffering" events that we see during the next few seconds
         final Future<List<bool>> stream = timedStream
-            .where(
-                (VideoEvent event) => bufferingEvents.contains(event.eventType))
-            .map((VideoEvent event) =>
-                event.eventType == VideoEventType.bufferingStart)
+            .where((VideoEvent event) => bufferingEvents.contains(event.eventType))
+            .map((VideoEvent event) => event.eventType == VideoEventType.bufferingStart)
             .toList();
 
         player.setBuffering(true);
@@ -194,8 +232,7 @@ void main() {
         expect(events, <bool>[true, false]);
       });
 
-      testWidgets('initialized dispatches only once',
-          (WidgetTester tester) async {
+      testWidgets('initialized dispatches only once', (WidgetTester tester) async {
         // Dispatch some bogus "canplay" events from the video object
         video.dispatchEvent(web.Event('canplay'));
         video.dispatchEvent(web.Event('canplay'));
@@ -203,8 +240,7 @@ void main() {
 
         // Take all the "initialized" events that we see during the next few seconds
         final Future<List<VideoEvent>> stream = timedStream
-            .where((VideoEvent event) =>
-                event.eventType == VideoEventType.initialized)
+            .where((VideoEvent event) => event.eventType == VideoEventType.initialized)
             .toList();
 
         video.dispatchEvent(web.Event('canplay'));
@@ -217,21 +253,30 @@ void main() {
         expect(events[0].eventType, VideoEventType.initialized);
       });
 
-      // Issue: https://github.com/flutter/flutter/issues/137023
-      testWidgets('loadedmetadata dispatches initialized',
-          (WidgetTester tester) async {
+      testWidgets('loadedmetadata does not dispatch initialized', (WidgetTester tester) async {
         video.dispatchEvent(web.Event('loadedmetadata'));
         video.dispatchEvent(web.Event('loadedmetadata'));
 
         final Future<List<VideoEvent>> stream = timedStream
-            .where((VideoEvent event) =>
-                event.eventType == VideoEventType.initialized)
+            .where((VideoEvent event) => event.eventType == VideoEventType.initialized)
             .toList();
 
         final List<VideoEvent> events = await stream;
 
-        expect(events, hasLength(1));
-        expect(events[0].eventType, VideoEventType.initialized);
+        expect(events, isEmpty);
+      });
+
+      testWidgets('loadeddata does not dispatch initialized', (WidgetTester tester) async {
+        video.dispatchEvent(web.Event('loadeddata'));
+        video.dispatchEvent(web.Event('loadeddata'));
+
+        final Future<List<VideoEvent>> stream = timedStream
+            .where((VideoEvent event) => event.eventType == VideoEventType.initialized)
+            .toList();
+
+        final List<VideoEvent> events = await stream;
+
+        expect(events, isEmpty);
       });
 
       // Issue: https://github.com/flutter/flutter/issues/105649
@@ -240,8 +285,7 @@ void main() {
         expect(video.duration.isInfinite, isTrue);
 
         final Future<List<VideoEvent>> stream = timedStream
-            .where((VideoEvent event) =>
-                event.eventType == VideoEventType.initialized)
+            .where((VideoEvent event) => event.eventType == VideoEventType.initialized)
             .toList();
 
         video.dispatchEvent(web.Event('canplay'));
@@ -263,8 +307,7 @@ void main() {
       });
 
       group('VideoPlayerWebOptionsControls', () {
-        testWidgets('when disabled expect no controls',
-            (WidgetTester tester) async {
+        testWidgets('when disabled expect no controls', (WidgetTester tester) async {
           await player.setOptions(
             const VideoPlayerWebOptions(
               // ignore: avoid_redundant_argument_values
@@ -280,9 +323,7 @@ void main() {
         group('when enabled', () {
           testWidgets('expect controls', (WidgetTester tester) async {
             await player.setOptions(
-              const VideoPlayerWebOptions(
-                controls: VideoPlayerWebOptionsControls.enabled(),
-              ),
+              const VideoPlayerWebOptions(controls: VideoPlayerWebOptionsControls.enabled()),
             );
 
             expect(video.controls, isTrue);
@@ -294,13 +335,10 @@ void main() {
             expect(video.disablePictureInPicture, isFalse);
           });
 
-          testWidgets('and no download expect correct controls',
-              (WidgetTester tester) async {
+          testWidgets('and no download expect correct controls', (WidgetTester tester) async {
             await player.setOptions(
               const VideoPlayerWebOptions(
-                controls: VideoPlayerWebOptionsControls.enabled(
-                  allowDownload: false,
-                ),
+                controls: VideoPlayerWebOptionsControls.enabled(allowDownload: false),
               ),
             );
 
@@ -313,13 +351,10 @@ void main() {
             expect(video.disablePictureInPicture, isFalse);
           });
 
-          testWidgets('and no fullscreen expect correct controls',
-              (WidgetTester tester) async {
+          testWidgets('and no fullscreen expect correct controls', (WidgetTester tester) async {
             await player.setOptions(
               const VideoPlayerWebOptions(
-                controls: VideoPlayerWebOptionsControls.enabled(
-                  allowFullscreen: false,
-                ),
+                controls: VideoPlayerWebOptionsControls.enabled(allowFullscreen: false),
               ),
             );
 
@@ -332,13 +367,10 @@ void main() {
             expect(video.disablePictureInPicture, isFalse);
           });
 
-          testWidgets('and no playback rate expect correct controls',
-              (WidgetTester tester) async {
+          testWidgets('and no playback rate expect correct controls', (WidgetTester tester) async {
             await player.setOptions(
               const VideoPlayerWebOptions(
-                controls: VideoPlayerWebOptionsControls.enabled(
-                  allowPlaybackRate: false,
-                ),
+                controls: VideoPlayerWebOptionsControls.enabled(allowPlaybackRate: false),
               ),
             );
 
@@ -351,13 +383,12 @@ void main() {
             expect(video.disablePictureInPicture, isFalse);
           });
 
-          testWidgets('and no picture in picture expect correct controls',
-              (WidgetTester tester) async {
+          testWidgets('and no picture in picture expect correct controls', (
+            WidgetTester tester,
+          ) async {
             await player.setOptions(
               const VideoPlayerWebOptions(
-                controls: VideoPlayerWebOptionsControls.enabled(
-                  allowPictureInPicture: false,
-                ),
+                controls: VideoPlayerWebOptionsControls.enabled(allowPictureInPicture: false),
               ),
             );
 
@@ -373,8 +404,7 @@ void main() {
       });
 
       group('allowRemotePlayback', () {
-        testWidgets('when enabled expect no attribute',
-            (WidgetTester tester) async {
+        testWidgets('when enabled expect no attribute', (WidgetTester tester) async {
           await player.setOptions(
             const VideoPlayerWebOptions(
               // ignore: avoid_redundant_argument_values
@@ -385,15 +415,58 @@ void main() {
           expect(video.disableRemotePlayback, isFalse);
         });
 
-        testWidgets('when disabled expect attribute',
-            (WidgetTester tester) async {
-          await player.setOptions(
-            const VideoPlayerWebOptions(
-              allowRemotePlayback: false,
-            ),
-          );
+        testWidgets('when disabled expect attribute', (WidgetTester tester) async {
+          await player.setOptions(const VideoPlayerWebOptions(allowRemotePlayback: false));
 
           expect(video.disableRemotePlayback, isTrue);
+        });
+      });
+
+      group('poster', () {
+        testWidgets('when null expect no poster attribute', (WidgetTester tester) async {
+          await player.setOptions(const VideoPlayerWebOptions());
+
+          expect(video.poster, isEmpty);
+          expect(video.getAttribute('poster'), isNull);
+        });
+
+        testWidgets('when provided expect poster attribute set', (WidgetTester tester) async {
+          final Uri posterUri = Uri.parse('https://example.com/poster.jpg');
+          await player.setOptions(VideoPlayerWebOptions(poster: posterUri));
+
+          expect(video.poster, posterUri.toString());
+          expect(video.getAttribute('poster'), posterUri.toString());
+        });
+
+        testWidgets('when set to null after having value expect poster removed', (
+          WidgetTester tester,
+        ) async {
+          final Uri posterUri = Uri.parse('https://example.com/poster.jpg');
+
+          await player.setOptions(VideoPlayerWebOptions(poster: posterUri));
+
+          expect(video.poster, posterUri.toString());
+
+          await player.setOptions(const VideoPlayerWebOptions());
+
+          expect(video.poster, isEmpty);
+          expect(video.getAttribute('poster'), isNull);
+        });
+
+        testWidgets('when updated expect poster attribute updated', (WidgetTester tester) async {
+          final Uri initialPoster = Uri.parse('https://example.com/poster1.jpg');
+          final Uri updatedPoster = Uri.parse('https://example.com/poster2.jpg');
+
+          // Set initial poster
+          await player.setOptions(VideoPlayerWebOptions(poster: initialPoster));
+
+          expect(video.poster, initialPoster.toString());
+
+          // Update poster
+          await player.setOptions(VideoPlayerWebOptions(poster: updatedPoster));
+
+          expect(video.poster, updatedPoster.toString());
+          expect(video.getAttribute('poster'), updatedPoster.toString());
         });
       });
 

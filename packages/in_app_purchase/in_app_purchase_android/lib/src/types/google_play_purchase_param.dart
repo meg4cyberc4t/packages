@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,25 @@ class GooglePlayPurchaseParam extends PurchaseParam {
     required super.productDetails,
     super.applicationUserName,
     this.changeSubscriptionParam,
+    this.offerToken,
+    this.obfuscatedProfileId,
   });
 
   /// The 'changeSubscriptionParam' containing information for upgrading or
   /// downgrading an existing subscription.
   final ChangeSubscriptionParam? changeSubscriptionParam;
+
+  /// For One-time product, "offerToken" shouldn't be filled.
+  ///
+  /// For subscriptions, to get the offer token corresponding to the selected
+  /// offer call productDetails.subscriptionOfferDetails?.get(selectedOfferIndex)?.offerToken
+  final String? offerToken;
+
+  /// An optional obfuscated profile ID associated with the user's profile.
+  ///
+  /// This is useful when an app allows multiple profiles under a single account.
+  /// Google Play can use this value to detect irregular activity and to associate
+  /// the purchase with the profile that initiated it. If specified, consider also
+  /// setting [applicationUserName], which maps to the obfuscated account ID.
+  final String? obfuscatedProfileId;
 }

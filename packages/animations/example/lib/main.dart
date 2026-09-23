@@ -1,9 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'container_transition.dart';
 import 'fade_scale_transition.dart';
@@ -13,9 +13,7 @@ import 'shared_axis_transition.dart';
 void main() {
   runApp(
     MaterialApp(
-      theme: ThemeData.from(
-        colorScheme: const ColorScheme.light(),
-      ).copyWith(
+      theme: ThemeData.from(colorScheme: const ColorScheme.light()).copyWith(
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: <TargetPlatform, PageTransitionsBuilder>{
             TargetPlatform.android: ZoomPageTransitionsBuilder(),
@@ -124,11 +122,7 @@ class _TransitionsHomePageState extends State<_TransitionsHomePage> {
 }
 
 class _TransitionListTile extends StatelessWidget {
-  const _TransitionListTile({
-    this.onTap,
-    required this.title,
-    required this.subtitle,
-  });
+  const _TransitionListTile({this.onTap, required this.title, required this.subtitle});
 
   final GestureTapCallback? onTap;
   final String title;
@@ -137,22 +131,15 @@ class _TransitionListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 15.0,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15.0),
       leading: Container(
         width: 40.0,
         height: 40.0,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(
-            color: Colors.black54,
-          ),
+          border: Border.all(color: Colors.black54),
         ),
-        child: const Icon(
-          Icons.play_arrow,
-          size: 35,
-        ),
+        child: const Icon(Icons.play_arrow, size: 35),
       ),
       onTap: onTap,
       title: Text(title),

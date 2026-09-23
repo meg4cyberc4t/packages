@@ -1,16 +1,16 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:pigeon/ast.dart';
-import 'package:pigeon/generator_tools.dart';
+import 'package:pigeon/src/ast.dart';
+import 'package:pigeon/src/generator_tools.dart';
 import 'package:test/test.dart';
 
 bool _equalSet<T>(Set<T> x, Set<T> y) {
   if (x.length != y.length) {
     return false;
   }
-  for (final T object in x) {
+  for (final object in x) {
     if (!y.contains(object)) {
       return false;
     }
@@ -37,193 +37,75 @@ bool _equalMaps(Map<String, Object> x, Map<String, Object> y) {
   return true;
 }
 
-final Class emptyClass = Class(name: 'className', fields: <NamedType>[
-  NamedType(
-    name: 'namedTypeName',
-    type: const TypeDeclaration(baseName: 'baseName', isNullable: false),
-  )
-]);
-
-final Enum emptyEnum = Enum(
-  name: 'enumName',
-  members: <EnumMember>[EnumMember(name: 'enumMemberName')],
+final Class emptyClass = Class(
+  name: 'className',
+  fields: <NamedType>[
+    NamedType(
+      name: 'namedTypeName',
+      type: const TypeDeclaration(baseName: 'baseName', isNullable: false),
+    ),
+  ],
 );
 
 void main() {
   test('test merge maps', () {
-    final Map<String, Object> source = <String, Object>{
+    final source = <String, Object>{
       '1': '1',
-      '2': <String, Object>{
-        '1': '1',
-        '3': '3',
-      },
+      '2': <String, Object>{'1': '1', '3': '3'},
       '3': '3', // not modified
     };
-    final Map<String, Object> modification = <String, Object>{
+    final modification = <String, Object>{
       '1': '2', // modify
       '2': <String, Object>{
         '2': '2', // added
       },
     };
-    final Map<String, Object> expected = <String, Object>{
+    final expected = <String, Object>{
       '1': '2',
-      '2': <String, Object>{
-        '1': '1',
-        '2': '2',
-        '3': '3',
-      },
+      '2': <String, Object>{'1': '1', '2': '2', '3': '3'},
       '3': '3',
     };
-    expect(_equalMaps(expected, mergeMaps(source, modification)), isTrue);
+    expect(_equalMaps(expected, mergePigeonMaps(source, modification)), isTrue);
   });
 
-  test('get codec classes from argument type arguments', () {
-    final AstFlutterApi api = AstFlutterApi(name: 'Api', methods: <Method>[
-      Method(
-        name: 'doSomething',
-        location: ApiLocation.flutter,
-        parameters: <Parameter>[
-          Parameter(
-            type: TypeDeclaration(
-              baseName: 'List',
-              isNullable: false,
-              typeArguments: <TypeDeclaration>[
-                TypeDeclaration(
-                  baseName: 'Input',
-                  isNullable: true,
-                  associatedClass: emptyClass,
-                )
-              ],
+  test('get codec types from all classes and enums', () {
+    final root = Root(
+      classes: <Class>[
+        Class(
+          name: 'name',
+          fields: <NamedType>[
+            NamedType(
+              name: 'name',
+              type: const TypeDeclaration(baseName: 'name', isNullable: true),
             ),
-            name: '',
-          )
-        ],
-        returnType: TypeDeclaration(
-          baseName: 'Output',
-          isNullable: false,
-          associatedClass: emptyClass,
-        ),
-        isAsynchronous: true,
-      )
-    ]);
-    final Root root =
-        Root(classes: <Class>[], apis: <Api>[api], enums: <Enum>[]);
-    final List<EnumeratedClass> classes = getCodecClasses(api, root).toList();
-    expect(classes.length, 2);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Input')
-            .length,
-        1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Output')
-            .length,
-        1);
-  });
-
-  test('get codec classes from return value type arguments', () {
-    final AstFlutterApi api = AstFlutterApi(name: 'Api', methods: <Method>[
-      Method(
-        name: 'doSomething',
-        location: ApiLocation.flutter,
-        parameters: <Parameter>[
-          Parameter(
-            type: TypeDeclaration(
-              baseName: 'Output',
-              isNullable: false,
-              associatedClass: emptyClass,
-            ),
-            name: '',
-          )
-        ],
-        returnType: TypeDeclaration(
-          baseName: 'List',
-          isNullable: false,
-          typeArguments: <TypeDeclaration>[
-            TypeDeclaration(
-              baseName: 'Input',
-              isNullable: true,
-              associatedClass: emptyClass,
-            )
           ],
         ),
-        isAsynchronous: true,
-      )
-    ]);
-    final Root root =
-        Root(classes: <Class>[], apis: <Api>[api], enums: <Enum>[]);
-    final List<EnumeratedClass> classes = getCodecClasses(api, root).toList();
-    expect(classes.length, 2);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Input')
-            .length,
-        1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Output')
-            .length,
-        1);
-  });
-
-  test('get codec classes from all arguments', () {
-    final AstFlutterApi api = AstFlutterApi(name: 'Api', methods: <Method>[
-      Method(
-        name: 'doSomething',
-        location: ApiLocation.flutter,
-        parameters: <Parameter>[
-          Parameter(
-            type: TypeDeclaration(
-              baseName: 'Foo',
-              isNullable: false,
-              associatedClass: emptyClass,
-            ),
-            name: '',
-          ),
-          Parameter(
-            type: TypeDeclaration(
-              baseName: 'Bar',
-              isNullable: false,
-              associatedEnum: emptyEnum,
-            ),
-            name: '',
-          ),
-        ],
-        returnType: const TypeDeclaration(
-          baseName: 'List',
-          isNullable: false,
-          typeArguments: <TypeDeclaration>[TypeDeclaration.voidDeclaration()],
+      ],
+      apis: <Api>[],
+      enums: <Enum>[
+        Enum(
+          name: 'enum',
+          members: <EnumMember>[EnumMember(name: 'enumMember')],
         ),
-        isAsynchronous: true,
-      )
-    ]);
-    final Root root =
-        Root(classes: <Class>[], apis: <Api>[api], enums: <Enum>[]);
-    final List<EnumeratedClass> classes = getCodecClasses(api, root).toList();
-    expect(classes.length, 2);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Foo')
-            .length,
-        1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Bar')
-            .length,
-        1);
+      ],
+    );
+    final List<EnumeratedType> types = getEnumeratedTypes(root).toList();
+    expect(types.length, 2);
   });
 
-  test('getCodecClasses: nested type arguments', () {
-    final Root root = Root(apis: <Api>[
-      AstFlutterApi(name: 'Api', methods: <Method>[
-        Method(
-          name: 'foo',
-          location: ApiLocation.flutter,
-          parameters: <Parameter>[
-            Parameter(
-                name: 'x',
-                type: TypeDeclaration(
+  test('getEnumeratedTypes:ed type arguments', () {
+    final root = Root(
+      apis: <Api>[
+        AstFlutterApi(
+          name: 'Api',
+          methods: <Method>[
+            Method(
+              name: 'foo',
+              location: ApiLocation.flutter,
+              parameters: <Parameter>[
+                Parameter(
+                  name: 'x',
+                  type: TypeDeclaration(
                     isNullable: false,
                     baseName: 'List',
                     typeArguments: <TypeDeclaration>[
@@ -231,157 +113,164 @@ void main() {
                         baseName: 'Foo',
                         isNullable: true,
                         associatedClass: emptyClass,
-                      )
-                    ])),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              returnType: const TypeDeclaration.voidDeclaration(),
+            ),
           ],
-          returnType: const TypeDeclaration.voidDeclaration(),
-        )
-      ])
-    ], classes: <Class>[
-      Class(name: 'Foo', fields: <NamedType>[
-        NamedType(
-            name: 'bar',
-            type: TypeDeclaration(
-              baseName: 'Bar',
-              isNullable: true,
-              associatedClass: emptyClass,
-            )),
-      ]),
-      Class(name: 'Bar', fields: <NamedType>[
-        NamedType(
-            name: 'value',
-            type: const TypeDeclaration(
-              baseName: 'int',
-              isNullable: true,
-            ))
-      ])
-    ], enums: <Enum>[]);
-    final List<EnumeratedClass> classes =
-        getCodecClasses(root.apis[0], root).toList();
+        ),
+      ],
+      classes: <Class>[
+        Class(
+          name: 'Foo',
+          fields: <NamedType>[
+            NamedType(
+              name: 'bar',
+              type: TypeDeclaration(baseName: 'Bar', isNullable: true, associatedClass: emptyClass),
+            ),
+          ],
+        ),
+        Class(
+          name: 'Bar',
+          fields: <NamedType>[
+            NamedType(
+              name: 'value',
+              type: const TypeDeclaration(baseName: 'int', isNullable: true),
+            ),
+          ],
+        ),
+      ],
+      enums: <Enum>[],
+    );
+    final List<EnumeratedType> classes = getEnumeratedTypes(root).toList();
     expect(classes.length, 2);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Foo')
-            .length,
-        1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Bar')
-            .length,
-        1);
+    expect(classes.where((EnumeratedType element) => element.name == 'Foo').length, 1);
+    expect(classes.where((EnumeratedType element) => element.name == 'Bar').length, 1);
   });
 
-  test('getCodecClasses: with Object', () {
-    final Root root = Root(apis: <Api>[
-      AstFlutterApi(
-        name: 'Api1',
-        methods: <Method>[
-          Method(
-            name: 'foo',
-            location: ApiLocation.flutter,
-            parameters: <Parameter>[
-              Parameter(
+  test('getEnumeratedTypes: Object', () {
+    final root = Root(
+      apis: <Api>[
+        AstFlutterApi(
+          name: 'Api1',
+          methods: <Method>[
+            Method(
+              name: 'foo',
+              location: ApiLocation.flutter,
+              parameters: <Parameter>[
+                Parameter(
                   name: 'x',
                   type: const TypeDeclaration(
-                      isNullable: false,
-                      baseName: 'List',
-                      typeArguments: <TypeDeclaration>[
-                        TypeDeclaration(baseName: 'Object', isNullable: true)
-                      ])),
-            ],
-            returnType: const TypeDeclaration.voidDeclaration(),
-          )
-        ],
-      ),
-    ], classes: <Class>[
-      Class(name: 'Foo', fields: <NamedType>[
-        NamedType(
-            name: 'bar',
-            type: const TypeDeclaration(baseName: 'int', isNullable: true)),
-      ]),
-    ], enums: <Enum>[]);
-    final List<EnumeratedClass> classes =
-        getCodecClasses(root.apis[0], root).toList();
+                    isNullable: false,
+                    baseName: 'List',
+                    typeArguments: <TypeDeclaration>[
+                      TypeDeclaration(baseName: 'Object', isNullable: true),
+                    ],
+                  ),
+                ),
+              ],
+              returnType: const TypeDeclaration.voidDeclaration(),
+            ),
+          ],
+        ),
+      ],
+      classes: <Class>[
+        Class(
+          name: 'Foo',
+          fields: <NamedType>[
+            NamedType(
+              name: 'bar',
+              type: const TypeDeclaration(baseName: 'int', isNullable: true),
+            ),
+          ],
+        ),
+      ],
+      enums: <Enum>[],
+    );
+    final List<EnumeratedType> classes = getEnumeratedTypes(root).toList();
     expect(classes.length, 1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Foo')
-            .length,
-        1);
+    expect(classes.where((EnumeratedType element) => element.name == 'Foo').length, 1);
   });
 
-  test('getCodecClasses: unique entries', () {
-    final Root root = Root(apis: <Api>[
-      AstFlutterApi(
-        name: 'Api1',
-        methods: <Method>[
-          Method(
-            name: 'foo',
-            location: ApiLocation.flutter,
-            parameters: <Parameter>[
-              Parameter(
+  test('getEnumeratedTypes:ue entries', () {
+    final root = Root(
+      apis: <Api>[
+        AstFlutterApi(
+          name: 'Api1',
+          methods: <Method>[
+            Method(
+              name: 'foo',
+              location: ApiLocation.flutter,
+              parameters: <Parameter>[
+                Parameter(
                   name: 'x',
                   type: TypeDeclaration(
                     isNullable: false,
                     baseName: 'Foo',
                     associatedClass: emptyClass,
-                  )),
-            ],
-            returnType: const TypeDeclaration.voidDeclaration(),
-          )
-        ],
-      ),
-      AstHostApi(
-        name: 'Api2',
-        methods: <Method>[
-          Method(
-            name: 'foo',
-            location: ApiLocation.host,
-            parameters: <Parameter>[
-              Parameter(
+                  ),
+                ),
+              ],
+              returnType: const TypeDeclaration.voidDeclaration(),
+            ),
+          ],
+        ),
+        AstHostApi(
+          name: 'Api2',
+          methods: <Method>[
+            Method(
+              name: 'foo',
+              location: ApiLocation.host,
+              parameters: <Parameter>[
+                Parameter(
                   name: 'x',
                   type: TypeDeclaration(
                     isNullable: false,
                     baseName: 'Foo',
                     associatedClass: emptyClass,
-                  )),
-            ],
-            returnType: const TypeDeclaration.voidDeclaration(),
-          )
-        ],
-      )
-    ], classes: <Class>[
-      Class(name: 'Foo', fields: <NamedType>[
-        NamedType(
-            name: 'bar',
-            type: const TypeDeclaration(baseName: 'int', isNullable: true)),
-      ]),
-    ], enums: <Enum>[]);
-    final List<EnumeratedClass> classes =
-        getCodecClasses(root.apis[0], root).toList();
+                  ),
+                ),
+              ],
+              returnType: const TypeDeclaration.voidDeclaration(),
+            ),
+          ],
+        ),
+      ],
+      classes: <Class>[
+        Class(
+          name: 'Foo',
+          fields: <NamedType>[
+            NamedType(
+              name: 'bar',
+              type: const TypeDeclaration(baseName: 'int', isNullable: true),
+            ),
+          ],
+        ),
+      ],
+      enums: <Enum>[],
+    );
+    final List<EnumeratedType> classes = getEnumeratedTypes(root).toList();
     expect(classes.length, 1);
-    expect(
-        classes
-            .where((EnumeratedClass element) => element.name == 'Foo')
-            .length,
-        1);
+    expect(classes.where((EnumeratedType element) => element.name == 'Foo').length, 1);
   });
 
   test('deduces package name successfully', () {
-    final String? dartPackageName =
-        deducePackageName('./pigeons/core_tests.dart');
+    final String? dartPackageName = deducePackageName('./pigeons/core_tests.dart');
 
     expect(dartPackageName, 'pigeon');
   });
 
   test('recursiveGetSuperClassApisChain', () {
-    final AstProxyApi superClassOfSuperClassApi = AstProxyApi(
+    final superClassOfSuperClassApi = AstProxyApi(
       name: 'Api3',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
     );
-    final AstProxyApi superClassApi = AstProxyApi(
+    final superClassApi = AstProxyApi(
       name: 'Api2',
       methods: <Method>[],
       constructors: <Constructor>[],
@@ -392,7 +281,7 @@ void main() {
         associatedProxyApi: superClassOfSuperClassApi,
       ),
     );
-    final AstProxyApi api = AstProxyApi(
+    final api = AstProxyApi(
       name: 'Api',
       methods: <Method>[],
       constructors: <Constructor>[],
@@ -406,27 +295,24 @@ void main() {
 
     expect(
       api.allSuperClasses().toList(),
-      containsAllInOrder(<AstProxyApi>[
-        superClassApi,
-        superClassOfSuperClassApi,
-      ]),
+      containsAllInOrder(<AstProxyApi>[superClassApi, superClassOfSuperClassApi]),
     );
   });
 
   test('recursiveFindAllInterfacesApis', () {
-    final AstProxyApi interfaceOfInterfaceApi2 = AstProxyApi(
+    final interfaceOfInterfaceApi2 = AstProxyApi(
       name: 'Api5',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
     );
-    final AstProxyApi interfaceOfInterfaceApi = AstProxyApi(
+    final interfaceOfInterfaceApi = AstProxyApi(
       name: 'Api4',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
     );
-    final AstProxyApi interfaceApi2 = AstProxyApi(
+    final interfaceApi2 = AstProxyApi(
       name: 'Api3',
       methods: <Method>[],
       constructors: <Constructor>[],
@@ -439,7 +325,7 @@ void main() {
         ),
       },
     );
-    final AstProxyApi interfaceApi = AstProxyApi(
+    final interfaceApi = AstProxyApi(
       name: 'Api2',
       methods: <Method>[],
       constructors: <Constructor>[],
@@ -457,22 +343,14 @@ void main() {
         ),
       },
     );
-    final AstProxyApi api = AstProxyApi(
+    final api = AstProxyApi(
       name: 'Api',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
       interfaces: <TypeDeclaration>{
-        TypeDeclaration(
-          baseName: 'Api2',
-          isNullable: false,
-          associatedProxyApi: interfaceApi,
-        ),
-        TypeDeclaration(
-          baseName: 'Api3',
-          isNullable: false,
-          associatedProxyApi: interfaceApi2,
-        ),
+        TypeDeclaration(baseName: 'Api2', isNullable: false, associatedProxyApi: interfaceApi),
+        TypeDeclaration(baseName: 'Api3', isNullable: false, associatedProxyApi: interfaceApi2),
       },
     );
 
@@ -487,22 +365,20 @@ void main() {
     );
   });
 
-  test(
-      'recursiveFindAllInterfacesApis throws error if api recursively implements itself',
-      () {
-    final AstProxyApi a = AstProxyApi(
+  test('recursiveFindAllInterfacesApis throws error if api recursively implements itself', () {
+    final a = AstProxyApi(
       name: 'A',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
     );
-    final AstProxyApi b = AstProxyApi(
+    final b = AstProxyApi(
       name: 'B',
       methods: <Method>[],
       constructors: <Constructor>[],
       fields: <ApiField>[],
     );
-    final AstProxyApi c = AstProxyApi(
+    final c = AstProxyApi(
       name: 'C',
       methods: <Method>[],
       constructors: <Constructor>[],
@@ -520,5 +396,299 @@ void main() {
     };
 
     expect(() => a.apisOfInterfaces(), throwsArgumentError);
+  });
+
+  test('findHighestApiRequirement', () {
+    final typeWithoutMinApi = TypeDeclaration(
+      baseName: 'TypeWithoutMinApi',
+      isNullable: false,
+      associatedProxyApi: AstProxyApi(
+        name: 'TypeWithoutMinApi',
+        methods: <Method>[],
+        constructors: <Constructor>[],
+        fields: <ApiField>[],
+      ),
+    );
+
+    final typeWithMinApi = TypeDeclaration(
+      baseName: 'TypeWithMinApi',
+      isNullable: false,
+      associatedProxyApi: AstProxyApi(
+        name: 'TypeWithMinApi',
+        methods: <Method>[],
+        constructors: <Constructor>[],
+        fields: <ApiField>[],
+      ),
+    );
+
+    final typeWithHighestMinApi = TypeDeclaration(
+      baseName: 'TypeWithHighestMinApi',
+      isNullable: false,
+      associatedProxyApi: AstProxyApi(
+        name: 'TypeWithHighestMinApi',
+        methods: <Method>[],
+        constructors: <Constructor>[],
+        fields: <ApiField>[],
+      ),
+    );
+
+    final ({TypeDeclaration type, int version})? result = findHighestApiRequirement(
+      <TypeDeclaration>[typeWithoutMinApi, typeWithMinApi, typeWithHighestMinApi],
+      onGetApiRequirement: (TypeDeclaration type) {
+        if (type == typeWithMinApi) {
+          return 1;
+        } else if (type == typeWithHighestMinApi) {
+          return 2;
+        }
+
+        return null;
+      },
+      onCompare: (int one, int two) => one.compareTo(two),
+    );
+
+    expect(result?.type, typeWithHighestMinApi);
+    expect(result?.version, 2);
+  });
+
+  test('Indent.format trims indentation', () {
+    final indent = Indent();
+
+    indent.format('''
+      void myMethod() {
+
+        print('hello');
+      }''');
+
+    expect(indent.toString(), '''
+void myMethod() {
+
+  print('hello');
+}
+''');
+  });
+
+  group('compareTypeDeclarationGenericness', () {
+    const object = TypeDeclaration(baseName: 'Object', isNullable: false);
+    const nullableObject = TypeDeclaration(baseName: 'Object', isNullable: true);
+    const listObject = TypeDeclaration(
+      baseName: 'List',
+      isNullable: false,
+      typeArguments: <TypeDeclaration>[object],
+    );
+    const untypedList = TypeDeclaration(baseName: 'List', isNullable: false);
+
+    const string = TypeDeclaration(baseName: 'String', isNullable: false);
+    const listString = TypeDeclaration(
+      baseName: 'List',
+      isNullable: false,
+      typeArguments: <TypeDeclaration>[string],
+    );
+    const mapObjectObject = TypeDeclaration(
+      baseName: 'Map',
+      isNullable: false,
+      typeArguments: <TypeDeclaration>[object, object],
+    );
+    const untypedMap = TypeDeclaration(baseName: 'Map', isNullable: false);
+
+    const listListObject = TypeDeclaration(
+      baseName: 'List',
+      isNullable: false,
+      typeArguments: <TypeDeclaration>[listObject],
+    );
+
+    const listListNullableObject = TypeDeclaration(
+      baseName: 'List',
+      isNullable: false,
+      typeArguments: <TypeDeclaration>[
+        TypeDeclaration(
+          baseName: 'List',
+          isNullable: false,
+          typeArguments: <TypeDeclaration>[nullableObject],
+        ),
+      ],
+    );
+
+    test('Object? is more generic than List<Object>', () {
+      expect(compareTypeDeclarationGenericness(nullableObject, listObject), 1);
+    });
+
+    test('Object is less generic than Object?', () {
+      expect(compareTypeDeclarationGenericness(object, nullableObject), -1);
+    });
+
+    test('Untyped List defaults to List<Object?> which is more generic than List<Object>', () {
+      expect(compareTypeDeclarationGenericness(untypedList, listObject), 1);
+    });
+
+    test('List<Object> is more generic than List<String>', () {
+      expect(compareTypeDeclarationGenericness(listObject, listString), 1);
+    });
+
+    test('Map<Object, Object> is more generic than List<Object>', () {
+      expect(compareTypeDeclarationGenericness(mapObjectObject, listObject), 1);
+    });
+
+    test(
+      'Untyped Map defaults to Map<Object?, Object?> which is more generic than Map<Object, Object>',
+      () {
+        expect(compareTypeDeclarationGenericness(untypedMap, mapObjectObject), 1);
+      },
+    );
+
+    test('List<List<Object?>> is more generic than List<List<Object>>', () {
+      expect(compareTypeDeclarationGenericness(listListNullableObject, listListObject), 1);
+    });
+  });
+
+  group('isPrimitiveType', () {
+    test('returns true for int, double, bool', () {
+      expect(isPrimitiveType(const TypeDeclaration(baseName: 'int', isNullable: false)), isTrue);
+      expect(isPrimitiveType(const TypeDeclaration(baseName: 'double', isNullable: false)), isTrue);
+      expect(isPrimitiveType(const TypeDeclaration(baseName: 'bool', isNullable: false)), isTrue);
+    });
+
+    test('returns false for other types', () {
+      expect(
+        isPrimitiveType(const TypeDeclaration(baseName: 'String', isNullable: false)),
+        isFalse,
+      );
+      expect(isPrimitiveType(const TypeDeclaration(baseName: 'List', isNullable: false)), isFalse);
+      expect(
+        isPrimitiveType(const TypeDeclaration(baseName: 'Object', isNullable: false)),
+        isFalse,
+      );
+    });
+  });
+
+  group('symbols', () {
+    test('getNullabilitySymbol', () {
+      expect(getNullabilitySymbol(true), '?');
+      expect(getNullabilitySymbol(false), '');
+    });
+
+    test('getForceNonNullSymbol', () {
+      expect(getForceNonNullSymbol(true), '!');
+      expect(getForceNonNullSymbol(false), '');
+    });
+  });
+
+  group('compareTypeDeclarationGenericness', () {
+    test('non-nullable is more specific than nullable', () {
+      const nonNullInt = TypeDeclaration(baseName: 'int', isNullable: false);
+      const nullInt = TypeDeclaration(baseName: 'int', isNullable: true);
+      expect(compareTypeDeclarationGenericness(nonNullInt, nullInt), lessThan(0));
+      expect(compareTypeDeclarationGenericness(nullInt, nonNullInt), greaterThan(0));
+      expect(compareTypeDeclarationGenericness(nonNullInt, nonNullInt), equals(0));
+    });
+
+    test('specific type is more specific than Object', () {
+      const intType = TypeDeclaration(baseName: 'int', isNullable: false);
+      const objectType = TypeDeclaration(baseName: 'Object', isNullable: true);
+      expect(compareTypeDeclarationGenericness(intType, objectType), lessThan(0));
+    });
+
+    test('typed list is more specific than untyped list', () {
+      const typedList = TypeDeclaration(
+        baseName: 'List',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'int', isNullable: false)],
+      );
+      const untypedList = TypeDeclaration(baseName: 'List', isNullable: false);
+      expect(compareTypeDeclarationGenericness(typedList, untypedList), lessThan(0));
+    });
+
+    test('typed map is more specific than untyped map', () {
+      const typedMap = TypeDeclaration(
+        baseName: 'Map',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[
+          TypeDeclaration(baseName: 'String', isNullable: false),
+          TypeDeclaration(baseName: 'int', isNullable: false),
+        ],
+      );
+      const untypedMap = TypeDeclaration(baseName: 'Map', isNullable: false);
+      expect(compareTypeDeclarationGenericness(typedMap, untypedMap), lessThan(0));
+    });
+
+    test('nested generics are ordered correctly', () {
+      const nestedTypedList = TypeDeclaration(
+        baseName: 'List',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[
+          TypeDeclaration(
+            baseName: 'List',
+            isNullable: false,
+            typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'int', isNullable: false)],
+          ),
+        ],
+      );
+      const nestedObjectList = TypeDeclaration(
+        baseName: 'List',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[
+          TypeDeclaration(
+            baseName: 'List',
+            isNullable: false,
+            typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'Object', isNullable: true)],
+          ),
+        ],
+      );
+      const nestedUntypedList = TypeDeclaration(
+        baseName: 'List',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'List', isNullable: false)],
+      );
+      expect(compareTypeDeclarationGenericness(nestedTypedList, nestedObjectList), lessThan(0));
+      expect(compareTypeDeclarationGenericness(nestedTypedList, nestedUntypedList), lessThan(0));
+
+      const nestedTypedMap = TypeDeclaration(
+        baseName: 'Map',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[
+          TypeDeclaration(baseName: 'String', isNullable: false),
+          TypeDeclaration(
+            baseName: 'List',
+            isNullable: false,
+            typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'int', isNullable: false)],
+          ),
+        ],
+      );
+      const nestedObjectMap = TypeDeclaration(
+        baseName: 'Map',
+        isNullable: false,
+        typeArguments: <TypeDeclaration>[
+          TypeDeclaration(baseName: 'String', isNullable: false),
+          TypeDeclaration(
+            baseName: 'List',
+            isNullable: false,
+            typeArguments: <TypeDeclaration>[TypeDeclaration(baseName: 'Object', isNullable: true)],
+          ),
+        ],
+      );
+      expect(compareTypeDeclarationGenericness(nestedTypedMap, nestedObjectMap), lessThan(0));
+    });
+  });
+
+  group('makeRelative', () {
+    test('computes relative path correctly from root', () {
+      expect(makeRelative('lib/src/messages.g.dart', '.'), equals('lib/src/messages.g.dart'));
+    });
+
+    test('computes relative path correctly with empty fromPath', () {
+      expect(makeRelative('lib/src/messages.g.dart', ''), equals('lib/src/messages.g.dart'));
+    });
+
+    test('computes relative path across directories', () {
+      expect(
+        makeRelative('lib/src/messages.g.dart', 'tool/pigeon'),
+        equals('../../lib/src/messages.g.dart'),
+      );
+    });
+  });
+  test('deduceClassNameComponent extracts class name component', () {
+    expect(deduceClassNameComponent('ios/Classes/messages.g.swift'), 'messages');
+    expect(deduceClassNameComponent('Foo.swift'), 'Foo');
+    expect(deduceClassNameComponent(''), '');
+    expect(deduceClassNameComponent(null), '');
   });
 }

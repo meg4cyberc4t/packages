@@ -1,3 +1,34 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 1.2.3
+
+* Fixes `pickMultiImage(limit: 1)` and `pickMultipleMedia(limit: 1)` throwing an `ArgumentError` by delegating to
+  single-item pickers when `limit` is exactly 1, since the platform interface requires `limit >= 2` for multi-selection.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 1.2.2
+
+* Clarifies that `maxDuration` only applies to video recording and not gallery selection.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+
+
+## 1.2.1
+
+* Fixes README description of plugin suggesting that only Android and iOS is supported.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+* Updates README to reflect that only Android API 24+ is supported.
+
+## 1.2.0
+
+* Adds `pickMultiVideo` to allow selecting multiple videos from the gallery.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
 ## 1.1.2
 
 * Adds comment for the limit parameter.
@@ -110,7 +141,6 @@
 ## 0.8.6+2
 
 * Updates `NSPhotoLibraryUsageDescription` description in README.
-
 * Updates minimum Flutter version to 3.0.
 
 ## 0.8.6+1

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,14 +24,13 @@ class SKTransactionStatusConverter
       return SKPaymentTransactionStateWrapper.unspecified;
     }
     return $enumDecode<SKPaymentTransactionStateWrapper, dynamic>(
-        _$SKPaymentTransactionStateWrapperEnumMap
-            .cast<SKPaymentTransactionStateWrapper, dynamic>(),
-        json);
+      _$SKPaymentTransactionStateWrapperEnumMap.cast<SKPaymentTransactionStateWrapper, dynamic>(),
+      json,
+    );
   }
 
   /// Converts an [SKPaymentTransactionStateWrapper] to a [PurchaseStatus].
-  PurchaseStatus toPurchaseStatus(
-      SKPaymentTransactionStateWrapper object, SKError? error) {
+  PurchaseStatus toPurchaseStatus(SKPaymentTransactionStateWrapper object, SKError? error) {
     switch (object) {
       case SKPaymentTransactionStateWrapper.purchasing:
       case SKPaymentTransactionStateWrapper.deferred:
@@ -63,8 +62,7 @@ class SKTransactionStatusConverter
 ///
 /// Use these in `@JsonSerializable()` classes by annotating them with
 /// `@SKSubscriptionPeriodUnitConverter()`.
-class SKSubscriptionPeriodUnitConverter
-    implements JsonConverter<SKSubscriptionPeriodUnit, int?> {
+class SKSubscriptionPeriodUnitConverter implements JsonConverter<SKSubscriptionPeriodUnit, int?> {
   /// Default const constructor.
   const SKSubscriptionPeriodUnitConverter();
 
@@ -74,14 +72,13 @@ class SKSubscriptionPeriodUnitConverter
       return SKSubscriptionPeriodUnit.day;
     }
     return $enumDecode<SKSubscriptionPeriodUnit, dynamic>(
-        _$SKSubscriptionPeriodUnitEnumMap
-            .cast<SKSubscriptionPeriodUnit, dynamic>(),
-        json);
+      _$SKSubscriptionPeriodUnitEnumMap.cast<SKSubscriptionPeriodUnit, dynamic>(),
+      json,
+    );
   }
 
   @override
-  int toJson(SKSubscriptionPeriodUnit object) =>
-      _$SKSubscriptionPeriodUnitEnumMap[object]!;
+  int toJson(SKSubscriptionPeriodUnit object) => _$SKSubscriptionPeriodUnitEnumMap[object]!;
 }
 
 /// Serializer for [SKProductDiscountPaymentMode].
@@ -99,14 +96,13 @@ class SKProductDiscountPaymentModeConverter
       return SKProductDiscountPaymentMode.payAsYouGo;
     }
     return $enumDecode<SKProductDiscountPaymentMode, dynamic>(
-        _$SKProductDiscountPaymentModeEnumMap
-            .cast<SKProductDiscountPaymentMode, dynamic>(),
-        json);
+      _$SKProductDiscountPaymentModeEnumMap.cast<SKProductDiscountPaymentMode, dynamic>(),
+      json,
+    );
   }
 
   @override
-  int toJson(SKProductDiscountPaymentMode object) =>
-      _$SKProductDiscountPaymentModeEnumMap[object]!;
+  int toJson(SKProductDiscountPaymentMode object) => _$SKProductDiscountPaymentModeEnumMap[object]!;
 }
 
 // Define a class so we generate serializer helper methods for the enums
@@ -116,14 +112,14 @@ class _SerializedEnums {
   late SKPaymentTransactionStateWrapper response;
   late SKSubscriptionPeriodUnit unit;
   late SKProductDiscountPaymentMode discountPaymentMode;
+  late SKProductDiscountType discountType;
 }
 
 /// Serializer for [SKProductDiscountType].
 ///
 /// Use these in `@JsonSerializable()` classes by annotating them with
 /// `@SKProductDiscountTypeConverter()`.
-class SKProductDiscountTypeConverter
-    implements JsonConverter<SKProductDiscountType, int?> {
+class SKProductDiscountTypeConverter implements JsonConverter<SKProductDiscountType, int?> {
   /// Default const constructor.
   const SKProductDiscountTypeConverter();
 
@@ -133,11 +129,11 @@ class SKProductDiscountTypeConverter
       return SKProductDiscountType.introductory;
     }
     return $enumDecode<SKProductDiscountType, dynamic>(
-        _$SKProductDiscountTypeEnumMap.cast<SKProductDiscountType, dynamic>(),
-        json);
+      _$SKProductDiscountTypeEnumMap.cast<SKProductDiscountType, dynamic>(),
+      json,
+    );
   }
 
   @override
-  int toJson(SKProductDiscountType object) =>
-      _$SKProductDiscountTypeEnumMap[object]!;
+  int toJson(SKProductDiscountType object) => _$SKProductDiscountTypeEnumMap[object]!;
 }

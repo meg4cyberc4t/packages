@@ -1,11 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// This sample app demonstrates how to provide a codec for complex extra data.
 void main() => runApp(const MyApp());
@@ -13,11 +13,7 @@ void main() => runApp(const MyApp());
 /// The router configuration.
 final GoRouter _router = GoRouter(
   routes: <RouteBase>[
-    GoRoute(
-      path: '/',
-      builder: (BuildContext context, GoRouterState state) =>
-          const HomeScreen(),
-    ),
+    GoRoute(path: '/', builder: (BuildContext context, GoRouterState state) => const HomeScreen()),
   ],
   extraCodec: const MyExtraCodec(),
 );
@@ -29,9 +25,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: _router,
-    );
+    return MaterialApp.router(routerConfig: _router);
   }
 }
 
@@ -49,9 +43,9 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-                "If running in web, use the browser's backward and forward button to test extra codec after setting extra several times."),
-            Text(
-                'The extra for this page is: ${GoRouterState.of(context).extra}'),
+              "If running in web, use the browser's backward and forward button to test extra codec after setting extra several times.",
+            ),
+            Text('The extra for this page is: ${GoRouterState.of(context).extra}'),
             ElevatedButton(
               onPressed: () => context.go('/', extra: ComplexData1('data')),
               child: const Text('Set extra to ComplexData1'),
@@ -109,7 +103,7 @@ class _MyExtraDecoder extends Converter<Object?, Object?> {
     if (input == null) {
       return null;
     }
-    final List<Object?> inputAsList = input as List<Object?>;
+    final inputAsList = input as List<Object?>;
     if (inputAsList[0] == 'ComplexData1') {
       return ComplexData1(inputAsList[1]! as String);
     }

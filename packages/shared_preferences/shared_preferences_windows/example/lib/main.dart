@@ -1,12 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // ignore_for_file: public_member_api_docs
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:shared_preferences_windows/shared_preferences_windows.dart';
 
 void main() {
@@ -18,10 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'SharedPreferences Demo',
-      home: SharedPreferencesDemo(),
-    );
+    return const MaterialApp(title: 'SharedPreferences Demo', home: SharedPreferencesDemo());
   }
 }
 
@@ -33,16 +29,26 @@ class SharedPreferencesDemo extends StatefulWidget {
 }
 
 class SharedPreferencesDemoState extends State<SharedPreferencesDemo> {
-  final SharedPreferencesWindows prefs = SharedPreferencesWindows();
+  final SharedPreferencesAsyncPlatform? _prefs = SharedPreferencesAsyncPlatform.instance;
+  final SharedPreferencesWindowsOptions options = const SharedPreferencesWindowsOptions();
+  static const String _counterKey = 'counter';
   late Future<int> _counter;
 
   Future<void> _incrementCounter() async {
-    final Map<String, Object> values = await prefs.getAll();
-    final int counter = (values['counter'] as int? ?? 0) + 1;
+    final int? value = await _prefs!.getInt(_counterKey, options);
+    final int counter = (value ?? 0) + 1;
 
     setState(() {
-      _counter = prefs.setValue('Int', 'counter', counter).then((bool success) {
+      _counter = _prefs.setInt(_counterKey, counter, options).then((_) {
         return counter;
+      });
+    });
+  }
+
+  Future<void> _getAndSetCounter() async {
+    setState(() {
+      _counter = _prefs!.getInt(_counterKey, options).then((int? counter) {
+        return counter ?? 0;
       });
     });
   }
@@ -50,37 +56,35 @@ class SharedPreferencesDemoState extends State<SharedPreferencesDemo> {
   @override
   void initState() {
     super.initState();
-    _counter = prefs.getAll().then((Map<String, Object> values) {
-      return values['counter'] as int? ?? 0;
-    });
+    _getAndSetCounter();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SharedPreferences Demo'),
-      ),
+      appBar: AppBar(title: const Text('SharedPreferences Demo')),
       body: Center(
-          child: FutureBuilder<int>(
-              future: _counter,
-              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                  case ConnectionState.waiting:
-                    return const CircularProgressIndicator();
-                  case ConnectionState.active:
-                  case ConnectionState.done:
-                    if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Text(
-                        'Button tapped ${snapshot.data} time${snapshot.data == 1 ? '' : 's'}.\n\n'
-                        'This should persist across restarts.',
-                      );
-                    }
+        child: FutureBuilder<int>(
+          future: _counter,
+          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return const CircularProgressIndicator();
+              case ConnectionState.active:
+              case ConnectionState.done:
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Text(
+                    'Button tapped ${snapshot.data} time${snapshot.data == 1 ? '' : 's'}.\n\n'
+                    'This should persist across restarts.',
+                  );
                 }
-              })),
+            }
+          },
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',

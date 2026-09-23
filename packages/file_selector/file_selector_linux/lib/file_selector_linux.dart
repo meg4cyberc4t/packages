@@ -1,33 +1,19 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
-import 'package:flutter/services.dart';
 
-const MethodChannel _channel =
-    MethodChannel('plugins.flutter.dev/file_selector_linux');
-
-const String _typeGroupLabelKey = 'label';
-const String _typeGroupExtensionsKey = 'extensions';
-const String _typeGroupMimeTypesKey = 'mimeTypes';
-
-const String _openFileMethod = 'openFile';
-const String _getSavePathMethod = 'getSavePath';
-const String _getDirectoryPathMethod = 'getDirectoryPath';
-
-const String _acceptedTypeGroupsKey = 'acceptedTypeGroups';
-const String _confirmButtonTextKey = 'confirmButtonText';
-const String _initialDirectoryKey = 'initialDirectory';
-const String _multipleKey = 'multiple';
-const String _suggestedNameKey = 'suggestedName';
+import 'src/messages.g.dart';
 
 /// An implementation of [FileSelectorPlatform] for Linux.
 class FileSelectorLinux extends FileSelectorPlatform {
-  /// The MethodChannel that is being used by this implementation of the plugin.
-  @visibleForTesting
-  MethodChannel get channel => _channel;
+  /// Creates a new plugin implementation instance.
+  FileSelectorLinux({@visibleForTesting FileSelectorApi? api})
+    : _hostApi = api ?? FileSelectorApi();
+
+  final FileSelectorApi _hostApi;
 
   /// Registers the Linux implementation.
   static void registerWith() {
@@ -40,19 +26,16 @@ class FileSelectorLinux extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<Map<String, Object>> serializedTypeGroups =
-        _serializeTypeGroups(acceptedTypeGroups);
-    final List<String>? path = await _channel.invokeListMethod<String>(
-      _openFileMethod,
-      <String, dynamic>{
-        if (serializedTypeGroups.isNotEmpty)
-          _acceptedTypeGroupsKey: serializedTypeGroups,
-        'initialDirectory': initialDirectory,
-        _confirmButtonTextKey: confirmButtonText,
-        _multipleKey: false,
-      },
+    final List<String> paths = await _hostApi.showFileChooser(
+      PlatformFileChooserActionType.open,
+      PlatformFileChooserOptions(
+        allowedFileTypes: _platformTypeGroupsFromXTypeGroups(acceptedTypeGroups),
+        currentFolderPath: initialDirectory,
+        acceptButtonLabel: confirmButtonText,
+        selectMultiple: false,
+      ),
     );
-    return path == null ? null : XFile(path.first);
+    return paths.isEmpty ? null : XFile(paths.first);
   }
 
   @override
@@ -61,19 +44,16 @@ class FileSelectorLinux extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<Map<String, Object>> serializedTypeGroups =
-        _serializeTypeGroups(acceptedTypeGroups);
-    final List<String>? pathList = await _channel.invokeListMethod<String>(
-      _openFileMethod,
-      <String, dynamic>{
-        if (serializedTypeGroups.isNotEmpty)
-          _acceptedTypeGroupsKey: serializedTypeGroups,
-        _initialDirectoryKey: initialDirectory,
-        _confirmButtonTextKey: confirmButtonText,
-        _multipleKey: true,
-      },
+    final List<String> paths = await _hostApi.showFileChooser(
+      PlatformFileChooserActionType.open,
+      PlatformFileChooserOptions(
+        allowedFileTypes: _platformTypeGroupsFromXTypeGroups(acceptedTypeGroups),
+        currentFolderPath: initialDirectory,
+        acceptButtonLabel: confirmButtonText,
+        selectMultiple: true,
+      ),
     );
-    return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];
+    return paths.map((String path) => XFile(path)).toList();
   }
 
   @override
@@ -84,12 +64,13 @@ class FileSelectorLinux extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final FileSaveLocation? location = await getSaveLocation(
-        acceptedTypeGroups: acceptedTypeGroups,
-        options: SaveDialogOptions(
-          initialDirectory: initialDirectory,
-          suggestedName: suggestedName,
-          confirmButtonText: confirmButtonText,
-        ));
+      acceptedTypeGroups: acceptedTypeGroups,
+      options: SaveDialogOptions(
+        initialDirectory: initialDirectory,
+        suggestedName: suggestedName,
+        confirmButtonText: confirmButtonText,
+      ),
+    );
     return location?.path;
   }
 
@@ -98,34 +79,40 @@ class FileSelectorLinux extends FileSelectorPlatform {
     List<XTypeGroup>? acceptedTypeGroups,
     SaveDialogOptions options = const SaveDialogOptions(),
   }) async {
-    final List<Map<String, Object>> serializedTypeGroups =
-        _serializeTypeGroups(acceptedTypeGroups);
     // TODO(stuartmorgan): Add the selected type group here and return it. See
     // https://github.com/flutter/flutter/issues/107093
-    final String? path = await _channel.invokeMethod<String>(
-      _getSavePathMethod,
-      <String, dynamic>{
-        if (serializedTypeGroups.isNotEmpty)
-          _acceptedTypeGroupsKey: serializedTypeGroups,
-        _initialDirectoryKey: options.initialDirectory,
-        _suggestedNameKey: options.suggestedName,
-        _confirmButtonTextKey: options.confirmButtonText,
-      },
+    final List<String> paths = await _hostApi.showFileChooser(
+      PlatformFileChooserActionType.save,
+      PlatformFileChooserOptions(
+        allowedFileTypes: _platformTypeGroupsFromXTypeGroups(acceptedTypeGroups),
+        currentFolderPath: options.initialDirectory,
+        currentName: options.suggestedName,
+        acceptButtonLabel: options.confirmButtonText,
+        createFolders: options.canCreateDirectories,
+      ),
     );
-    return path == null ? null : FileSaveLocation(path);
+    return paths.isEmpty ? null : FileSaveLocation(paths.first);
   }
 
   @override
-  Future<String?> getDirectoryPath({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) async {
-    final List<String>? path = await _channel
-        .invokeListMethod<String>(_getDirectoryPathMethod, <String, dynamic>{
-      _initialDirectoryKey: initialDirectory,
-      _confirmButtonTextKey: confirmButtonText,
-    });
-    return path?.first;
+  Future<String?> getDirectoryPath({String? initialDirectory, String? confirmButtonText}) async {
+    return getDirectoryPathWithOptions(
+      FileDialogOptions(initialDirectory: initialDirectory, confirmButtonText: confirmButtonText),
+    );
+  }
+
+  @override
+  Future<String?> getDirectoryPathWithOptions(FileDialogOptions options) async {
+    final List<String> paths = await _hostApi.showFileChooser(
+      PlatformFileChooserActionType.chooseDirectory,
+      PlatformFileChooserOptions(
+        currentFolderPath: options.initialDirectory,
+        acceptButtonLabel: options.confirmButtonText,
+        createFolders: options.canCreateDirectories,
+        selectMultiple: false,
+      ),
+    );
+    return paths.isEmpty ? null : paths.first;
   }
 
   @override
@@ -133,43 +120,46 @@ class FileSelectorLinux extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String>? pathList = await _channel
-        .invokeListMethod<String>(_getDirectoryPathMethod, <String, dynamic>{
-      _initialDirectoryKey: initialDirectory,
-      _confirmButtonTextKey: confirmButtonText,
-      _multipleKey: true,
-    });
-    return pathList ?? <String>[];
+    return getDirectoryPathsWithOptions(
+      FileDialogOptions(initialDirectory: initialDirectory, confirmButtonText: confirmButtonText),
+    );
+  }
+
+  @override
+  Future<List<String>> getDirectoryPathsWithOptions(FileDialogOptions options) async {
+    return _hostApi.showFileChooser(
+      PlatformFileChooserActionType.chooseDirectory,
+      PlatformFileChooserOptions(
+        currentFolderPath: options.initialDirectory,
+        acceptButtonLabel: options.confirmButtonText,
+        createFolders: options.canCreateDirectories,
+        selectMultiple: true,
+      ),
+    );
   }
 }
 
-List<Map<String, Object>> _serializeTypeGroups(List<XTypeGroup>? groups) {
-  return (groups ?? <XTypeGroup>[]).map(_serializeTypeGroup).toList();
+List<PlatformTypeGroup>? _platformTypeGroupsFromXTypeGroups(List<XTypeGroup>? groups) {
+  return groups?.map(_platformTypeGroupFromXTypeGroup).toList();
 }
 
-Map<String, Object> _serializeTypeGroup(XTypeGroup group) {
-  final Map<String, Object> serialization = <String, Object>{
-    _typeGroupLabelKey: group.label ?? '',
-  };
+PlatformTypeGroup _platformTypeGroupFromXTypeGroup(XTypeGroup group) {
+  final String label = group.label ?? '';
   if (group.allowsAny) {
-    serialization[_typeGroupExtensionsKey] = <String>['*'];
-  } else {
-    if ((group.extensions?.isEmpty ?? true) &&
-        (group.mimeTypes?.isEmpty ?? true)) {
-      throw ArgumentError('Provided type group $group does not allow '
-          'all files, but does not set any of the Linux-supported filter '
-          'categories. "extensions" or "mimeTypes" must be non-empty for Linux '
-          'if anything is non-empty.');
-    }
-    if (group.extensions?.isNotEmpty ?? false) {
-      serialization[_typeGroupExtensionsKey] = group.extensions
-              ?.map((String extension) => '*.$extension')
-              .toList() ??
-          <String>[];
-    }
-    if (group.mimeTypes?.isNotEmpty ?? false) {
-      serialization[_typeGroupMimeTypesKey] = group.mimeTypes ?? <String>[];
-    }
+    return PlatformTypeGroup(label: label, extensions: <String>['*']);
   }
-  return serialization;
+  if ((group.extensions?.isEmpty ?? true) && (group.mimeTypes?.isEmpty ?? true)) {
+    throw ArgumentError(
+      'Provided type group $group does not allow '
+      'all files, but does not set any of the Linux-supported filter '
+      'categories. "extensions" or "mimeTypes" must be non-empty for Linux '
+      'if anything is non-empty.',
+    );
+  }
+  return PlatformTypeGroup(
+    label: label,
+    // Covert to GtkFileFilter's *.<extension> format.
+    extensions: group.extensions?.map((String extension) => '*.$extension').toList() ?? <String>[],
+    mimeTypes: group.mimeTypes ?? <String>[],
+  );
 }

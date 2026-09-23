@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,7 @@ abstract class CameraEvent {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CameraEvent &&
-          runtimeType == other.runtimeType &&
-          cameraId == other.cameraId;
+      other is CameraEvent && runtimeType == other.runtimeType && cameraId == other.cameraId;
 
   @override
   int get hashCode => cameraId.hashCode;
@@ -63,14 +61,13 @@ class CameraInitializedEvent extends CameraEvent {
   /// Converts the supplied [Map] to an instance of the [CameraInitializedEvent]
   /// class.
   CameraInitializedEvent.fromJson(Map<String, dynamic> json)
-      : previewWidth = json['previewWidth']! as double,
-        previewHeight = json['previewHeight']! as double,
-        exposureMode = deserializeExposureMode(json['exposureMode']! as String),
-        exposurePointSupported =
-            (json['exposurePointSupported'] as bool?) ?? false,
-        focusMode = deserializeFocusMode(json['focusMode']! as String),
-        focusPointSupported = (json['focusPointSupported'] as bool?) ?? false,
-        super(json['cameraId']! as int);
+    : previewWidth = json['previewWidth']! as double,
+      previewHeight = json['previewHeight']! as double,
+      exposureMode = deserializeExposureMode(json['exposureMode']! as String),
+      exposurePointSupported = (json['exposurePointSupported'] as bool?) ?? false,
+      focusMode = deserializeFocusMode(json['focusMode']! as String),
+      focusPointSupported = (json['focusPointSupported'] as bool?) ?? false,
+      super(json['cameraId']! as int);
 
   /// The width of the preview in pixels.
   final double previewWidth;
@@ -93,14 +90,14 @@ class CameraInitializedEvent extends CameraEvent {
   /// Converts the [CameraInitializedEvent] instance into a [Map] instance that
   /// can be serialized to JSON.
   Map<String, dynamic> toJson() => <String, Object>{
-        'cameraId': cameraId,
-        'previewWidth': previewWidth,
-        'previewHeight': previewHeight,
-        'exposureMode': serializeExposureMode(exposureMode),
-        'exposurePointSupported': exposurePointSupported,
-        'focusMode': serializeFocusMode(focusMode),
-        'focusPointSupported': focusPointSupported,
-      };
+    'cameraId': cameraId,
+    'previewWidth': previewWidth,
+    'previewHeight': previewHeight,
+    'exposureMode': serializeExposureMode(exposureMode),
+    'exposurePointSupported': exposurePointSupported,
+    'focusMode': serializeFocusMode(focusMode),
+    'focusPointSupported': focusPointSupported,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -117,14 +114,14 @@ class CameraInitializedEvent extends CameraEvent {
 
   @override
   int get hashCode => Object.hash(
-        super.hashCode,
-        previewWidth,
-        previewHeight,
-        exposureMode,
-        exposurePointSupported,
-        focusMode,
-        focusPointSupported,
-      );
+    super.hashCode,
+    previewWidth,
+    previewHeight,
+    exposureMode,
+    exposurePointSupported,
+    focusMode,
+    focusPointSupported,
+  );
 }
 
 /// An event fired when the resolution preset of the camera has changed.
@@ -134,18 +131,14 @@ class CameraResolutionChangedEvent extends CameraEvent {
   ///
   /// The `captureWidth` represents the width of the resulting image in pixels.
   /// The `captureHeight` represents the height of the resulting image in pixels.
-  const CameraResolutionChangedEvent(
-    super.cameraId,
-    this.captureWidth,
-    this.captureHeight,
-  );
+  const CameraResolutionChangedEvent(super.cameraId, this.captureWidth, this.captureHeight);
 
   /// Converts the supplied [Map] to an instance of the
   /// [CameraResolutionChangedEvent] class.
   CameraResolutionChangedEvent.fromJson(Map<String, dynamic> json)
-      : captureWidth = json['captureWidth']! as double,
-        captureHeight = json['captureHeight']! as double,
-        super(json['cameraId']! as int);
+    : captureWidth = json['captureWidth']! as double,
+      captureHeight = json['captureHeight']! as double,
+      super(json['cameraId']! as int);
 
   /// The capture width in pixels.
   final double captureWidth;
@@ -156,10 +149,10 @@ class CameraResolutionChangedEvent extends CameraEvent {
   /// Converts the [CameraResolutionChangedEvent] instance into a [Map] instance
   /// that can be serialized to JSON.
   Map<String, dynamic> toJson() => <String, Object>{
-        'cameraId': cameraId,
-        'captureWidth': captureWidth,
-        'captureHeight': captureHeight,
-      };
+    'cameraId': cameraId,
+    'captureWidth': captureWidth,
+    'captureHeight': captureHeight,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -182,21 +175,16 @@ class CameraClosingEvent extends CameraEvent {
 
   /// Converts the supplied [Map] to an instance of the [CameraClosingEvent]
   /// class.
-  CameraClosingEvent.fromJson(Map<String, dynamic> json)
-      : super(json['cameraId']! as int);
+  CameraClosingEvent.fromJson(Map<String, dynamic> json) : super(json['cameraId']! as int);
 
   /// Converts the [CameraClosingEvent] instance into a [Map] instance that can
   /// be serialized to JSON.
-  Map<String, dynamic> toJson() => <String, Object>{
-        'cameraId': cameraId,
-      };
+  Map<String, dynamic> toJson() => <String, Object>{'cameraId': cameraId};
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      super == other &&
-          other is CameraClosingEvent &&
-          runtimeType == other.runtimeType;
+      super == other && other is CameraClosingEvent && runtimeType == other.runtimeType;
 
   @override
   // This is here even though it just calls super to make it less likely that
@@ -216,8 +204,8 @@ class CameraErrorEvent extends CameraEvent {
   /// Converts the supplied [Map] to an instance of the [CameraErrorEvent]
   /// class.
   CameraErrorEvent.fromJson(Map<String, dynamic> json)
-      : description = json['description']! as String,
-        super(json['cameraId']! as int);
+    : description = json['description']! as String,
+      super(json['cameraId']! as int);
 
   /// Description of the error.
   final String description;
@@ -225,9 +213,9 @@ class CameraErrorEvent extends CameraEvent {
   /// Converts the [CameraErrorEvent] instance into a [Map] instance that can be
   /// serialized to JSON.
   Map<String, dynamic> toJson() => <String, Object>{
-        'cameraId': cameraId,
-        'description': description,
-      };
+    'cameraId': cameraId,
+    'description': description,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -253,11 +241,11 @@ class VideoRecordedEvent extends CameraEvent {
   /// Converts the supplied [Map] to an instance of the [VideoRecordedEvent]
   /// class.
   VideoRecordedEvent.fromJson(Map<String, dynamic> json)
-      : file = XFile(json['path']! as String),
-        maxVideoDuration = json['maxVideoDuration'] != null
-            ? Duration(milliseconds: json['maxVideoDuration'] as int)
-            : null,
-        super(json['cameraId']! as int);
+    : file = XFile(json['path']! as String),
+      maxVideoDuration = json['maxVideoDuration'] != null
+          ? Duration(milliseconds: json['maxVideoDuration'] as int)
+          : null,
+      super(json['cameraId']! as int);
 
   /// XFile of the recorded video.
   final XFile file;
@@ -268,10 +256,10 @@ class VideoRecordedEvent extends CameraEvent {
   /// Converts the [VideoRecordedEvent] instance into a [Map] instance that can be
   /// serialized to JSON.
   Map<String, dynamic> toJson() => <String, Object?>{
-        'cameraId': cameraId,
-        'path': file.path,
-        'maxVideoDuration': maxVideoDuration?.inMilliseconds
-      };
+    'cameraId': cameraId,
+    'path': file.path,
+    'maxVideoDuration': maxVideoDuration?.inMilliseconds,
+  };
 
   @override
   bool operator ==(Object other) =>

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,8 @@ late QuickActionHandler _handler;
 /// An implementation of [QuickActionsPlatform] for Android.
 class QuickActionsAndroid extends QuickActionsPlatform {
   /// Creates a new plugin implementation instance.
-  QuickActionsAndroid({
-    @visibleForTesting AndroidQuickActionsApi? api,
-  }) : _hostApi = api ?? AndroidQuickActionsApi();
+  QuickActionsAndroid({@visibleForTesting AndroidQuickActionsApi? api})
+    : _hostApi = api ?? AndroidQuickActionsApi();
 
   final AndroidQuickActionsApi _hostApi;
 
@@ -27,9 +26,8 @@ class QuickActionsAndroid extends QuickActionsPlatform {
 
   @override
   Future<void> initialize(QuickActionHandler handler) async {
-    final _QuickActionHandlerApi quickActionsHandlerApi =
-        _QuickActionHandlerApi();
-    AndroidQuickActionsFlutterApi.setup(quickActionsHandlerApi);
+    final quickActionsHandlerApi = _QuickActionHandlerApi();
+    AndroidQuickActionsFlutterApi.setUp(quickActionsHandlerApi);
     _handler = handler;
     final String? action = await _hostApi.getLaunchAction();
     if (action != null) {
@@ -39,9 +37,7 @@ class QuickActionsAndroid extends QuickActionsPlatform {
 
   @override
   Future<void> setShortcutItems(List<ShortcutItem> items) async {
-    await _hostApi.setShortcutItems(
-      items.map(_shortcutItemToShortcutItemMessage).toList(),
-    );
+    await _hostApi.setShortcutItems(items.map(_shortcutItemToShortcutItemMessage).toList());
   }
 
   @override

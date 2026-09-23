@@ -1,3 +1,147 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 4.5.0
+
+- Detects routes that resolve to the same URL pattern. Routes are compared by
+  the whole URL each one resolves to, so a collision is caught wherever the two
+  routes sit in the route tree, including across shell routes and
+  `StatefulShellRoute` branches, between relative routes, and between separate
+  annotations in one library. Paths that differ only in a parameter name, or
+  only in casing where the earlier route sets `caseSensitive: false`, count as
+  the same pattern. These are reported as build warnings by default. The new
+  `duplicate_route_paths` builder option raises them to build errors with
+  `error`, or silences them with `ignore`.
+
+## 4.4.1
+
+* Adds support for analyzer 14.
+
+## 4.4.0
+
+- Adds `hasOverriddenOnExit` parameter to `GoRouteData.$route` and `RelativeGoRouteData.$route` helper methods for type-safe routes. When set to `true`, enables custom `onExit` callback invocation from route data classes extending `GoRouteData` or `RelativeGoRouteData` when the route is removed from the navigation stack.
+
+## 4.3.1
+
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* Adds support for analyzer 13.
+
+## 4.3.0
+
+- Adds support for custom types through `TypedQueryParameter` annotation. The `encoder`, `decoder` and `compare` parameters allow specifying custom functions for encoding, decoding and comparing query parameters in `TypedGoRoute` constructors. For example, you can use a `DateTime` parameter with a custom encoder and decoder to convert it to and from a string representation in the URL.
+
+## 4.2.1
+
+* Adds support for analyzer 11 and 12.
+
+## 4.2.0
+
+- Adds supports for `TypedQueryParameter` annotation.
+  Its `name` parameter allows specifying a different name for the query parameter than the field name. The name is escaped to be URL-safe. For example `@TypedQueryParameter(name: 'field with space')` will generate a query parameter named `field+with+space`.
+
+## 4.1.3
+
+* Requires `analyzer` 8.2 or higher, to avoid experimental APIs.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 4.1.2
+
+* Updates supported analyzer versions to 8.x or 9.x.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 4.1.1
+
+- Allow `analyzer: '>=7.4.0 <9.0.0'`.
+- Allow `build: '>=3.0.0 <5.0.0'`.
+- Allow `source_gen: '>=3.1.0 <5.0.0'`.
+
+## 4.1.0
+
+- Adds support for classes that support fromJson/toJson. [#117261](https://github.com/flutter/flutter/issues/117261)
+- Adds annotation that enable custom string encoder/decoder [#110781](https://github.com/flutter/flutter/issues/110781)
+
+## 4.0.1
+
+- Fixes unnecessary whitespace in generated `RelativeGoRouteData`.
+
+## 4.0.0
+
+- Make Route mixins public.
+
+## 3.3.1
+
+- Fixes warnings in generated code of iterable parameters.
+
+## 3.3.0
+
+- Adds support for `TypedRelativeGoRoute`.
+
+## 3.2.1
+
+- Changes generated whitespace for better compatibility with new Dart formatter.
+
+## 3.2.0
+
+- Adds support for`extension type`.
+
+## 3.1.0
+
+- Updates dependencies to use the latest `analyzer`, `build`, and `source_gen`.
+- Updates dev dependencies to use the latest `build_test`.
+- Migrates to the `element2` API.
+- Improves test code formatting consistency.
+- Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 3.0.1
+
+- Updates README.md to use the mixin `with _$RouteName`.
+
+## 3.0.0
+
+- Route classes now required to use a mixin `with _$RouteName`.
+
+## 2.9.1
+
+- Fixes an deprecated warning for using withNullability
+
+## 2.9.0
+
+- Adds support for `caseSensitive` for go routes.
+
+## 2.8.2
+
+- Fixes an issue when enum params are not required
+
+## 2.8.1
+
+- Fixes an issue when navigate to router with invalid params
+
+## 2.8.0
+
+- Adds support for passing `preload` parameter to `StatefulShellBranchData`.
+
+## 2.7.5
+
+- Fixes trailing `?` in the location when a go route has an empty default value.
+
+## 2.7.4
+
+- Fixes an issue by removing unnecessary `const` in StatefulShellRouteData generation.
+
+## 2.7.3
+
+- Fixes an issue when using a not null List or Set param.
+
+## 2.7.2
+
+- Supports the latest `package:analyzer` and `package:source_gen`.
+- Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 2.7.1
+
+- Fixes readme typos and uses code excerpts.
+
 ## 2.7.0
 
 - Adds an example and a test with `onExit`.

@@ -1,3 +1,30 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+* Updates the minimum supported `package:web` version to 1.0.0.
+
+## 2.4.0
+
+* Adds HTML5 video poster support as a VideoPlayerWebOptions.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 2.3.5
+
+* Fixes blank first frame on iOS.
+
+## 2.3.4
+
+* Adjusts the code to the new platform interface.
+
+## 2.3.3
+
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+* Corrects the behavior of muting/unmuting videos in Chrome's Tap Emulation mode.
+
+## 2.3.2
+
+* Adds support for `web: ^1.0.0`.
+
 ## 2.3.1
 
 * Fixes some `package:web` tweaks.

@@ -1,8 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Determines which type of shared axis transition is used.
 enum SharedAxisTransitionType {
@@ -73,10 +73,7 @@ enum SharedAxisTransitionType {
 /// ```
 class SharedAxisPageTransitionsBuilder extends PageTransitionsBuilder {
   /// Construct a [SharedAxisPageTransitionsBuilder].
-  const SharedAxisPageTransitionsBuilder({
-    required this.transitionType,
-    this.fillColor,
-  });
+  const SharedAxisPageTransitionsBuilder({required this.transitionType, this.fillColor});
 
   /// Determines which [SharedAxisTransitionType] to build.
   final SharedAxisTransitionType transitionType;
@@ -233,22 +230,10 @@ class SharedAxisTransition extends StatelessWidget {
     final Color color = fillColor ?? Theme.of(context).canvasColor;
     return DualTransitionBuilder(
       animation: animation,
-      forwardBuilder: (
-        BuildContext context,
-        Animation<double> animation,
-        Widget? child,
-      ) {
-        return _EnterTransition(
-          animation: animation,
-          transitionType: transitionType,
-          child: child,
-        );
+      forwardBuilder: (BuildContext context, Animation<double> animation, Widget? child) {
+        return _EnterTransition(animation: animation, transitionType: transitionType, child: child);
       },
-      reverseBuilder: (
-        BuildContext context,
-        Animation<double> animation,
-        Widget? child,
-      ) {
+      reverseBuilder: (BuildContext context, Animation<double> animation, Widget? child) {
         return _ExitTransition(
           animation: animation,
           transitionType: transitionType,
@@ -259,11 +244,7 @@ class SharedAxisTransition extends StatelessWidget {
       },
       child: DualTransitionBuilder(
         animation: ReverseAnimation(secondaryAnimation),
-        forwardBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Widget? child,
-        ) {
+        forwardBuilder: (BuildContext context, Animation<double> animation, Widget? child) {
           return _EnterTransition(
             animation: animation,
             transitionType: transitionType,
@@ -271,11 +252,7 @@ class SharedAxisTransition extends StatelessWidget {
             child: child,
           );
         },
-        reverseBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Widget? child,
-        ) {
+        reverseBuilder: (BuildContext context, Animation<double> animation, Widget? child) {
           return _ExitTransition(
             animation: animation,
             transitionType: transitionType,
@@ -361,8 +338,7 @@ class _EnterTransition extends StatelessWidget {
         return FadeTransition(
           opacity: _fadeInTransition.animate(animation),
           child: ScaleTransition(
-            scale: (!reverse ? _scaleUpTransition : _scaleDownTransition)
-                .animate(animation),
+            scale: (!reverse ? _scaleUpTransition : _scaleDownTransition).animate(animation),
             child: child,
           ),
         );
@@ -452,8 +428,7 @@ class _ExitTransition extends StatelessWidget {
           child: ColoredBox(
             color: fillColor,
             child: ScaleTransition(
-              scale: (!reverse ? _scaleUpTransition : _scaleDownTransition)
-                  .animate(animation),
+              scale: (!reverse ? _scaleUpTransition : _scaleDownTransition).animate(animation),
               child: child,
             ),
           ),
@@ -471,9 +446,7 @@ class _ExitTransition extends StatelessWidget {
 /// between 0.0 and 1.0.
 class _FlippedCurveTween extends CurveTween {
   /// Creates a vertically flipped [CurveTween].
-  _FlippedCurveTween({
-    required super.curve,
-  });
+  _FlippedCurveTween({required super.curve});
 
   @override
   double transform(double t) => 1.0 - super.transform(t);

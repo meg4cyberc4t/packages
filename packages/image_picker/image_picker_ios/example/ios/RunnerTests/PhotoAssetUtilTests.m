@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,26 +10,98 @@
 #endif
 @import XCTest;
 
+#import <OCMock/OCMock.h>
+
 @interface PhotoAssetUtilTests : XCTestCase
 @end
 
 @implementation PhotoAssetUtilTests
 
-- (void)getAssetFromImagePickerInfoShouldReturnNilIfNotAvailable {
+- (void)testGetAssetFromImagePickerInfoShouldReturnNilIfNotAvailable {
   NSDictionary *mockData = @{};
   XCTAssertNil([FLTImagePickerPhotoAssetUtil getAssetFromImagePickerInfo:mockData]);
 }
 
-- (void)testGetAssetFromPHPickerResultShouldReturnNilIfNotAvailable API_AVAILABLE(ios(14)) {
-  if (@available(iOS 14, *)) {
-    PHPickerResult *mockData;
-    [mockData.itemProvider
-        loadObjectOfClass:[UIImage class]
-        completionHandler:^(__kindof id<NSItemProviderReading> _Nullable image,
-                            NSError *_Nullable error) {
-          XCTAssertNil([FLTImagePickerPhotoAssetUtil getAssetFromPHPickerResult:mockData]);
-        }];
+- (void)testGetAssetFromImagePickerInfoShouldReturnAssetIfPresent {
+  id mockAsset = OCMClassMock([PHAsset class]);
+  NSDictionary *info = @{UIImagePickerControllerPHAsset : mockAsset};
+  XCTAssertEqual([FLTImagePickerPhotoAssetUtil getAssetFromImagePickerInfo:info], mockAsset);
+}
+
+- (void)testSaveVideoFromURLReturnsNilWhenSourceIsUnreadable {
+  NSURL *missing = [NSURL fileURLWithPath:@"/this/path/does/not/exist.mov"];
+  XCTAssertNil([FLTImagePickerPhotoAssetUtil saveVideoFromURL:missing]);
+}
+
+- (void)testSaveVideoFromURLCopiesReadableFile {
+  NSString *sourcePath = [NSTemporaryDirectory()
+      stringByAppendingPathComponent:[[NSUUID UUID].UUIDString
+                                         stringByAppendingPathExtension:@"mov"]];
+  XCTAssertTrue([[NSFileManager defaultManager]
+      createFileAtPath:sourcePath
+              contents:[@"video" dataUsingEncoding:NSUTF8StringEncoding]
+            attributes:nil]);
+  NSURL *destination =
+      [FLTImagePickerPhotoAssetUtil saveVideoFromURL:[NSURL fileURLWithPath:sourcePath]];
+  XCTAssertNotNil(destination);
+  if (destination) {
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:destination.path]);
+    [[NSFileManager defaultManager] removeItemAtURL:destination error:nil];
   }
+  [[NSFileManager defaultManager] removeItemAtPath:sourcePath error:nil];
+}
+
+- (void)testSaveVideoFromURLReturnsNilWhenCopyFails {
+  NSString *sourcePath = [NSTemporaryDirectory()
+      stringByAppendingPathComponent:[[NSUUID UUID].UUIDString
+                                         stringByAppendingPathExtension:@"mov"]];
+  XCTAssertTrue([[NSFileManager defaultManager]
+      createFileAtPath:sourcePath
+              contents:[@"video" dataUsingEncoding:NSUTF8StringEncoding]
+            attributes:nil]);
+
+  id mockFileManager = OCMPartialMock([NSFileManager defaultManager]);
+  NSError *copyError = [NSError errorWithDomain:@"PhotoAssetUtilTests" code:1 userInfo:nil];
+  OCMStub([mockFileManager copyItemAtURL:OCMOCK_ANY
+                                   toURL:OCMOCK_ANY
+                                   error:[OCMArg setTo:copyError]])
+      .andReturn(NO);
+
+  XCTAssertNil([FLTImagePickerPhotoAssetUtil saveVideoFromURL:[NSURL fileURLWithPath:sourcePath]]);
+
+  [mockFileManager stopMocking];
+  [[NSFileManager defaultManager] removeItemAtPath:sourcePath error:nil];
+}
+
+- (void)testSaveImageWithOriginalImageDataNilUsesDefaultJPEG {
+  UIImage *imageJPG = [UIImage imageWithData:ImagePickerTestImages.JPGTestData];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+  NSString *savedPath = [FLTImagePickerPhotoAssetUtil saveImageWithOriginalImageData:nil
+                                                                               image:imageJPG
+                                                                            maxWidth:nil
+                                                                           maxHeight:nil
+                                                                        imageQuality:nil];
+#pragma clang diagnostic pop
+  XCTAssertEqualObjects([NSURL fileURLWithPath:savedPath].pathExtension, @"jpg");
+  if (savedPath) {
+    [[NSFileManager defaultManager] removeItemAtPath:savedPath error:nil];
+  }
+}
+
+- (void)testCreateFileReturnsPathWhenWriteFails {
+  UIImage *imageJPG = [UIImage imageWithData:ImagePickerTestImages.JPGTestData];
+  id mockFileManager = OCMPartialMock([NSFileManager defaultManager]);
+  OCMStub([mockFileManager createFileAtPath:OCMOCK_ANY contents:OCMOCK_ANY attributes:OCMOCK_ANY])
+      .andReturn(NO);
+
+  // Current behavior: the write-failure branch is a no-op and still returns the temp path.
+  NSString *savedPath = [FLTImagePickerPhotoAssetUtil saveImageWithPickerInfo:nil
+                                                                        image:imageJPG
+                                                                 imageQuality:nil];
+  XCTAssertNotNil(savedPath);
+
+  [mockFileManager stopMocking];
 }
 
 - (void)testSaveImageWithOriginalImageData_ShouldSaveWithTheCorrectExtentionAndMetaData {

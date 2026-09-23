@@ -1,6 +1,25 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 3.2.3
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 3.2.2
+
+* Updates to Pigeon 26.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 3.2.1
+
+* Updates Pigeon to resolve a compilation failure with some versions of glib.
+
+## 3.2.0
+
+* Updates platform channels to use Pigeon.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
 
 ## 3.1.1
 

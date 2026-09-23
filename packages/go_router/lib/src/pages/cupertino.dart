@@ -1,10 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // ignore_for_file: diagnostic_describe_all_properties
 
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import '../misc/extensions.dart';
 
 /// Checks for CupertinoApp in the widget tree.
@@ -12,8 +12,7 @@ bool isCupertinoApp(BuildContext context) =>
     context.findAncestorWidgetOfExactType<CupertinoApp>() != null;
 
 /// Creates a Cupertino HeroController.
-HeroController createCupertinoHeroController() =>
-    CupertinoApp.createCupertinoHeroController();
+HeroController createCupertinoHeroController() => CupertinoApp.createCupertinoHeroController();
 
 /// Builds a Cupertino page.
 CupertinoPage<void> pageBuilderForCupertinoApp({
@@ -22,14 +21,13 @@ CupertinoPage<void> pageBuilderForCupertinoApp({
   required Object? arguments,
   required String restorationId,
   required Widget child,
-}) =>
-    CupertinoPage<void>(
-      name: name,
-      arguments: arguments,
-      key: key,
-      restorationId: restorationId,
-      child: child,
-    );
+}) => CupertinoPage<void>(
+  name: name,
+  arguments: arguments,
+  key: key,
+  restorationId: restorationId,
+  child: child,
+);
 
 /// Default error page implementation for Cupertino.
 class CupertinoErrorScreen extends StatelessWidget {
@@ -41,19 +39,15 @@ class CupertinoErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CupertinoPageScaffold(
-        navigationBar:
-            const CupertinoNavigationBar(middle: Text('Page Not Found')),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(error?.toString() ?? 'page not found'),
-              CupertinoButton(
-                onPressed: () => context.go('/'),
-                child: const Text('Home'),
-              ),
-            ],
-          ),
-        ),
-      );
+    navigationBar: const CupertinoNavigationBar(middle: Text('Page Not Found')),
+    child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(error?.toString() ?? 'page not found'),
+          CupertinoButton(onPressed: () => context.go('/'), child: const Text('Home')),
+        ],
+      ),
+    ),
+  );
 }

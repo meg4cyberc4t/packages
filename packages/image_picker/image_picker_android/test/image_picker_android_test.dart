@@ -1,7 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/src/services/binary_messenger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:image_picker_android/image_picker_android.dart';
@@ -24,10 +25,9 @@ void main() {
 
   group('#pickImage', () {
     test('calls the method correctly', () async {
-      const String fakePath = '/foo.jpg';
+      const fakePath = '/foo.jpg';
       api.returnValue = <String>[fakePath];
-      final PickedFile? result =
-          await picker.pickImage(source: ImageSource.camera);
+      final PickedFile? result = await picker.pickImage(source: ImageSource.camera);
 
       expect(result?.path, fakePath);
       expect(api.lastCall, _LastPickType.image);
@@ -115,9 +115,7 @@ void main() {
     });
 
     test('camera position can be set to front', () async {
-      await picker.pickImage(
-          source: ImageSource.camera,
-          preferredCameraDevice: CameraDevice.front);
+      await picker.pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
 
       expect(api.passedSource?.camera, SourceCamera.front);
     });
@@ -138,7 +136,7 @@ void main() {
 
   group('#pickMultiImage', () {
     test('calls the method correctly', () async {
-      const List<String> fakePaths = <String>['/foo.jgp', 'bar.jpg'];
+      const fakePaths = <String>['/foo.jgp', 'bar.jpg'];
       api.returnValue = fakePaths;
 
       final List<PickedFile>? files = await picker.pickMultiImage();
@@ -160,11 +158,7 @@ void main() {
     });
 
     test('passes image option arguments correctly', () async {
-      await picker.pickMultiImage(
-        maxWidth: 10.0,
-        maxHeight: 20.0,
-        imageQuality: 70,
-      );
+      await picker.pickMultiImage(maxWidth: 10.0, maxHeight: 20.0, imageQuality: 70);
 
       expect(api.passedImageOptions?.maxWidth, 10.0);
       expect(api.passedImageOptions?.maxHeight, 20.0);
@@ -172,27 +166,15 @@ void main() {
     });
 
     test('does not accept a negative width or height argument', () {
-      expect(
-        () => picker.pickMultiImage(maxWidth: -1.0),
-        throwsArgumentError,
-      );
+      expect(() => picker.pickMultiImage(maxWidth: -1.0), throwsArgumentError);
 
-      expect(
-        () => picker.pickMultiImage(maxHeight: -1.0),
-        throwsArgumentError,
-      );
+      expect(() => picker.pickMultiImage(maxHeight: -1.0), throwsArgumentError);
     });
 
     test('does not accept an invalid imageQuality argument', () {
-      expect(
-        () => picker.pickMultiImage(imageQuality: -1),
-        throwsArgumentError,
-      );
+      expect(() => picker.pickMultiImage(imageQuality: -1), throwsArgumentError);
 
-      expect(
-        () => picker.pickMultiImage(imageQuality: 101),
-        throwsArgumentError,
-      );
+      expect(() => picker.pickMultiImage(imageQuality: 101), throwsArgumentError);
     });
 
     test('handles an empty path response gracefully', () async {
@@ -217,10 +199,9 @@ void main() {
 
   group('#pickVideo', () {
     test('calls the method correctly', () async {
-      const String fakePath = '/foo.jpg';
+      const fakePath = '/foo.jpg';
       api.returnValue = <String>[fakePath];
-      final PickedFile? result =
-          await picker.pickVideo(source: ImageSource.camera);
+      final PickedFile? result = await picker.pickVideo(source: ImageSource.camera);
 
       expect(result?.path, fakePath);
       expect(api.lastCall, _LastPickType.video);
@@ -247,10 +228,7 @@ void main() {
     });
 
     test('passes the duration argument correctly', () async {
-      await picker.pickVideo(
-        source: ImageSource.camera,
-        maxDuration: const Duration(minutes: 1),
-      );
+      await picker.pickVideo(source: ImageSource.camera, maxDuration: const Duration(minutes: 1));
 
       expect(api.passedVideoOptions?.maxDurationSeconds, 60);
     });
@@ -269,10 +247,7 @@ void main() {
     });
 
     test('camera position can set to front', () async {
-      await picker.pickVideo(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-      );
+      await picker.pickVideo(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
 
       expect(api.passedSource?.camera, SourceCamera.front);
     });
@@ -294,7 +269,9 @@ void main() {
   group('#retrieveLostData', () {
     test('retrieveLostData get success response', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.image, paths: <String>['/example/path']);
+        type: CacheRetrievalType.image,
+        paths: <String>['/example/path'],
+      );
 
       final LostData response = await picker.retrieveLostData();
       expect(response.type, RetrieveType.image);
@@ -304,10 +281,10 @@ void main() {
 
     test('retrieveLostData get error response', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.video,
-          paths: <String>[],
-          error: CacheRetrievalError(
-              code: 'test_error_code', message: 'test_error_message'));
+        type: CacheRetrievalType.video,
+        paths: <String>[],
+        error: CacheRetrievalError(code: 'test_error_code', message: 'test_error_message'),
+      );
 
       final LostData response = await picker.retrieveLostData();
       expect(response.type, RetrieveType.video);
@@ -324,10 +301,10 @@ void main() {
 
     test('retrieveLostData get both path and error should throw', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.video,
-          paths: <String>['/example/path'],
-          error: CacheRetrievalError(
-              code: 'test_error_code', message: 'test_error_message'));
+        type: CacheRetrievalType.video,
+        paths: <String>['/example/path'],
+        error: CacheRetrievalError(code: 'test_error_code', message: 'test_error_message'),
+      );
 
       expect(picker.retrieveLostData(), throwsAssertionError);
     });
@@ -335,7 +312,7 @@ void main() {
 
   group('#getImage', () {
     test('calls the method correctly', () async {
-      const String fakePath = '/foo.jpg';
+      const fakePath = '/foo.jpg';
       api.returnValue = <String>[fakePath];
       final XFile? result = await picker.getImage(source: ImageSource.camera);
 
@@ -425,9 +402,7 @@ void main() {
     });
 
     test('camera position can set to front', () async {
-      await picker.getImage(
-          source: ImageSource.camera,
-          preferredCameraDevice: CameraDevice.front);
+      await picker.getImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
 
       expect(api.passedSource?.camera, SourceCamera.front);
     });
@@ -448,7 +423,7 @@ void main() {
 
   group('#getMultiImage', () {
     test('calls the method correctly', () async {
-      const List<String> fakePaths = <String>['/foo.jgp', 'bar.jpg'];
+      const fakePaths = <String>['/foo.jgp', 'bar.jpg'];
       api.returnValue = fakePaths;
 
       final List<XFile>? files = await picker.getMultiImage();
@@ -470,11 +445,7 @@ void main() {
     });
 
     test('passes image option arguments correctly', () async {
-      await picker.getMultiImage(
-        maxWidth: 10.0,
-        maxHeight: 20.0,
-        imageQuality: 70,
-      );
+      await picker.getMultiImage(maxWidth: 10.0, maxHeight: 20.0, imageQuality: 70);
 
       expect(api.passedImageOptions?.maxWidth, 10.0);
       expect(api.passedImageOptions?.maxHeight, 20.0);
@@ -482,27 +453,15 @@ void main() {
     });
 
     test('does not accept a negative width or height argument', () {
-      expect(
-        () => picker.getMultiImage(maxWidth: -1.0),
-        throwsArgumentError,
-      );
+      expect(() => picker.getMultiImage(maxWidth: -1.0), throwsArgumentError);
 
-      expect(
-        () => picker.getMultiImage(maxHeight: -1.0),
-        throwsArgumentError,
-      );
+      expect(() => picker.getMultiImage(maxHeight: -1.0), throwsArgumentError);
     });
 
     test('does not accept an invalid imageQuality argument', () {
-      expect(
-        () => picker.getMultiImage(imageQuality: -1),
-        throwsArgumentError,
-      );
+      expect(() => picker.getMultiImage(imageQuality: -1), throwsArgumentError);
 
-      expect(
-        () => picker.getMultiImage(imageQuality: 101),
-        throwsArgumentError,
-      );
+      expect(() => picker.getMultiImage(imageQuality: 101), throwsArgumentError);
     });
 
     test('handles an empty image path response gracefully', () async {
@@ -528,7 +487,7 @@ void main() {
 
   group('#getVideo', () {
     test('calls the method correctly', () async {
-      const String fakePath = '/foo.jpg';
+      const fakePath = '/foo.jpg';
       api.returnValue = <String>[fakePath];
       final XFile? result = await picker.getVideo(source: ImageSource.camera);
 
@@ -557,10 +516,7 @@ void main() {
     });
 
     test('passes the duration argument correctly', () async {
-      await picker.getVideo(
-        source: ImageSource.camera,
-        maxDuration: const Duration(minutes: 1),
-      );
+      await picker.getVideo(source: ImageSource.camera, maxDuration: const Duration(minutes: 1));
 
       expect(api.passedVideoOptions?.maxDurationSeconds, 60);
     });
@@ -579,10 +535,7 @@ void main() {
     });
 
     test('camera position can set to front', () async {
-      await picker.getVideo(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-      );
+      await picker.getVideo(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
 
       expect(api.passedSource?.camera, SourceCamera.front);
     });
@@ -601,10 +554,36 @@ void main() {
     });
   });
 
+  group('#getMultiVideoWithOptions', () {
+    test('calls the method correctly', () async {
+      const fakePaths = <String>['/foo.mp4', 'bar.mp4'];
+      api.returnValue = fakePaths;
+      final List<XFile> result = await picker.getMultiVideoWithOptions();
+
+      expect(result.length, 2);
+      expect(result[0].path, fakePaths[0]);
+      expect(api.lastCall, _LastPickType.video);
+      expect(api.passedAllowMultiple, true);
+    });
+
+    test('passes the arguments correctly', () async {
+      api.returnValue = <String>[];
+      await picker.getMultiVideoWithOptions(
+        options: const MultiVideoPickerOptions(maxDuration: Duration(seconds: 10), limit: 5),
+      );
+
+      expect(api.passedSource?.type, SourceType.gallery);
+      expect(api.passedVideoOptions?.maxDurationSeconds, 10);
+      expect(api.limit, 5);
+    });
+  });
+
   group('#getLostData', () {
     test('getLostData get success response', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.image, paths: <String>['/example/path']);
+        type: CacheRetrievalType.image,
+        paths: <String>['/example/path'],
+      );
 
       final LostDataResponse response = await picker.getLostData();
       expect(response.type, RetrieveType.image);
@@ -614,8 +593,9 @@ void main() {
 
     test('getLostData should successfully retrieve multiple files', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.image,
-          paths: <String>['/example/path0', '/example/path1']);
+        type: CacheRetrievalType.image,
+        paths: <String>['/example/path0', '/example/path1'],
+      );
 
       final LostDataResponse response = await picker.getLostData();
       expect(response.type, RetrieveType.image);
@@ -627,10 +607,10 @@ void main() {
 
     test('getLostData get error response', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.video,
-          paths: <String>[],
-          error: CacheRetrievalError(
-              code: 'test_error_code', message: 'test_error_message'));
+        type: CacheRetrievalType.video,
+        paths: <String>[],
+        error: CacheRetrievalError(code: 'test_error_code', message: 'test_error_message'),
+      );
 
       final LostDataResponse response = await picker.getLostData();
       expect(response.type, RetrieveType.video);
@@ -647,10 +627,10 @@ void main() {
 
     test('getLostData get both path and error should throw', () async {
       api.returnValue = CacheRetrievalResult(
-          type: CacheRetrievalType.video,
-          paths: <String>['/example/path'],
-          error: CacheRetrievalError(
-              code: 'test_error_code', message: 'test_error_message'));
+        type: CacheRetrievalType.video,
+        paths: <String>['/example/path'],
+        error: CacheRetrievalError(code: 'test_error_code', message: 'test_error_message'),
+      );
 
       expect(picker.getLostData(), throwsAssertionError);
     });
@@ -658,13 +638,11 @@ void main() {
 
   group('#getMedia', () {
     test('calls the method correctly', () async {
-      const List<String> fakePaths = <String>['/foo.jgp', 'bar.jpg'];
+      const fakePaths = <String>['/foo.jgp', 'bar.jpg'];
       api.returnValue = fakePaths;
 
       final List<XFile> files = await picker.getMedia(
-        options: const MediaOptions(
-          allowMultiple: true,
-        ),
+        options: const MediaOptions(allowMultiple: true),
       );
 
       expect(api.lastCall, _LastPickType.image);
@@ -674,11 +652,7 @@ void main() {
     });
 
     test('passes default image options', () async {
-      await picker.getMedia(
-        options: const MediaOptions(
-          allowMultiple: true,
-        ),
-      );
+      await picker.getMedia(options: const MediaOptions(allowMultiple: true));
 
       expect(api.passedImageOptions?.maxWidth, null);
       expect(api.passedImageOptions?.maxHeight, null);
@@ -688,15 +662,12 @@ void main() {
 
     test('passes image option arguments correctly', () async {
       await picker.getMedia(
-          options: const MediaOptions(
-        allowMultiple: true,
-        imageOptions: ImageOptions(
-          maxWidth: 10.0,
-          maxHeight: 20.0,
-          imageQuality: 70,
+        options: const MediaOptions(
+          allowMultiple: true,
+          imageOptions: ImageOptions(maxWidth: 10.0, maxHeight: 20.0, imageQuality: 70),
+          limit: 5,
         ),
-        limit: 5,
-      ));
+      );
 
       expect(api.passedImageOptions?.maxWidth, 10.0);
       expect(api.passedImageOptions?.maxHeight, 20.0);
@@ -749,32 +720,31 @@ void main() {
     });
 
     test('does not accept an invalid limit argument', () {
-      expect(
-        () => picker.getMedia(
-          options: const MediaOptions(
-            allowMultiple: true,
-            limit: -1,
-          ),
-        ),
-        throwsArgumentError,
+      final Matcher throwsLimitArgumentError = throwsA(
+        isA<ArgumentError>()
+            .having((ArgumentError error) => error.name, 'name', 'limit')
+            .having((ArgumentError error) => error.message, 'message', 'cannot be lower than 2'),
       );
 
       expect(
-        () => picker.getMedia(
-          options: const MediaOptions(
-            allowMultiple: true,
-            limit: 0,
-          ),
-        ),
-        throwsArgumentError,
+        () => picker.getMedia(options: const MediaOptions(allowMultiple: true, limit: -1)),
+        throwsLimitArgumentError,
+      );
+
+      expect(
+        () => picker.getMedia(options: const MediaOptions(allowMultiple: true, limit: 0)),
+        throwsLimitArgumentError,
+      );
+
+      expect(
+        () => picker.getMedia(options: const MediaOptions(allowMultiple: true, limit: 1)),
+        throwsLimitArgumentError,
       );
     });
 
     test('does not accept a not null limit when allowMultiple is false', () {
       expect(
-        () => picker.getMedia(
-          options: const MediaOptions(allowMultiple: false, limit: 5),
-        ),
+        () => picker.getMedia(options: const MediaOptions(allowMultiple: false, limit: 5)),
         throwsArgumentError,
       );
     });
@@ -782,32 +752,18 @@ void main() {
     test('handles an empty path response gracefully', () async {
       api.returnValue = <String>[];
 
-      expect(
-          await picker.getMedia(
-            options: const MediaOptions(
-              allowMultiple: true,
-            ),
-          ),
-          <String>[]);
+      expect(await picker.getMedia(options: const MediaOptions(allowMultiple: true)), <String>[]);
     });
 
     test('defaults to not using Android Photo Picker', () async {
-      await picker.getMedia(
-        options: const MediaOptions(
-          allowMultiple: true,
-        ),
-      );
+      await picker.getMedia(options: const MediaOptions(allowMultiple: true));
 
       expect(api.passedPhotoPickerFlag, false);
     });
 
     test('allows using Android Photo Picker', () async {
       picker.useAndroidPhotoPicker = true;
-      await picker.getMedia(
-        options: const MediaOptions(
-          allowMultiple: true,
-        ),
-      );
+      await picker.getMedia(options: const MediaOptions(allowMultiple: true));
 
       expect(api.passedPhotoPickerFlag, true);
     });
@@ -815,7 +771,7 @@ void main() {
 
   group('#getImageFromSource', () {
     test('calls the method correctly', () async {
-      const String fakePath = '/foo.jpg';
+      const fakePath = '/foo.jpg';
       api.returnValue = <String>[fakePath];
       final XFile? result = await picker.getImage(source: ImageSource.camera);
 
@@ -847,11 +803,7 @@ void main() {
     test('passes image option arguments correctly', () async {
       await picker.getImageFromSource(
         source: ImageSource.camera,
-        options: const ImagePickerOptions(
-          maxWidth: 10.0,
-          maxHeight: 20.0,
-          imageQuality: 70,
-        ),
+        options: const ImagePickerOptions(maxWidth: 10.0, maxHeight: 20.0, imageQuality: 70),
       );
 
       expect(api.passedImageOptions?.maxWidth, 10.0);
@@ -914,10 +866,8 @@ void main() {
     test('handles a null image path response gracefully', () async {
       api.returnValue = null;
 
-      expect(
-          await picker.getImageFromSource(source: ImageSource.gallery), isNull);
-      expect(
-          await picker.getImageFromSource(source: ImageSource.camera), isNull);
+      expect(await picker.getImageFromSource(source: ImageSource.gallery), isNull);
+      expect(await picker.getImageFromSource(source: ImageSource.camera), isNull);
     });
 
     test('camera position defaults to back', () async {
@@ -928,9 +878,9 @@ void main() {
 
     test('camera position can be set to front', () async {
       await picker.getImageFromSource(
-          source: ImageSource.camera,
-          options: const ImagePickerOptions(
-              preferredCameraDevice: CameraDevice.front));
+        source: ImageSource.camera,
+        options: const ImagePickerOptions(preferredCameraDevice: CameraDevice.front),
+      );
 
       expect(api.passedSource?.camera, SourceCamera.front);
     });
@@ -966,7 +916,7 @@ class _FakeImagePickerApi implements ImagePickerApi {
   _LastPickType? lastCall;
 
   @override
-  Future<List<String?>> pickImages(
+  Future<List<String>> pickImages(
     SourceSpecification source,
     ImageSelectionOptions options,
     GeneralOptions generalOptions,
@@ -977,11 +927,11 @@ class _FakeImagePickerApi implements ImagePickerApi {
     passedAllowMultiple = generalOptions.allowMultiple;
     passedPhotoPickerFlag = generalOptions.usePhotoPicker;
     limit = generalOptions.limit;
-    return returnValue as List<String?>? ?? <String>[];
+    return returnValue as List<String>? ?? <String>[];
   }
 
   @override
-  Future<List<String?>> pickMedia(
+  Future<List<String>> pickMedia(
     MediaSelectionOptions options,
     GeneralOptions generalOptions,
   ) async {
@@ -990,11 +940,11 @@ class _FakeImagePickerApi implements ImagePickerApi {
     passedPhotoPickerFlag = generalOptions.usePhotoPicker;
     passedAllowMultiple = generalOptions.allowMultiple;
     limit = generalOptions.limit;
-    return returnValue as List<String?>? ?? <String>[];
+    return returnValue as List<String>? ?? <String>[];
   }
 
   @override
-  Future<List<String?>> pickVideos(
+  Future<List<String>> pickVideos(
     SourceSpecification source,
     VideoSelectionOptions options,
     GeneralOptions generalOptions,
@@ -1004,11 +954,20 @@ class _FakeImagePickerApi implements ImagePickerApi {
     passedVideoOptions = options;
     passedAllowMultiple = generalOptions.allowMultiple;
     passedPhotoPickerFlag = generalOptions.usePhotoPicker;
-    return returnValue as List<String?>? ?? <String>[];
+    limit = generalOptions.limit;
+    return returnValue as List<String>? ?? <String>[];
   }
 
   @override
   Future<CacheRetrievalResult?> retrieveLostResults() async {
     return returnValue as CacheRetrievalResult?;
   }
+
+  @override
+  // ignore: non_constant_identifier_names
+  BinaryMessenger? get pigeonVar_binaryMessenger => null;
+
+  @override
+  // ignore: non_constant_identifier_names
+  String get pigeonVar_messageChannelSuffix => '';
 }

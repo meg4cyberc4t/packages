@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ import io.flutter.plugins.camera.features.exposurepoint.ExposurePointFeature;
 import io.flutter.plugins.camera.features.flash.FlashFeature;
 import io.flutter.plugins.camera.features.focuspoint.FocusPointFeature;
 import io.flutter.plugins.camera.features.fpsrange.FpsRangeFeature;
+import io.flutter.plugins.camera.features.jpegquality.JpegQualityFeature;
 import io.flutter.plugins.camera.features.noisereduction.NoiseReductionFeature;
 import io.flutter.plugins.camera.features.resolution.ResolutionFeature;
 import io.flutter.plugins.camera.features.resolution.ResolutionPreset;
@@ -60,15 +61,15 @@ public class CameraTest_getRecordingProfileTest {
     mockDartMessenger = mock(DartMessenger.class);
 
     final Activity mockActivity = mock(Activity.class);
-    final TextureRegistry.SurfaceProducer mockSurfaceProducer =
-        mock(TextureRegistry.SurfaceProducer.class);
+    final TextureRegistry.SurfaceTextureEntry mockFlutterTexture =
+        mock(TextureRegistry.SurfaceTextureEntry.class);
     final ResolutionPreset resolutionPreset = ResolutionPreset.high;
     final boolean enableAudio = false;
 
     camera =
         new Camera(
             mockActivity,
-            mockSurfaceProducer,
+            mockFlutterTexture,
             mockCameraFeatureFactory,
             mockDartMessenger,
             mockCameraProperties,
@@ -86,10 +87,7 @@ public class CameraTest_getRecordingProfileTest {
 
     CamcorderProfile actualRecordingProfile = camera.getRecordingProfileLegacy();
 
-    // First time: getRecordingProfileLegacy() is called in `before()` when
-    // camera constructor tries to determine default recording Fps.
-    // Second time: in this test case.
-    verify(mockResolutionFeature, times(2)).getRecordingProfileLegacy();
+    verify(mockResolutionFeature, times(1)).getRecordingProfileLegacy();
     assertEquals(mockCamcorderProfile, actualRecordingProfile);
   }
 
@@ -104,7 +102,7 @@ public class CameraTest_getRecordingProfileTest {
 
     EncoderProfiles actualRecordingProfile = camera.getRecordingProfile();
 
-    verify(mockResolutionFeature, times(2)).getRecordingProfile();
+    verify(mockResolutionFeature, times(1)).getRecordingProfile();
     assertEquals(mockRecordingProfile, actualRecordingProfile);
   }
 
@@ -202,6 +200,11 @@ public class CameraTest_getRecordingProfileTest {
     public NoiseReductionFeature createNoiseReductionFeature(
         @NonNull CameraProperties cameraProperties) {
       return mockNoiseReductionFeature;
+    }
+
+    @Override
+    public JpegQualityFeature createJpegQualityFeature(@NonNull CameraProperties cameraProperties) {
+      return mock(JpegQualityFeature.class);
     }
   }
 }

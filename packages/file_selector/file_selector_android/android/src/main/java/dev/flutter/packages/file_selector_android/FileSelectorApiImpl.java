@@ -1,10 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package dev.flutter.packages.file_selector_android;
 
-import android.annotation.TargetApi;
+import static dev.flutter.packages.file_selector_android.FileUtils.FILE_SELECTOR_EXCEPTION_PLACEHOLDER_PATH;
+
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentResolver;
@@ -30,8 +31,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import kotlin.Result;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import org.jetbrains.annotations.NotNull;
 
-public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelectorApi {
+public class FileSelectorApiImpl implements FileSelectorApi {
   private static final String TAG = "FileSelectorApiImpl";
   // Request code for selecting a file.
   private static final int OPEN_FILE = 221;
@@ -90,8 +95,8 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
   @Override
   public void openFile(
       @Nullable String initialDirectory,
-      @NonNull GeneratedFileSelectorApi.FileTypes allowedTypes,
-      @NonNull GeneratedFileSelectorApi.Result<GeneratedFileSelectorApi.FileResponse> result) {
+      @NonNull FileTypes allowedTypes,
+      @NonNull Function1<? super Result<FileResponse>, Unit> callback) {
     final Intent intent = objectFactory.newIntent(Intent.ACTION_OPEN_DOCUMENT);
     intent.addCategory(Intent.CATEGORY_OPENABLE);
 
@@ -109,32 +114,37 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
                 final Uri uri = data.getData();
                 if (uri == null) {
                   // No data retrieved from opening file.
-                  result.error(new Exception("Failed to retrieve data from opening file."));
+                  ResultUtilsKt.<FileResponse>completeWithError(
+                      callback, new Exception("Failed to retrieve data from opening file."));
                   return;
                 }
 
-                final GeneratedFileSelectorApi.FileResponse file = toFileResponse(uri);
+                final FileResponse file = toFileResponse(uri);
                 if (file != null) {
-                  result.success(file);
+                  ResultUtilsKt.<FileResponse>completeWithValue(callback, file);
                 } else {
-                  result.error(new Exception("Failed to read file: " + uri));
+                  ResultUtilsKt.completeWithError(
+                      callback, new Exception("Failed to read file: " + uri));
                 }
               } else {
-                result.success(null);
+                ResultUtilsKt.completeWithValue(callback, null);
               }
             }
           });
     } catch (Exception exception) {
-      result.error(exception);
+      ResultUtilsKt.completeWithError(callback, exception);
     }
   }
 
   @Override
   public void openFiles(
       @Nullable String initialDirectory,
-      @NonNull GeneratedFileSelectorApi.FileTypes allowedTypes,
+      @NonNull FileTypes allowedTypes,
       @NonNull
-          GeneratedFileSelectorApi.Result<List<GeneratedFileSelectorApi.FileResponse>> result) {
+          Function1<
+                  ? super @NotNull Result<? extends @NotNull List<@NotNull FileResponse>>,
+                  @NotNull Unit>
+              callback) {
     final Intent intent = objectFactory.newIntent(Intent.ACTION_OPEN_DOCUMENT);
     intent.addCategory(Intent.CATEGORY_OPENABLE);
     intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -153,53 +163,46 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
                 // Only one file was returned.
                 final Uri uri = data.getData();
                 if (uri != null) {
-                  final GeneratedFileSelectorApi.FileResponse file = toFileResponse(uri);
+                  final FileResponse file = toFileResponse(uri);
                   if (file != null) {
-                    result.success(Collections.singletonList(file));
+                    ResultUtilsKt.completeWithValue(callback, Collections.singletonList(file));
                   } else {
-                    result.error(new Exception("Failed to read file: " + uri));
+                    ResultUtilsKt.completeWithError(
+                        callback, new Exception("Failed to read file: " + uri));
                   }
                 }
 
                 // Multiple files were returned.
                 final ClipData clipData = data.getClipData();
                 if (clipData != null) {
-                  final List<GeneratedFileSelectorApi.FileResponse> files =
-                      new ArrayList<>(clipData.getItemCount());
+                  final List<FileResponse> files = new ArrayList<>(clipData.getItemCount());
                   for (int i = 0; i < clipData.getItemCount(); i++) {
                     final ClipData.Item clipItem = clipData.getItemAt(i);
-                    final GeneratedFileSelectorApi.FileResponse file =
-                        toFileResponse(clipItem.getUri());
+                    final FileResponse file = toFileResponse(clipItem.getUri());
                     if (file != null) {
                       files.add(file);
                     } else {
-                      result.error(new Exception("Failed to read file: " + uri));
+                      ResultUtilsKt.completeWithError(
+                          callback, new Exception("Failed to read file: " + uri));
                       return;
                     }
                   }
-                  result.success(files);
+                  ResultUtilsKt.completeWithValue(callback, files);
                 }
               } else {
-                result.success(new ArrayList<>());
+                ResultUtilsKt.completeWithValue(callback, new ArrayList<>());
               }
             }
           });
     } catch (Exception exception) {
-      result.error(exception);
+      ResultUtilsKt.completeWithError(callback, exception);
     }
   }
 
   @Override
-  @TargetApi(21)
   public void getDirectoryPath(
-      @Nullable String initialDirectory, @NonNull GeneratedFileSelectorApi.Result<String> result) {
-    if (!sdkChecker.sdkIsAtLeast(android.os.Build.VERSION_CODES.LOLLIPOP)) {
-      result.error(
-          new UnsupportedOperationException(
-              "Selecting a directory is only supported on versions >= 21"));
-      return;
-    }
-
+      @Nullable String initialDirectory,
+      @NonNull Function1<? super @NotNull Result<String>, @NotNull Unit> callback) {
     final Intent intent = objectFactory.newIntent(Intent.ACTION_OPEN_DOCUMENT_TREE);
     trySetInitialDirectory(intent, initialDirectory);
 
@@ -214,7 +217,8 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
                 final Uri uri = data.getData();
                 if (uri == null) {
                   // No data retrieved from opening directory.
-                  result.error(new Exception("Failed to retrieve data from opening directory."));
+                  ResultUtilsKt.completeWithError(
+                      callback, new Exception("Failed to retrieve data from opening directory."));
                   return;
                 }
 
@@ -224,17 +228,17 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
                 try {
                   final String path =
                       FileUtils.getPathFromUri(activityPluginBinding.getActivity(), docUri);
-                  result.success(path);
+                  ResultUtilsKt.completeWithValue(callback, path);
                 } catch (UnsupportedOperationException exception) {
-                  result.error(exception);
+                  ResultUtilsKt.completeWithError(callback, exception);
                 }
               } else {
-                result.success(null);
+                ResultUtilsKt.<String>completeWithValue(callback, null);
               }
             }
           });
     } catch (Exception exception) {
-      result.error(exception);
+      ResultUtilsKt.completeWithError(callback, exception);
     }
   }
 
@@ -245,8 +249,7 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
   // Setting the mimeType with `setType` is required when opening files. This handles setting the
   // mimeType based on the `mimeTypes` list and converts extensions to mimeTypes.
   // See https://developer.android.com/guide/components/intents-common#OpenFile
-  private void setMimeTypes(
-      @NonNull Intent intent, @NonNull GeneratedFileSelectorApi.FileTypes allowedTypes) {
+  private void setMimeTypes(@NonNull Intent intent, @NonNull FileTypes allowedTypes) {
     final Set<String> allMimetypes = new HashSet<>();
     allMimetypes.addAll(allowedTypes.getMimeTypes());
     allMimetypes.addAll(tryConvertExtensionsToMimetypes(allowedTypes.getExtensions()));
@@ -312,7 +315,7 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
   }
 
   @Nullable
-  GeneratedFileSelectorApi.FileResponse toFileResponse(@NonNull Uri uri) {
+  FileResponse toFileResponse(@NonNull Uri uri) {
     if (activityPluginBinding == null) {
       Log.d(TAG, "Activity is not available.");
       return null;
@@ -348,6 +351,13 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
 
     final byte[] bytes = new byte[size];
     try (InputStream inputStream = contentResolver.openInputStream(uri)) {
+      if (inputStream == null) {
+        // `ContentResolver#openInputStream()` returns null when the provider cannot serve the
+        // file (for example after the provider crashed). Reading it would throw a
+        // NullPointerException on the activity-result callback, i.e. the main thread.
+        Log.w(TAG, "The content provider returned no stream for the selected file.");
+        return null;
+      }
       final DataInputStream dataInputStream = objectFactory.newDataInputStream(inputStream);
       dataInputStream.readFully(bytes);
     } catch (IOException exception) {
@@ -355,15 +365,41 @@ public class FileSelectorApiImpl implements GeneratedFileSelectorApi.FileSelecto
       return null;
     }
 
-    final String uriPath =
-        FileUtils.getPathFromCopyOfFileFromUri(activityPluginBinding.getActivity(), uri);
+    String uriPath;
+    FileSelectorNativeException nativeError = null;
 
-    return new GeneratedFileSelectorApi.FileResponse.Builder()
-        .setName(name)
-        .setBytes(bytes)
-        .setPath(uriPath)
-        .setMimeType(contentResolver.getType(uri))
-        .setSize(size.longValue())
-        .build();
+    try {
+      uriPath = FileUtils.getPathFromCopyOfFileFromUri(activityPluginBinding.getActivity(), uri);
+    } catch (IOException e) {
+      // If closing the output stream fails, we cannot be sure that the
+      // target file was written in full. Flushing the stream merely moves
+      // the bytes into the OS, not necessarily to the file.
+      uriPath = null;
+    } catch (SecurityException e) {
+      // Calling `ContentResolver#openInputStream()` has been reported to throw a
+      // `SecurityException` on some devices in certain circumstances. Instead of crashing, we
+      // return `null`.
+      //
+      // See https://github.com/flutter/flutter/issues/100025 for more details.
+      uriPath = null;
+    } catch (IllegalArgumentException e) {
+      uriPath = FILE_SELECTOR_EXCEPTION_PLACEHOLDER_PATH;
+      nativeError =
+          new FileSelectorNativeException(
+              FileSelectorExceptionCode.ILLEGAL_ARGUMENT_EXCEPTION,
+              e.getMessage() == null ? "" : e.getMessage());
+    }
+
+    if (uriPath == null) {
+      // `getPathFromCopyOfFileFromUri` can fail to produce a path: either by
+      // throwing (handled above by returning a null `uriPath`) or by returning
+      // null directly. Return null so the caller surfaces the failure to Dart,
+      // instead of building a `FileResponse` with a null `path`, which the
+      // non-null field rejects at runtime.
+      // See https://github.com/flutter/flutter/issues/159568.
+      return null;
+    }
+
+    return new FileResponse(uriPath, contentResolver.getType(uri), name, size, bytes, nativeError);
   }
 }

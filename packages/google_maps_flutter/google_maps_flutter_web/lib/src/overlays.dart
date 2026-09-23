@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,18 +8,18 @@ part of '../google_maps_flutter_web.dart';
 class TileOverlaysController extends GeometryController {
   final Map<TileOverlayId, TileOverlayController> _tileOverlays =
       <TileOverlayId, TileOverlayController>{};
-  final List<TileOverlayController> _visibleTileOverlays =
-      <TileOverlayController>[];
+  final List<TileOverlayController> _visibleTileOverlays = <TileOverlayController>[];
 
   // Inserts `tileOverlayController` into the list of visible overlays, and the current [googleMap].
   //
   // After insertion, the arrays stay sorted by ascending z-index.
   void _insertZSorted(TileOverlayController tileOverlayController) {
     final int index = _visibleTileOverlays.lowerBoundBy<num>(
-        tileOverlayController,
-        (TileOverlayController c) => c.tileOverlay.zIndex);
+      tileOverlayController,
+      (TileOverlayController c) => c.tileOverlay.zIndex,
+    );
 
-    googleMap.overlayMapTypes!.insertAt(index, tileOverlayController.gmMapType);
+    googleMap.overlayMapTypes.insertAt(index, tileOverlayController.gmMapType);
     _visibleTileOverlays.insert(index, tileOverlayController);
   }
 
@@ -30,7 +30,7 @@ class TileOverlaysController extends GeometryController {
       return;
     }
 
-    googleMap.overlayMapTypes!.removeAt(index);
+    googleMap.overlayMapTypes.removeAt(index);
     _visibleTileOverlays.removeAt(index);
   }
 
@@ -42,9 +42,7 @@ class TileOverlaysController extends GeometryController {
   }
 
   void _addTileOverlay(TileOverlay tileOverlay) {
-    final TileOverlayController controller = TileOverlayController(
-      tileOverlay: tileOverlay,
-    );
+    final controller = TileOverlayController(tileOverlay: tileOverlay);
     _tileOverlays[tileOverlay.tileOverlayId] = controller;
 
     if (tileOverlay.visible) {
@@ -58,8 +56,7 @@ class TileOverlaysController extends GeometryController {
   }
 
   void _changeTileOverlay(TileOverlay tileOverlay) {
-    final TileOverlayController controller =
-        _tileOverlays[tileOverlay.tileOverlayId]!;
+    final TileOverlayController controller = _tileOverlays[tileOverlay.tileOverlayId]!;
 
     final bool wasVisible = controller.tileOverlay.visible;
     final bool isVisible = tileOverlay.visible;
@@ -80,8 +77,7 @@ class TileOverlaysController extends GeometryController {
   }
 
   void _removeTileOverlay(TileOverlayId tileOverlayId) {
-    final TileOverlayController? controller =
-        _tileOverlays.remove(tileOverlayId);
+    final TileOverlayController? controller = _tileOverlays.remove(tileOverlayId);
     if (controller != null) {
       _remove(controller);
     }
@@ -93,7 +89,7 @@ class TileOverlaysController extends GeometryController {
     if (controller != null && controller.tileOverlay.visible) {
       final int i = _visibleTileOverlays.indexOf(controller);
       // This causes the map to reload the overlay.
-      googleMap.overlayMapTypes!.setAt(i, controller.gmMapType);
+      googleMap.overlayMapTypes.setAt(i, controller.gmMapType);
     }
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@ import 'package:file/file.dart';
 import 'package:yaml/yaml.dart';
 
 import 'common/core.dart';
+import 'common/file_filters.dart';
 import 'common/output_utils.dart';
 import 'common/package_looping_command.dart';
 import 'common/plugin_utils.dart';
@@ -18,7 +19,8 @@ const String _pluginToolsConfigFileName = '.pluginToolsConfig.yaml';
 const String _pluginToolsConfigBuildFlagsKey = 'buildFlags';
 const String _pluginToolsConfigGlobalKey = 'global';
 
-const String _pluginToolsConfigExample = '''
+const String _pluginToolsConfigExample =
+    '''
 $_pluginToolsConfigBuildFlagsKey:
   $_pluginToolsConfigGlobalKey:
     - "--no-tree-shake-icons"
@@ -44,30 +46,24 @@ const String _swiftPackageManagerFlag = 'swift-package-manager';
 /// A command to build the example applications for packages.
 class BuildExamplesCommand extends PackageLoopingCommand {
   /// Creates an instance of the build command.
-  BuildExamplesCommand(
-    super.packagesDir, {
-    super.processRunner,
-    super.platform,
-  }) {
+  BuildExamplesCommand(super.packagesDir, {super.processRunner, super.platform, super.gitDir}) {
     argParser.addFlag(platformLinux);
     argParser.addFlag(platformMacOS);
     argParser.addFlag(platformWeb);
     argParser.addFlag(platformWindows);
     argParser.addFlag(platformIOS);
-    argParser.addFlag(_platformFlagApk,
-        aliases: const <String>[_flutterBuildTypeAndroidAlias]);
+    argParser.addFlag(_platformFlagApk, aliases: const <String>[_flutterBuildTypeAndroidAlias]);
     argParser.addOption(
       kEnableExperiment,
       defaultsTo: '',
       help: 'Enables the given Dart SDK experiments.',
     );
-    argParser.addFlag(_swiftPackageManagerFlag);
+    argParser.addFlag(_swiftPackageManagerFlag, defaultsTo: null);
   }
 
   // Maps the switch this command uses to identify a platform to information
   // about it.
-  static final Map<String, _PlatformDetails> _platforms =
-      <String, _PlatformDetails>{
+  static final Map<String, _PlatformDetails> _platforms = <String, _PlatformDetails>{
     _platformFlagApk: const _PlatformDetails(
       'Android',
       pluginPlatform: platformAndroid,
@@ -115,13 +111,20 @@ class BuildExamplesCommand extends PackageLoopingCommand {
       'single key "$_pluginToolsConfigGlobalKey" containing a list of build '
       'arguments.';
 
-  /// Returns true if `--swift-package-manager` flag was passed along with
-  /// either `--ios` or `--macos`.
-  bool get usingSwiftPackageManager {
+  /// Returns whether the Swift Package Manager feature should be enabled,
+  /// disabled, or left to the default value.
+  bool? get _swiftPackageManagerFeatureConfig {
     final List<String> platformFlags = _platforms.keys.toList();
-    return getBoolArg(_swiftPackageManagerFlag) &&
-        (platformFlags.contains(platformIOS) ||
-            platformFlags.contains(platformMacOS));
+    if (!platformFlags.contains(platformIOS) && !platformFlags.contains(platformMacOS)) {
+      return null;
+    }
+
+    return getNullableBoolArg(_swiftPackageManagerFlag);
+  }
+
+  @override
+  bool shouldIgnoreFile(String path) {
+    return isRepoLevelNonCodeImpactingFile(path) || isPackageSupportFile(path);
   }
 
   @override
@@ -130,40 +133,31 @@ class BuildExamplesCommand extends PackageLoopingCommand {
     platformFlags.sort();
     if (!platformFlags.any((String platform) => getBoolArg(platform))) {
       printError(
-          'None of ${platformFlags.map((String platform) => '--$platform').join(', ')} '
-          'were specified. At least one platform must be provided.');
-      throw ToolExit(_exitNoPlatformFlags);
-    }
-
-    // TODO(vashworth): Enable on stable once Swift Package Manager feature is
-    // available on stable.
-    if (usingSwiftPackageManager &&
-        platform.environment['CHANNEL'] != 'stable') {
-      await processRunner.runAndStream(
-        flutterCommand,
-        <String>['config', '--enable-swift-package-manager'],
-        exitOnError: true,
+        'None of ${platformFlags.map((String platform) => '--$platform').join(', ')} '
+        'were specified. At least one platform must be provided.',
       );
+      throw ToolExit(_exitNoPlatformFlags);
     }
   }
 
   @override
   Future<PackageResult> runForPackage(RepositoryPackage package) async {
-    final List<String> errors = <String>[];
+    final errors = <String>[];
 
     final bool isPlugin = isFlutterPlugin(package);
     final Iterable<_PlatformDetails> requestedPlatforms = _platforms.entries
-        .where(
-            (MapEntry<String, _PlatformDetails> entry) => getBoolArg(entry.key))
+        .where((MapEntry<String, _PlatformDetails> entry) => getBoolArg(entry.key))
         .map((MapEntry<String, _PlatformDetails> entry) => entry.value);
 
     // Platform support is checked at the package level for plugins; there is
     // no package-level platform information for non-plugin packages.
     final Set<_PlatformDetails> buildPlatforms = isPlugin
         ? requestedPlatforms
-            .where((_PlatformDetails platform) =>
-                pluginSupportsPlatform(platform.pluginPlatform, package))
-            .toSet()
+              .where(
+                (_PlatformDetails platform) =>
+                    pluginSupportsPlatform(platform.pluginPlatform, package),
+              )
+              .toSet()
         : requestedPlatforms.toSet();
 
     String platformDisplayList(Iterable<_PlatformDetails> platforms) {
@@ -171,37 +165,49 @@ class BuildExamplesCommand extends PackageLoopingCommand {
     }
 
     if (buildPlatforms.isEmpty) {
-      final String unsupported = requestedPlatforms.length == 1
+      final unsupported = requestedPlatforms.length == 1
           ? '${requestedPlatforms.first.label} is not supported'
           : 'None of [${platformDisplayList(requestedPlatforms)}] are supported';
       return PackageResult.skip('$unsupported by this plugin');
     }
     print('Building for: ${platformDisplayList(buildPlatforms)}');
 
-    final Set<_PlatformDetails> unsupportedPlatforms =
-        requestedPlatforms.toSet().difference(buildPlatforms);
+    final Set<_PlatformDetails> unsupportedPlatforms = requestedPlatforms.toSet().difference(
+      buildPlatforms,
+    );
     if (unsupportedPlatforms.isNotEmpty) {
       final List<String> skippedPlatforms = unsupportedPlatforms
           .map((_PlatformDetails platform) => platform.label)
           .toList();
       skippedPlatforms.sort();
-      print('Skipping unsupported platform(s): '
-          '${skippedPlatforms.join(', ')}');
+      print(
+        'Skipping unsupported platform(s): '
+        '${skippedPlatforms.join(', ')}',
+      );
     }
     print('');
 
-    bool builtSomething = false;
-    for (final RepositoryPackage example in package.getExamples()) {
-      final String packageName =
-          getRelativePosixPath(example.directory, from: packagesDir);
+    final bool? swiftPackageManagerOverride = _swiftPackageManagerFeatureConfig;
 
-      for (final _PlatformDetails platform in buildPlatforms) {
+    var builtSomething = false;
+    for (final RepositoryPackage example in package.getExamples()) {
+      // Rather than changing global config state, enable SwiftPM via a
+      // temporary package-level override.
+      if (swiftPackageManagerOverride != null) {
+        print(
+          'Overriding enable-swift-package-manager to '
+          '$swiftPackageManagerOverride',
+        );
+        setSwiftPackageManagerState(example, enabled: swiftPackageManagerOverride);
+      }
+
+      final String packageName = getRelativePosixPath(example.directory, from: packagesDir);
+
+      for (final platform in buildPlatforms) {
         // Repo policy is that a plugin must have examples configured for all
         // supported platforms. For packages, just log and skip any requested
         // platform that a package doesn't have set up.
-        if (!isPlugin &&
-            !example.appSupportsPlatform(
-                getPlatformByName(platform.pluginPlatform))) {
+        if (!isPlugin && !example.appSupportsPlatform(getPlatformByName(platform.pluginPlatform))) {
           print('Skipping ${platform.label} for $packageName; not supported.');
           continue;
         }
@@ -213,10 +219,19 @@ class BuildExamplesCommand extends PackageLoopingCommand {
           buildPlatform += ' (${platform.flutterBuildType})';
         }
         print('\nBUILDING $packageName for $buildPlatform');
-        if (!await _buildExample(example, platform.flutterBuildType,
-            extraBuildFlags: platform.extraBuildFlags)) {
+        if (!await _buildExample(
+          example,
+          platform.flutterBuildType,
+          extraBuildFlags: platform.extraBuildFlags,
+        )) {
           errors.add('$packageName (${platform.label})');
         }
+      }
+
+      // If an override was added, remove it.
+      if (swiftPackageManagerOverride != null) {
+        print('Removing enable-swift-package-manager override');
+        setSwiftPackageManagerState(example, enabled: null);
       }
     }
 
@@ -224,45 +239,40 @@ class BuildExamplesCommand extends PackageLoopingCommand {
       if (isPlugin) {
         errors.add('No examples found');
       } else {
-        return PackageResult.skip(
-            'No examples found supporting requested platform(s).');
+        return PackageResult.skip('No examples found supporting requested platform(s).');
       }
     }
 
-    return errors.isEmpty
-        ? PackageResult.success()
-        : PackageResult.fail(errors);
+    return errors.isEmpty ? PackageResult.success() : PackageResult.fail(errors);
   }
 
-  Iterable<String> _readExtraBuildFlagsConfiguration(
-      Directory directory) sync* {
-    final File pluginToolsConfig =
-        directory.childFile(_pluginToolsConfigFileName);
+  Iterable<String> _readExtraBuildFlagsConfiguration(Directory directory) sync* {
+    final File pluginToolsConfig = directory.childFile(_pluginToolsConfigFileName);
     if (pluginToolsConfig.existsSync()) {
-      final Object? configuration =
-          loadYaml(pluginToolsConfig.readAsStringSync());
+      final Object? configuration = loadYaml(pluginToolsConfig.readAsStringSync());
       if (configuration is! YamlMap) {
         printError('The $_pluginToolsConfigFileName file must be a YAML map.');
         printError(
-            'Currently, the key "$_pluginToolsConfigBuildFlagsKey" is the only one that has an effect.');
+          'Currently, the key "$_pluginToolsConfigBuildFlagsKey" is the only one that has an effect.',
+        );
         printError(
-            'It must itself be a map. Currently, in that map only the key "$_pluginToolsConfigGlobalKey"');
-        printError(
-            'has any effect; it must contain a list of arguments to pass to the');
+          'It must itself be a map. Currently, in that map only the key "$_pluginToolsConfigGlobalKey"',
+        );
+        printError('has any effect; it must contain a list of arguments to pass to the');
         printError('flutter tool.');
         printError(_pluginToolsConfigExample);
         throw ToolExit(_exitInvalidPluginToolsConfig);
       }
       if (configuration.containsKey(_pluginToolsConfigBuildFlagsKey)) {
-        final Object? buildFlagsConfiguration =
-            configuration[_pluginToolsConfigBuildFlagsKey];
+        final Object? buildFlagsConfiguration = configuration[_pluginToolsConfigBuildFlagsKey];
         if (buildFlagsConfiguration is! YamlMap) {
           printError(
-              'The $_pluginToolsConfigFileName file\'s "$_pluginToolsConfigBuildFlagsKey" key must be a map.');
+            'The $_pluginToolsConfigFileName file\'s "$_pluginToolsConfigBuildFlagsKey" key must be a map.',
+          );
           printError(
-              'Currently, in that map only the key "$_pluginToolsConfigGlobalKey" has any effect; it must ');
-          printError(
-              'contain a list of arguments to pass to the flutter tool.');
+            'Currently, in that map only the key "$_pluginToolsConfigGlobalKey" has any effect; it must ',
+          );
+          printError('contain a list of arguments to pass to the flutter tool.');
           printError(_pluginToolsConfigExample);
           throw ToolExit(_exitInvalidPluginToolsConfig);
         }
@@ -271,12 +281,11 @@ class BuildExamplesCommand extends PackageLoopingCommand {
               buildFlagsConfiguration[_pluginToolsConfigGlobalKey];
           if (globalBuildFlagsConfiguration is! YamlList) {
             printError(
-                'The $_pluginToolsConfigFileName file\'s "$_pluginToolsConfigBuildFlagsKey" key must be a map');
+              'The $_pluginToolsConfigFileName file\'s "$_pluginToolsConfigBuildFlagsKey" key must be a map',
+            );
             printError('whose "$_pluginToolsConfigGlobalKey" key is a list.');
-            printError(
-                'That list must contain a list of arguments to pass to the flutter tool.');
-            printError(
-                'For example, the $_pluginToolsConfigFileName file could look like:');
+            printError('That list must contain a list of arguments to pass to the flutter tool.');
+            printError('For example, the $_pluginToolsConfigFileName file could look like:');
             printError(_pluginToolsConfigExample);
             throw ToolExit(_exitInvalidPluginToolsConfig);
           }
@@ -293,18 +302,13 @@ class BuildExamplesCommand extends PackageLoopingCommand {
   }) async {
     final String enableExperiment = getStringArg(kEnableExperiment);
 
-    final int exitCode = await processRunner.runAndStream(
-      flutterCommand,
-      <String>[
-        'build',
-        flutterBuildType,
-        ...extraBuildFlags,
-        ..._readExtraBuildFlagsConfiguration(example.directory),
-        if (enableExperiment.isNotEmpty)
-          '--enable-experiment=$enableExperiment',
-      ],
-      workingDir: example.directory,
-    );
+    final int exitCode = await processRunner.runAndStream(flutterCommand, <String>[
+      'build',
+      flutterBuildType,
+      ...extraBuildFlags,
+      ..._readExtraBuildFlagsConfiguration(example.directory),
+      if (enableExperiment.isNotEmpty) '--enable-experiment=$enableExperiment',
+    ], workingDir: example.directory);
     return exitCode == 0;
   }
 }

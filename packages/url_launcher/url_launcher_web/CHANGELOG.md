@@ -1,3 +1,36 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.4.3
+
+* Removes a LICENSE entry for code that no longer exists in the package.
+
+## 2.4.2
+
+* Fixes an issue that caused duplicate semantic nodes for `Link` widgets.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 2.4.1
+
+* Fixes a bug that triggers Links when they are not supposed to.
+
+## 2.4.0
+
+* Enhances handling of out-of-order events.
+* Adds support for clicks with a modifier key (e.g. cmd+click).
+* Improves support for semantics.
+* Applies the `target` attribute to semantic links.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 2.3.3
+
+* Changes `launchUrl` so it always returns `true`, except for disallowed URL schemes.
+
+## 2.3.2
+
+* Adds support for `web: ^1.0.0`.
+
 ## 2.3.1
 
 * Implements correct handling of keyboard events with Link.

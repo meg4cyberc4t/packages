@@ -6,8 +6,8 @@ publish_to: 'none'
 version: 2.0.0
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
-  flutter: ">=3.19.0"
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
@@ -16,9 +16,9 @@ dependencies:
     path: ../
 
 dev_dependencies:
-  flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
+  leak_tracker_flutter_testing: any
 
 # The following section is specific to Flutter packages.
 flutter:

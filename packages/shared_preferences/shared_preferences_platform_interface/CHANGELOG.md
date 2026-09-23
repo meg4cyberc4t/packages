@@ -1,5 +1,19 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.4.2
+
+* Fixes dartdoc comments that accidentally used HTML.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.4.1
+
+* Adds comments about unsupported types.
+
+## 2.4.0
+
+* Adds `SharedPreferencesAsyncPlatform` API.
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
 ## 2.3.2

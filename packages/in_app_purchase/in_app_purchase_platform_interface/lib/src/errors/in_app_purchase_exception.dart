@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,7 @@
 class InAppPurchaseException implements Exception {
   /// Creates a [InAppPurchaseException] with the specified source and error
   /// [code] and optional [message].
-  InAppPurchaseException({
-    required this.source,
-    required this.code,
-    this.message,
-  });
+  InAppPurchaseException({required this.source, required this.code, this.message});
 
   /// An error code.
   final String code;

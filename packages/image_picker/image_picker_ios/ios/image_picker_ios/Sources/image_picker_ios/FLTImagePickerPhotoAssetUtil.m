@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,12 @@
 #import "FLTImagePickerMetaDataUtil.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @implementation FLTImagePickerPhotoAssetUtil
 
 + (PHAsset *)getAssetFromImagePickerInfo:(NSDictionary *)info {
   return info[UIImagePickerControllerPHAsset];
-}
-
-+ (PHAsset *)getAssetFromPHPickerResult:(PHPickerResult *)result API_AVAILABLE(ios(14)) {
-  PHFetchResult *fetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[ result.assetIdentifier ]
-                                                                options:nil];
-  return fetchResult.firstObject;
 }
 
 + (NSURL *)saveVideoFromURL:(NSURL *)videoURL {
@@ -104,8 +99,14 @@
 + (NSString *)saveImageWithMetaData:(NSDictionary *)metaData
                             gifInfo:(GIFInfo *)gifInfo
                                path:(NSString *)path {
+  CFStringRef imageType;
+  if (@available(iOS 14.0, *)) {
+    imageType = (__bridge CFStringRef)UTTypeGIF.identifier;
+  } else {
+    imageType = kUTTypeGIF;
+  }
   CGImageDestinationRef destination = CGImageDestinationCreateWithURL(
-      (__bridge CFURLRef)[NSURL fileURLWithPath:path], kUTTypeGIF, gifInfo.images.count, NULL);
+      (__bridge CFURLRef)[NSURL fileURLWithPath:path], imageType, gifInfo.images.count, NULL);
 
   NSDictionary *frameProperties = @{
     (__bridge NSString *)kCGImagePropertyGIFDictionary : @{

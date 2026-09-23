@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class JavaScriptAlertDialogRequest {
   /// Creates a [JavaScriptAlertDialogRequest].
-  const JavaScriptAlertDialogRequest({
-    required this.message,
-    required this.url,
-  });
+  const JavaScriptAlertDialogRequest({required this.message, required this.url});
 
   /// The message to be displayed in the window.
   final String message;
@@ -24,10 +21,7 @@ class JavaScriptAlertDialogRequest {
 @immutable
 class JavaScriptConfirmDialogRequest {
   /// Creates a [JavaScriptConfirmDialogRequest].
-  const JavaScriptConfirmDialogRequest({
-    required this.message,
-    required this.url,
-  });
+  const JavaScriptConfirmDialogRequest({required this.message, required this.url});
 
   /// The message to be displayed in the window.
   final String message;

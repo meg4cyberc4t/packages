@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,12 +39,12 @@ class WebViewPermissionResourceType {
   final String name;
 
   /// A media device that can capture video.
-  static const WebViewPermissionResourceType camera =
-      WebViewPermissionResourceType('camera');
+  static const WebViewPermissionResourceType camera = WebViewPermissionResourceType('camera');
 
   /// A media device that can capture audio.
-  static const WebViewPermissionResourceType microphone =
-      WebViewPermissionResourceType('microphone');
+  static const WebViewPermissionResourceType microphone = WebViewPermissionResourceType(
+    'microphone',
+  );
 }
 
 /// Permissions request when web content requests access to protected resources.

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@
 
 - (void)testNullableParameterWithFlutterApi {
   EchoBinaryMessenger *binaryMessenger =
-      [[EchoBinaryMessenger alloc] initWithCodec:NullableArgHostApiGetCodec()];
+      [[EchoBinaryMessenger alloc] initWithCodec:GetNullableReturnsCodec()];
   NullableArgFlutterApi *api =
       [[NullableArgFlutterApi alloc] initWithBinaryMessenger:binaryMessenger];
   XCTestExpectation *expectation = [self expectationWithDescription:@"callback"];
@@ -50,12 +50,12 @@
 - (void)testNullableParameterWithHostApi {
   MockNullableArgHostApi *api = [[MockNullableArgHostApi alloc] init];
   MockBinaryMessenger *binaryMessenger =
-      [[MockBinaryMessenger alloc] initWithCodec:NullableArgHostApiGetCodec()];
+      [[MockBinaryMessenger alloc] initWithCodec:GetNullableReturnsCodec()];
   NSString *channel = @"dev.flutter.pigeon.pigeon_integration_tests.NullableArgHostApi.doit";
   SetUpNullableArgHostApi(binaryMessenger, api);
   XCTAssertNotNil(binaryMessenger.handlers[channel]);
   XCTestExpectation *expectation = [self expectationWithDescription:@"callback"];
-  NSData *arguments = [NullableArgHostApiGetCodec() encode:@[ [NSNull null] ]];
+  NSData *arguments = [GetNullableReturnsCodec() encode:@[ [NSNull null] ]];
   binaryMessenger.handlers[channel](arguments, ^(NSData *data) {
     [expectation fulfill];
   });

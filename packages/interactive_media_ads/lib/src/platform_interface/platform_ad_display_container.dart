@@ -1,10 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/cupertino.dart';
 
 import 'interactive_media_ads_platform.dart';
+import 'platform_companion_ad_slot.dart';
 
 /// Object specifying creation parameters for creating a
 /// [PlatformAdDisplayContainer].
@@ -45,6 +46,8 @@ base class PlatformAdDisplayContainerCreationParams {
   const PlatformAdDisplayContainerCreationParams({
     this.key,
     required this.onContainerAdded,
+    this.layoutDirection = TextDirection.ltr,
+    this.companionSlots = const <PlatformCompanionAdSlot>[],
   });
 
   /// Controls how one widget replaces another widget in the tree.
@@ -56,15 +59,19 @@ base class PlatformAdDisplayContainerCreationParams {
   /// Invoked when the View that contains the ad has been added to the platform
   /// view hierarchy.
   final void Function(PlatformAdDisplayContainer container) onContainerAdded;
+
+  /// The layout direction to use for the embedded AdDisplayContainer.
+  final TextDirection layoutDirection;
+
+  /// List of companion ad slots.
+  final Iterable<PlatformCompanionAdSlot> companionSlots;
 }
 
 /// The interface for a platform implementation for a container in which to
 /// display ads.
 abstract base class PlatformAdDisplayContainer {
   /// Creates a new [PlatformAdDisplayContainer]
-  factory PlatformAdDisplayContainer(
-    PlatformAdDisplayContainerCreationParams params,
-  ) {
+  factory PlatformAdDisplayContainer(PlatformAdDisplayContainerCreationParams params) {
     assert(
       InteractiveMediaAdsPlatform.instance != null,
       'A platform implementation for `interactive_media_ads` has not been set. '
@@ -73,9 +80,8 @@ abstract base class PlatformAdDisplayContainer {
       'unit testing, `InteractiveMediaAdsPlatform.instance` can be set with '
       'your own test implementation.',
     );
-    final PlatformAdDisplayContainer implementation =
-        InteractiveMediaAdsPlatform.instance!
-            .createPlatformAdDisplayContainer(params);
+    final PlatformAdDisplayContainer implementation = InteractiveMediaAdsPlatform.instance!
+        .createPlatformAdDisplayContainer(params);
     return implementation;
   }
 

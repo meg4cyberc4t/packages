@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('CameraImageData can be created', () {
-    final CameraImageData cameraImage =
-        cameraImageFromPlatformData(<dynamic, dynamic>{
+    final CameraImageData cameraImage = cameraImageFromPlatformData(<dynamic, dynamic>{
       'format': 35,
       'height': 1,
       'width': 4,
@@ -23,9 +22,9 @@ void main() {
           'bytesPerPixel': 1,
           'bytesPerRow': 4,
           'height': 1,
-          'width': 4
-        }
-      ]
+          'width': 4,
+        },
+      ],
     });
     expect(cameraImage.height, 1);
     expect(cameraImage.width, 4);
@@ -36,8 +35,7 @@ void main() {
   test('CameraImageData has ImageFormatGroup.yuv420 for iOS', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
-    final CameraImageData cameraImage =
-        cameraImageFromPlatformData(<dynamic, dynamic>{
+    final CameraImageData cameraImage = cameraImageFromPlatformData(<dynamic, dynamic>{
       'format': 875704438,
       'height': 1,
       'width': 4,
@@ -50,9 +48,9 @@ void main() {
           'bytesPerPixel': 1,
           'bytesPerRow': 4,
           'height': 1,
-          'width': 4
-        }
-      ]
+          'width': 4,
+        },
+      ],
     });
     expect(cameraImage.format.group, ImageFormatGroup.yuv420);
   });
@@ -60,8 +58,7 @@ void main() {
   test('CameraImageData has ImageFormatGroup.yuv420 for Android', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
-    final CameraImageData cameraImage =
-        cameraImageFromPlatformData(<dynamic, dynamic>{
+    final CameraImageData cameraImage = cameraImageFromPlatformData(<dynamic, dynamic>{
       'format': 35,
       'height': 1,
       'width': 4,
@@ -74,9 +71,9 @@ void main() {
           'bytesPerPixel': 1,
           'bytesPerRow': 4,
           'height': 1,
-          'width': 4
-        }
-      ]
+          'width': 4,
+        },
+      ],
     });
     expect(cameraImage.format.group, ImageFormatGroup.yuv420);
   });

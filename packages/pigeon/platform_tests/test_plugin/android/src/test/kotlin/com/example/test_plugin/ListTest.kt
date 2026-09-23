@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,15 @@ import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer
 import java.util.ArrayList
-import junit.framework.TestCase
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class ListTest : TestCase() {
+class ListTest {
+
   @Test
-  fun testListInList() {
+  fun testListInList() = runTest {
     val binaryMessenger = mockk<BinaryMessenger>()
     val api = FlutterSmallApi(binaryMessenger)
 
@@ -33,12 +36,16 @@ class ListTest : TestCase() {
           reply.reply(replyData)
         }
 
-    var didCall = false
-    api.echoWrappedList(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
+    val res = api.echoWrappedList(input)
+    assertEquals(input, res)
+  }
 
-    assertTrue(didCall)
+  @Test
+  fun testToStringSnapshot() {
+    val msg = TestMessage(listOf("hello", 42))
+    val str = msg.toString()
+    assertTrue(str.startsWith("TestMessage(testList="))
+    assertTrue(str.contains("hello"))
+    assertTrue(str.contains("42"))
   }
 }

@@ -1,56 +1,40 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('CustomTransitionPage builds its child using transitionsBuilder',
-      (WidgetTester tester) async {
-    const HomeScreen child = HomeScreen();
-    final CustomTransitionPage<void> transition = CustomTransitionPage<void>(
-      transitionsBuilder: expectAsync4((_, __, ___, Widget child) => child),
+  testWidgets('CustomTransitionPage builds its child using transitionsBuilder', (
+    WidgetTester tester,
+  ) async {
+    const child = HomeScreen();
+    final transition = CustomTransitionPage<void>(
+      transitionsBuilder: expectAsync4((_, _, _, Widget child) => child),
       child: child,
     );
-    final GoRouter router = GoRouter(
-      routes: <GoRoute>[
-        GoRoute(
-          path: '/',
-          pageBuilder: (_, __) => transition,
-        ),
-      ],
+    final router = GoRouter(
+      routes: <GoRoute>[GoRoute(path: '/', pageBuilder: (_, _) => transition)],
     );
     addTearDown(router.dispose);
-    await tester.pumpWidget(
-      MaterialApp.router(
-        routerConfig: router,
-        title: 'GoRouter Example',
-      ),
-    );
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router, title: 'GoRouter Example'));
     expect(find.byWidget(child), findsOneWidget);
   });
 
-  testWidgets('NoTransitionPage does not apply any transition',
-      (WidgetTester tester) async {
-    final ValueNotifier<bool> showHomeValueNotifier =
-        ValueNotifier<bool>(false);
+  testWidgets('NoTransitionPage does not apply any transition', (WidgetTester tester) async {
+    final showHomeValueNotifier = ValueNotifier<bool>(false);
     addTearDown(showHomeValueNotifier.dispose);
     await tester.pumpWidget(
       MaterialApp(
         home: ValueListenableBuilder<bool>(
           valueListenable: showHomeValueNotifier,
-          builder: (_, bool showHome, __) {
+          builder: (_, bool showHome, _) {
             return Navigator(
               pages: <Page<void>>[
-                const NoTransitionPage<void>(
-                  child: LoginScreen(),
-                ),
-                if (showHome)
-                  const NoTransitionPage<void>(
-                    child: HomeScreen(),
-                  ),
+                const NoTransitionPage<void>(child: LoginScreen()),
+                if (showHome) const NoTransitionPage<void>(child: HomeScreen()),
               ],
               onPopPage: (Route<dynamic> route, dynamic result) {
                 return route.didPop(result);
@@ -82,24 +66,20 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('NoTransitionPage does not apply any reverse transition',
-      (WidgetTester tester) async {
-    final ValueNotifier<bool> showHomeValueNotifier = ValueNotifier<bool>(true);
+  testWidgets('NoTransitionPage does not apply any reverse transition', (
+    WidgetTester tester,
+  ) async {
+    final showHomeValueNotifier = ValueNotifier<bool>(true);
     addTearDown(showHomeValueNotifier.dispose);
     await tester.pumpWidget(
       MaterialApp(
         home: ValueListenableBuilder<bool>(
           valueListenable: showHomeValueNotifier,
-          builder: (_, bool showHome, __) {
+          builder: (_, bool showHome, _) {
             return Navigator(
               pages: <Page<void>>[
-                const NoTransitionPage<void>(
-                  child: LoginScreen(),
-                ),
-                if (showHome)
-                  const NoTransitionPage<void>(
-                    child: HomeScreen(),
-                  ),
+                const NoTransitionPage<void>(child: LoginScreen()),
+                if (showHome) const NoTransitionPage<void>(child: HomeScreen()),
               ],
               onPopPage: (Route<dynamic> route, dynamic result) {
                 return route.didPop(result);
@@ -119,24 +99,22 @@ void main() {
     expect(homeScreenFinder, findsNothing);
   });
 
-  testWidgets('Dismiss a screen by tapping a modal barrier',
-      (WidgetTester tester) async {
-    const ValueKey<String> homeKey = ValueKey<String>('home');
-    const ValueKey<String> dismissibleModalKey =
-        ValueKey<String>('dismissibleModal');
+  testWidgets('Dismiss a screen by tapping a modal barrier', (WidgetTester tester) async {
+    const homeKey = ValueKey<String>('home');
+    const dismissibleModalKey = ValueKey<String>('dismissibleModal');
 
-    final GoRouter router = GoRouter(
+    final router = GoRouter(
       routes: <GoRoute>[
         GoRoute(
           path: '/',
-          builder: (_, __) => const HomeScreen(key: homeKey),
+          builder: (_, _) => const HomeScreen(key: homeKey),
         ),
         GoRoute(
           path: '/dismissible-modal',
           pageBuilder: (_, GoRouterState state) => CustomTransitionPage<void>(
             key: state.pageKey,
             barrierDismissible: true,
-            transitionsBuilder: (_, __, ___, Widget child) => child,
+            transitionsBuilder: (_, _, _, Widget child) => child,
             child: const DismissibleModal(key: dismissibleModalKey),
           ),
         ),
@@ -153,18 +131,19 @@ void main() {
     expect(find.byKey(homeKey), findsOneWidget);
   });
 
-  testWidgets('transitionDuration and reverseTransitionDuration is different',
-      (WidgetTester tester) async {
-    const ValueKey<String> homeKey = ValueKey<String>('home');
-    const ValueKey<String> loginKey = ValueKey<String>('login');
-    const Duration transitionDuration = Duration(milliseconds: 50);
-    const Duration reverseTransitionDuration = Duration(milliseconds: 500);
+  testWidgets('transitionDuration and reverseTransitionDuration is different', (
+    WidgetTester tester,
+  ) async {
+    const homeKey = ValueKey<String>('home');
+    const loginKey = ValueKey<String>('login');
+    const transitionDuration = Duration(milliseconds: 50);
+    const reverseTransitionDuration = Duration(milliseconds: 500);
 
-    final GoRouter router = GoRouter(
+    final router = GoRouter(
       routes: <GoRoute>[
         GoRoute(
           path: '/',
-          builder: (_, __) => const HomeScreen(key: homeKey),
+          builder: (_, _) => const HomeScreen(key: homeKey),
         ),
         GoRoute(
           path: '/login',
@@ -172,9 +151,8 @@ void main() {
             key: state.pageKey,
             transitionDuration: transitionDuration,
             reverseTransitionDuration: reverseTransitionDuration,
-            transitionsBuilder:
-                (_, Animation<double> animation, ___, Widget child) =>
-                    FadeTransition(opacity: animation, child: child),
+            transitionsBuilder: (_, Animation<double> animation, _, Widget child) =>
+                FadeTransition(opacity: animation, child: child),
             child: const LoginScreen(key: loginKey),
           ),
         ),
@@ -201,11 +179,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('HomeScreen'),
-      ),
-    );
+    return const Scaffold(body: Center(child: Text('HomeScreen')));
   }
 }
 
@@ -214,11 +188,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('LoginScreen'),
-      ),
-    );
+    return const Scaffold(body: Center(child: Text('LoginScreen')));
   }
 }
 
@@ -227,10 +197,6 @@ class DismissibleModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 200,
-      height: 200,
-      child: Center(child: Text('Dismissible Modal')),
-    );
+    return const SizedBox(width: 200, height: 200, child: Center(child: Text('Dismissible Modal')));
   }
 }

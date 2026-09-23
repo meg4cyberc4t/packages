@@ -1,21 +1,45 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package com.example.test_plugin
 
 import io.flutter.plugin.common.BinaryMessenger
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import java.nio.ByteBuffer
-import junit.framework.TestCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Before
 import org.junit.Test
 
-internal class AsyncHandlersTest : TestCase() {
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class AsyncHandlersTest {
+
+  @Before
+  fun setUp() {
+    Dispatchers.setMain(UnconfinedTestDispatcher())
+  }
+
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
+  }
+
   @Test
-  fun testAsyncHost2Flutter() {
+  fun testAsyncHost2Flutter() = runTest {
     val binaryMessenger = mockk<BinaryMessenger>()
     val api = FlutterIntegrationCoreApi(binaryMessenger)
 
@@ -32,13 +56,8 @@ internal class AsyncHandlersTest : TestCase() {
           reply.reply(replyData)
         }
 
-    var didCall = false
-    api.echoAsyncString(value) {
-      didCall = true
-      assertEquals(it.getOrNull(), value)
-    }
-
-    assertTrue(didCall)
+    val res = api.echoAsyncString(value)
+    assertEquals(value, res)
 
     verify {
       binaryMessenger.send(
@@ -56,7 +75,6 @@ internal class AsyncHandlersTest : TestCase() {
     val handlerSlot = slot<BinaryMessenger.BinaryMessageHandler>()
 
     val input = "Test"
-    val output = input
     val channelName = "dev.flutter.pigeon.pigeon_integration_tests.HostSmallApi.echo"
 
     every {
@@ -64,11 +82,7 @@ internal class AsyncHandlersTest : TestCase() {
           "dev.flutter.pigeon.pigeon_integration_tests.HostSmallApi.voidVoid", any())
     } returns Unit
     every { binaryMessenger.setMessageHandler(channelName, capture(handlerSlot)) } returns Unit
-    every { api.echo(any(), any()) } answers
-        {
-          val callback = arg<(Result<String>) -> Unit>(1)
-          callback(Result.success(output))
-        }
+    coEvery { api.echo(any()) } returns input
 
     HostSmallApi.setUp(binaryMessenger, api)
 
@@ -80,15 +94,15 @@ internal class AsyncHandlersTest : TestCase() {
       it?.rewind()
       @Suppress("UNCHECKED_CAST") val wrapped = codec.decodeMessage(it) as MutableList<Any>?
       assertNotNull(wrapped)
-      wrapped?.let { assertEquals(output, wrapped.first()) }
+      wrapped?.let { assertEquals(input, wrapped.first()) }
     }
 
     verify { binaryMessenger.setMessageHandler(channelName, handlerSlot.captured) }
-    verify { api.echo(input, any()) }
+    coVerify { api.echo(input) }
   }
 
   @Test
-  fun asyncFlutter2HostVoidVoid() {
+  fun testAsyncFlutter2HostVoidVoid() {
     val binaryMessenger = mockk<BinaryMessenger>()
     val api = mockk<HostSmallApi>()
 
@@ -101,11 +115,7 @@ internal class AsyncHandlersTest : TestCase() {
       binaryMessenger.setMessageHandler(
           "dev.flutter.pigeon.pigeon_integration_tests.HostSmallApi.echo", any())
     } returns Unit
-    every { api.voidVoid(any()) } answers
-        {
-          val callback = arg<() -> Unit>(0)
-          callback()
-        }
+    coEvery { api.voidVoid() } returns Unit
 
     HostSmallApi.setUp(binaryMessenger, api)
 
@@ -114,10 +124,11 @@ internal class AsyncHandlersTest : TestCase() {
     handlerSlot.captured.onMessage(message) {
       it?.rewind()
       @Suppress("UNCHECKED_CAST") val wrapped = codec.decodeMessage(it) as MutableList<Any>?
-      assertNull(wrapped)
+      assertNotNull(wrapped)
+      assertNull(wrapped?.first())
     }
 
     verify { binaryMessenger.setMessageHandler(channelName, handlerSlot.captured) }
-    verify { api.voidVoid(any()) }
+    coVerify { api.voidVoid() }
   }
 }

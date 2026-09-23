@@ -1,3 +1,43 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.5.7
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 2.5.6
+
+* Updates to Pigeon 26.
+
+## 2.5.5
+
+* Updates minimum supported version to iOS 13 and macOS 10.15.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.5.4
+
+* Updates Pigeon to fix lint error.
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+
+## 2.5.3
+
+* Updates Pigeon for non-nullable collection type support.
+
+## 2.5.2
+
+* Fixes getting all preferences when suite name is used.
+
+## 2.5.1
+
+* Fixes `getStringList` returning immutable list.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 2.5.0
+
+* Adds new `SharedPreferencesAsyncFoundation` API.
+
 ## 2.4.0
 
 * Adds Swift Package Manager compatibility.

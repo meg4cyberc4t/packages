@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,8 @@ late QuickActionHandler _handler;
 /// An implementation of [QuickActionsPlatform] for iOS.
 class QuickActionsIos extends QuickActionsPlatform {
   /// Creates a new plugin implementation instance.
-  QuickActionsIos({
-    @visibleForTesting IOSQuickActionsApi? api,
-  }) : _hostApi = api ?? IOSQuickActionsApi();
+  QuickActionsIos({@visibleForTesting IOSQuickActionsApi? api})
+    : _hostApi = api ?? IOSQuickActionsApi();
 
   final IOSQuickActionsApi _hostApi;
 
@@ -27,17 +26,14 @@ class QuickActionsIos extends QuickActionsPlatform {
 
   @override
   Future<void> initialize(QuickActionHandler handler) async {
-    final _QuickActionHandlerApi quickActionsHandlerApi =
-        _QuickActionHandlerApi();
-    IOSQuickActionsFlutterApi.setup(quickActionsHandlerApi);
+    final quickActionsHandlerApi = _QuickActionHandlerApi();
+    IOSQuickActionsFlutterApi.setUp(quickActionsHandlerApi);
     _handler = handler;
   }
 
   @override
   Future<void> setShortcutItems(List<ShortcutItem> items) async {
-    await _hostApi.setShortcutItems(
-      items.map(_shortcutItemToShortcutItemMessage).toList(),
-    );
+    await _hostApi.setShortcutItems(items.map(_shortcutItemToShortcutItemMessage).toList());
   }
 
   @override
@@ -47,6 +43,7 @@ class QuickActionsIos extends QuickActionsPlatform {
     return ShortcutItemMessage(
       type: item.type,
       localizedTitle: item.localizedTitle,
+      localizedSubtitle: item.localizedSubtitle,
       icon: item.icon,
     );
   }

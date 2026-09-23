@@ -8,13 +8,11 @@ A Flutter plugin for iOS, Android and Web for playing back video on a Widget sur
 
 |             | Android | iOS   | macOS  | Web   |
 |-------------|---------|-------|--------|-------|
-| **Support** | SDK 16+ | 12.0+ | 10.14+ | Any\* |
+| **Support** | SDK 24+ | 13.0+ | 10.15+ | Any\* |
 
 ![The example app running in iOS](https://github.com/flutter/packages/blob/main/packages/video_player/video_player/doc/demo_ipod.gif?raw=true)
 
-## Installation
-
-First, add `video_player` as a [dependency in your pubspec.yaml file](https://flutter.dev/using-packages/).
+## Setup
 
 ### iOS
 
@@ -37,7 +35,7 @@ Android Manifest file, located in `<project root>/android/app/src/main/AndroidMa
 
 If you are using network-based videos, you will need to [add the
 `com.apple.security.network.client`
-entitlement](https://docs.flutter.dev/platform-integration/macos/building#entitlements-and-the-app-sandbox)
+entitlement](https://flutter.dev/to/macos-entitlements)
 
 ### Web
 
@@ -79,12 +77,14 @@ class _VideoAppState extends State<VideoApp> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'))
-      ..initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-        setState(() {});
-      });
+    _controller =
+        VideoPlayerController.networkUrl(
+            Uri.parse('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
+          )
+          ..initialize().then((_) {
+            // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+            setState(() {});
+          });
   }
 
   @override
@@ -103,14 +103,10 @@ class _VideoAppState extends State<VideoApp> {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             setState(() {
-              _controller.value.isPlaying
-                  ? _controller.pause()
-                  : _controller.play();
+              _controller.value.isPlaying ? _controller.pause() : _controller.play();
             });
           },
-          child: Icon(
-            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-          ),
+          child: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
         ),
       ),
     );
@@ -122,6 +118,7 @@ class _VideoAppState extends State<VideoApp> {
     super.dispose();
   }
 }
+
 ```
 
 ## Usage
@@ -142,3 +139,10 @@ and so on.
 To learn about playback speed limitations, see the [`setPlaybackSpeed` method documentation](https://pub.dev/documentation/video_player/latest/video_player/VideoPlayerController/setPlaybackSpeed.html).
 
 Furthermore, see the example app for an example playback speed implementation.
+
+### Video view type
+
+You can set the video view type of your controller (instance of `VideoPlayerController`) during its creation by passing the `videoViewType` argument.  
+If set to `VideoViewType.platformView`, platform views will be used instead of texture view on supported platforms.
+
+The relative performance of the different view types may vary by platform, and on some platforms the use of platform views may have correctness issues in certain circumstances due to limitations of Flutter's platform view system.

@@ -1,11 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import Flutter
 import Foundation
 
-class EchoBinaryMessenger: NSObject, FlutterBinaryMessenger {
+final class EchoBinaryMessenger: NSObject, FlutterBinaryMessenger, @unchecked Sendable {
   let codec: FlutterMessageCodec
   private(set) var count = 0
   var defaultReturn: Any?

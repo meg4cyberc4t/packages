@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,14 +12,18 @@ import 'src/messages.g.dart';
 /// An Android implementation of [ImagePickerPlatform].
 class ImagePickerAndroid extends ImagePickerPlatform {
   /// Creates a new plugin implementation instance.
-  ImagePickerAndroid({@visibleForTesting ImagePickerApi? api})
-      : _hostApi = api ?? ImagePickerApi();
+  ImagePickerAndroid({@visibleForTesting ImagePickerApi? api}) : _hostApi = api ?? ImagePickerApi();
 
   final ImagePickerApi _hostApi;
 
-  /// Sets [ImagePickerAndroid] to use Android 13 Photo Picker.
+  /// Whether to use the Android Photo Picker on Android versions less than 16.
   ///
-  /// Currently defaults to false, but the default is subject to change.
+  /// On Android 16+ the Photo Picker is always used regardless of this setting.
+  ///
+  /// On earlier Android versions, setting this to false uses the legacy
+  /// `ACTION_GET_CONTENT` picker instead of the Photo Picker.
+  ///
+  /// Defaults to false.
   bool useAndroidPhotoPicker = false;
 
   /// Registers this class as the default platform implementation.
@@ -51,7 +55,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     double? maxHeight,
     int? imageQuality,
   }) async {
-    final List<dynamic> paths = await _getMultiImagePath(
+    final List<String> paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
@@ -60,18 +64,17 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       return null;
     }
 
-    return paths.map((dynamic path) => PickedFile(path as String)).toList();
+    return paths.map((String path) => PickedFile(path)).toList();
   }
 
-  Future<List<dynamic>> _getMultiImagePath({
+  Future<List<String>> _getMultiImagePath({
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
     int? limit,
   }) {
     if (imageQuality != null && (imageQuality < 0 || imageQuality > 100)) {
-      throw ArgumentError.value(
-          imageQuality, 'imageQuality', 'must be between 0 and 100');
+      throw ArgumentError.value(imageQuality, 'imageQuality', 'must be between 0 and 100');
     }
 
     if (maxWidth != null && maxWidth < 0) {
@@ -88,15 +91,8 @@ class ImagePickerAndroid extends ImagePickerPlatform {
 
     return _hostApi.pickImages(
       SourceSpecification(type: SourceType.gallery),
-      ImageSelectionOptions(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          quality: imageQuality ?? 100),
-      GeneralOptions(
-        allowMultiple: true,
-        usePhotoPicker: useAndroidPhotoPicker,
-        limit: limit,
-      ),
+      ImageSelectionOptions(maxWidth: maxWidth, maxHeight: maxHeight, quality: imageQuality ?? 100),
+      GeneralOptions(allowMultiple: true, usePhotoPicker: useAndroidPhotoPicker, limit: limit),
     );
   }
 
@@ -109,8 +105,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     bool requestFullMetadata = true,
   }) async {
     if (imageQuality != null && (imageQuality < 0 || imageQuality > 100)) {
-      throw ArgumentError.value(
-          imageQuality, 'imageQuality', 'must be between 0 and 100');
+      throw ArgumentError.value(imageQuality, 'imageQuality', 'must be between 0 and 100');
     }
 
     if (maxWidth != null && maxWidth < 0) {
@@ -121,16 +116,10 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       throw ArgumentError.value(maxHeight, 'maxHeight', 'cannot be negative');
     }
 
-    final List<String?> paths = await _hostApi.pickImages(
+    final List<String> paths = await _hostApi.pickImages(
       _buildSourceSpec(source, preferredCameraDevice),
-      ImageSelectionOptions(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          quality: imageQuality ?? 100),
-      GeneralOptions(
-        allowMultiple: false,
-        usePhotoPicker: useAndroidPhotoPicker,
-      ),
+      ImageSelectionOptions(maxWidth: maxWidth, maxHeight: maxHeight, quality: imageQuality ?? 100),
+      GeneralOptions(allowMultiple: false, usePhotoPicker: useAndroidPhotoPicker),
     );
     return paths.isEmpty ? null : paths.first;
   }
@@ -154,13 +143,10 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
-    final List<String?> paths = await _hostApi.pickVideos(
+    final List<String> paths = await _hostApi.pickVideos(
       _buildSourceSpec(source, preferredCameraDevice),
       VideoSelectionOptions(maxDurationSeconds: maxDuration?.inSeconds),
-      GeneralOptions(
-        allowMultiple: false,
-        usePhotoPicker: useAndroidPhotoPicker,
-      ),
+      GeneralOptions(allowMultiple: false, usePhotoPicker: useAndroidPhotoPicker),
     );
     return paths.isEmpty ? null : paths.first;
   }
@@ -205,7 +191,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     double? maxHeight,
     int? imageQuality,
   }) async {
-    final List<dynamic> paths = await _getMultiImagePath(
+    final List<String> paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
@@ -214,14 +200,14 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       return null;
     }
 
-    return paths.map((dynamic path) => XFile(path as String)).toList();
+    return paths.map((String path) => XFile(path)).toList();
   }
 
   @override
   Future<List<XFile>> getMultiImageWithOptions({
     MultiImagePickerOptions options = const MultiImagePickerOptions(),
   }) async {
-    final List<dynamic> paths = await _getMultiImagePath(
+    final List<String> paths = await _getMultiImagePath(
       maxWidth: options.imageOptions.maxWidth,
       maxHeight: options.imageOptions.maxHeight,
       imageQuality: options.imageOptions.imageQuality,
@@ -232,19 +218,15 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       return <XFile>[];
     }
 
-    return paths.map((dynamic path) => XFile(path as String)).toList();
+    return paths.map((String path) => XFile(path)).toList();
   }
 
   @override
-  Future<List<XFile>> getMedia({
-    required MediaOptions options,
-  }) async {
+  Future<List<XFile>> getMedia({required MediaOptions options}) async {
     return (await _hostApi.pickMedia(
       _mediaOptionsToMediaSelectionOptions(options),
       _mediaOptionsToGeneralOptions(options),
-    ))
-        .map((String? path) => XFile(path!))
-        .toList();
+    )).map((String? path) => XFile(path!)).toList();
   }
 
   @override
@@ -261,26 +243,43 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     return path != null ? XFile(path) : null;
   }
 
-  MediaSelectionOptions _mediaOptionsToMediaSelectionOptions(
-      MediaOptions mediaOptions) {
-    final ImageSelectionOptions imageSelectionOptions =
-        _imageOptionsToImageSelectionOptionsWithValidator(
-            mediaOptions.imageOptions);
-
-    return MediaSelectionOptions(
-      imageSelectionOptions: imageSelectionOptions,
+  @override
+  Future<List<XFile>> getMultiVideoWithOptions({
+    MultiVideoPickerOptions options = const MultiVideoPickerOptions(),
+  }) async {
+    final List<String> paths = await _hostApi.pickVideos(
+      SourceSpecification(type: SourceType.gallery),
+      VideoSelectionOptions(maxDurationSeconds: options.maxDuration?.inSeconds),
+      GeneralOptions(
+        allowMultiple: true,
+        usePhotoPicker: useAndroidPhotoPicker,
+        limit: options.limit,
+      ),
     );
+
+    if (paths.isEmpty) {
+      return <XFile>[];
+    }
+
+    return paths.map((String path) => XFile(path)).toList();
+  }
+
+  MediaSelectionOptions _mediaOptionsToMediaSelectionOptions(MediaOptions mediaOptions) {
+    final ImageSelectionOptions imageSelectionOptions =
+        _imageOptionsToImageSelectionOptionsWithValidator(mediaOptions.imageOptions);
+
+    return MediaSelectionOptions(imageSelectionOptions: imageSelectionOptions);
   }
 
   ImageSelectionOptions _imageOptionsToImageSelectionOptionsWithValidator(
-      ImageOptions? imageOptions) {
+    ImageOptions? imageOptions,
+  ) {
     final double? maxHeight = imageOptions?.maxHeight;
     final double? maxWidth = imageOptions?.maxWidth;
     final int? imageQuality = imageOptions?.imageQuality;
 
     if (imageQuality != null && (imageQuality < 0 || imageQuality > 100)) {
-      throw ArgumentError.value(
-          imageQuality, 'imageQuality', 'must be between 0 and 100');
+      throw ArgumentError.value(imageQuality, 'imageQuality', 'must be between 0 and 100');
     }
 
     if (maxWidth != null && maxWidth < 0) {
@@ -291,7 +290,10 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       throw ArgumentError.value(maxHeight, 'maxHeight', 'cannot be negative');
     }
     return ImageSelectionOptions(
-        quality: imageQuality ?? 100, maxHeight: maxHeight, maxWidth: maxWidth);
+      quality: imageQuality ?? 100,
+      maxHeight: maxHeight,
+      maxWidth: maxWidth,
+    );
   }
 
   GeneralOptions _mediaOptionsToGeneralOptions(MediaOptions options) {
@@ -307,7 +309,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     }
 
     if (limit != null && limit < 2) {
-      throw ArgumentError.value(limit, 'limit', 'cannot be lower then 2');
+      throw ArgumentError.value(limit, 'limit', 'cannot be lower than 2');
     }
 
     return GeneralOptions(
@@ -350,8 +352,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
 
     // Entries are guaranteed not to be null, even though that's not currently
     // expressible in Pigeon.
-    final List<XFile> pickedFileList =
-        result.paths.map((String? path) => XFile(path!)).toList();
+    final List<XFile> pickedFileList = result.paths.map((String? path) => XFile(path!)).toList();
 
     return LostDataResponse(
       file: pickedFileList.isEmpty ? null : pickedFileList.last,
@@ -361,11 +362,11 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     );
   }
 
-  SourceSpecification _buildSourceSpec(
-      ImageSource source, CameraDevice device) {
+  SourceSpecification _buildSourceSpec(ImageSource source, CameraDevice device) {
     return SourceSpecification(
-        type: _sourceSpecTypeForSource(source),
-        camera: _sourceSpecCameraForDevice(device));
+      type: _sourceSpecTypeForSource(source),
+      camera: _sourceSpecCameraForDevice(device),
+    );
   }
 
   SourceType _sourceSpecTypeForSource(ImageSource source) {

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
  * action that's performed via Flutter engine. It's supposed to be used for complex interactions or
  * those that are brittle if performed through Android system. Most of the actions should be
  * associated with a {@link WidgetMatcher}, but some may not, e.g. an action that checks the
- * rendering status of the entire {@link io.flutter.view.FlutterView}.
+ * rendering status of the entire {@link io.flutter.embedding.android.FlutterView}.
  */
 @Beta
 public abstract class SyntheticAction {

@@ -1,11 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:adaptive_navigation/adaptive_navigation.dart';
-import 'package:flutter/material.dart';
-
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The enum for scaffold tab.
 enum ScaffoldTab {
@@ -16,17 +15,13 @@ enum ScaffoldTab {
   authors,
 
   /// The settings tab.
-  settings
+  settings,
 }
 
 /// The scaffold for the book store.
 class BookstoreScaffold extends StatelessWidget {
   /// Creates a [BookstoreScaffold].
-  const BookstoreScaffold({
-    required this.selectedTab,
-    required this.child,
-    super.key,
-  });
+  const BookstoreScaffold({required this.selectedTab, required this.child, super.key});
 
   /// Which tab of the scaffold to display.
   final ScaffoldTab selectedTab;
@@ -36,33 +31,24 @@ class BookstoreScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: AdaptiveNavigationScaffold(
-          selectedIndex: selectedTab.index,
-          body: child,
-          onDestinationSelected: (int idx) {
-            switch (ScaffoldTab.values[idx]) {
-              case ScaffoldTab.books:
-                context.go('/books');
-              case ScaffoldTab.authors:
-                context.go('/authors');
-              case ScaffoldTab.settings:
-                context.go('/settings');
-            }
-          },
-          destinations: const <AdaptiveScaffoldDestination>[
-            AdaptiveScaffoldDestination(
-              title: 'Books',
-              icon: Icons.book,
-            ),
-            AdaptiveScaffoldDestination(
-              title: 'Authors',
-              icon: Icons.person,
-            ),
-            AdaptiveScaffoldDestination(
-              title: 'Settings',
-              icon: Icons.settings,
-            ),
-          ],
-        ),
-      );
+    body: AdaptiveNavigationScaffold(
+      selectedIndex: selectedTab.index,
+      body: child,
+      onDestinationSelected: (int idx) {
+        switch (ScaffoldTab.values[idx]) {
+          case ScaffoldTab.books:
+            context.go('/books');
+          case ScaffoldTab.authors:
+            context.go('/authors');
+          case ScaffoldTab.settings:
+            context.go('/settings');
+        }
+      },
+      destinations: const <AdaptiveScaffoldDestination>[
+        AdaptiveScaffoldDestination(title: 'Books', icon: Icons.book),
+        AdaptiveScaffoldDestination(title: 'Authors', icon: Icons.person),
+        AdaptiveScaffoldDestination(title: 'Settings', icon: Icons.settings),
+      ],
+    ),
+  );
 }

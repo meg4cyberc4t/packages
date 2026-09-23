@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@
 
 - (void)testSimple {
   HandlerBinaryMessenger *binaryMessenger = [[HandlerBinaryMessenger alloc]
-      initWithCodec:MultipleArityHostApiGetCodec()
-            handler:^id _Nullable(NSArray *_Nonnull args) {
+      initWithCodec:GetMultipleArityCodec()
+            handler:^id _Nullable(NSArray<id> *_Nonnull args) {
               return @[ @([args[0] intValue] - [args[1] intValue]) ];
             }];
   MultipleArityFlutterApi *api =

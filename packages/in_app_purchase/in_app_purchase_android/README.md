@@ -19,23 +19,10 @@ Using the Alternative billing only feature requires Google Play app configuratio
 
 [Google Play documentation for Alternative billing](https://developer.android.com/google/play/billing/alternative)
 
-## Migrating to 0.3.0
-To migrate to version 0.3.0 from 0.2.x, have a look at the [migration guide](migration_guide.md).
-
-## Contributing
-
-This plugin uses
-[json_serializable](https://pub.dev/packages/json_serializable) for the
-many data structs passed between the underlying platform layers and Dart. After
-editing any of the serialized data structs, rebuild the serializers by running
-`flutter packages pub run build_runner build --delete-conflicting-outputs`.
-`flutter packages pub run build_runner watch --delete-conflicting-outputs` will
-watch the filesystem for changes.
-
-If you would like to contribute to the plugin, check out our
-[contribution guide](https://github.com/flutter/packages/blob/main/CONTRIBUTING.md).
-
+## Migrating to 0.5.0
+To migrate to version 0.5.0 from 0.4.x or 0.3.0 from 0.2.x, have a look at the
+[migration guide](migration_guide.md).
 
 [1]: https://pub.dev/packages/in_app_purchase
-[2]: https://flutter.dev/docs/development/packages-and-plugins/developing-packages#endorsed-federated-plugin
+[2]: https://flutter.dev/to/endorsed-federated-plugin
 [3]: https://pub.dev/packages/in_app_purchase_android/install

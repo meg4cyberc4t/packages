@@ -1,9 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 // This scenario demonstrates how to navigate using named locations instead of
 // URLs.
@@ -65,11 +65,8 @@ class App extends StatelessWidget {
   static const String title = 'GoRouter Example: Named Routes';
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-        routerConfig: _router,
-        title: title,
-        debugShowCheckedModeBanner: false,
-      );
+  Widget build(BuildContext context) =>
+      MaterialApp.router(routerConfig: _router, title: title, debugShowCheckedModeBanner: false);
 
   late final GoRouter _router = GoRouter(
     debugLogDiagnostics: true,
@@ -77,8 +74,7 @@ class App extends StatelessWidget {
       GoRoute(
         name: 'home',
         path: '/',
-        builder: (BuildContext context, GoRouterState state) =>
-            const HomeScreen(),
+        builder: (BuildContext context, GoRouterState state) => const HomeScreen(),
         routes: <GoRoute>[
           GoRoute(
             name: 'family',
@@ -91,8 +87,9 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 builder: (BuildContext context, GoRouterState state) {
                   return PersonScreen(
-                      fid: state.pathParameters['fid']!,
-                      pid: state.pathParameters['pid']!);
+                    fid: state.pathParameters['fid']!,
+                    pid: state.pathParameters['pid']!,
+                  );
                 },
               ),
             ],
@@ -111,17 +108,16 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(App.title),
-      ),
+      appBar: AppBar(title: const Text(App.title)),
       body: ListView(
         children: <Widget>[
           for (final MapEntry<String, Family> entry in _families.entries)
             ListTile(
               title: Text(entry.value.name),
-              onTap: () => context.go(context.namedLocation('family',
-                  pathParameters: <String, String>{'fid': entry.key})),
-            )
+              onTap: () => context.go(
+                context.namedLocation('family', pathParameters: <String, String>{'fid': entry.key}),
+              ),
+            ),
         ],
       ),
     );
@@ -146,11 +142,13 @@ class FamilyScreen extends StatelessWidget {
           for (final MapEntry<String, Person> entry in people.entries)
             ListTile(
               title: Text(entry.value.name),
-              onTap: () => context.go(context.namedLocation(
-                'person',
-                pathParameters: <String, String>{'fid': fid, 'pid': entry.key},
-                queryParameters: <String, String>{'qid': 'quid'},
-              )),
+              onTap: () => context.go(
+                context.namedLocation(
+                  'person',
+                  pathParameters: <String, String>{'fid': fid, 'pid': entry.key},
+                  queryParameters: <String, String>{'qid': 'quid'},
+                ),
+              ),
             ),
         ],
       ),

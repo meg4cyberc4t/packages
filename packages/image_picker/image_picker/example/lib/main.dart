@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _playVideo(XFile? file) async {
     if (file != null && mounted) {
       await _disposeVideoController();
-      late VideoPlayerController controller;
+      final VideoPlayerController controller;
       if (kIsWeb) {
         controller = VideoPlayerController.networkUrl(Uri.parse(file.path));
       } else {
@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // Mute the video so it auto-plays in web!
       // This is not needed if the call to .play is the result of user
       // interaction (clicking on a "play" button, for example).
-      const double volume = kIsWeb ? 0.0 : 1.0;
+      const volume = kIsWeb ? 0.0 : 1.0;
       await controller.setVolume(volume);
       await controller.initialize();
       await controller.setLooping(true);
@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _onImageButtonPressed(
     ImageSource source, {
     required BuildContext context,
-    bool isMultiImage = false,
+    bool allowMultiple = false,
     bool isMedia = false,
   }) async {
     if (_controller != null) {
@@ -93,12 +93,25 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (context.mounted) {
       if (isVideo) {
-        final XFile? file = await _picker.pickVideo(
-            source: source, maxDuration: const Duration(seconds: 10));
-        await _playVideo(file);
-      } else if (isMultiImage) {
-        await _displayPickImageDialog(context, true, (double? maxWidth,
-            double? maxHeight, int? quality, int? limit) async {
+        final List<XFile> files;
+        if (allowMultiple) {
+          files = await _picker.pickMultiVideo();
+        } else {
+          final XFile? file = await _picker.pickVideo(
+            source: source,
+            maxDuration: const Duration(seconds: 10),
+          );
+          files = <XFile>[if (file != null) file];
+        }
+        // Just play the first file, to keep the example simple.
+        await _playVideo(files.firstOrNull);
+      } else if (allowMultiple) {
+        await _displayPickImageDialog(context, true, (
+          double? maxWidth,
+          double? maxHeight,
+          int? quality,
+          int? limit,
+        ) async {
           try {
             final List<XFile> pickedFileList = isMedia
                 ? await _picker.pickMultipleMedia(
@@ -123,10 +136,14 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         });
       } else if (isMedia) {
-        await _displayPickImageDialog(context, false, (double? maxWidth,
-            double? maxHeight, int? quality, int? limit) async {
+        await _displayPickImageDialog(context, false, (
+          double? maxWidth,
+          double? maxHeight,
+          int? quality,
+          int? limit,
+        ) async {
           try {
-            final List<XFile> pickedFileList = <XFile>[];
+            final pickedFileList = <XFile>[];
             final XFile? media = await _picker.pickMedia(
               maxWidth: maxWidth,
               maxHeight: maxHeight,
@@ -145,8 +162,12 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         });
       } else {
-        await _displayPickImageDialog(context, false, (double? maxWidth,
-            double? maxHeight, int? quality, int? limit) async {
+        await _displayPickImageDialog(context, false, (
+          double? maxWidth,
+          double? maxHeight,
+          int? quality,
+          int? limit,
+        ) async {
           try {
             final XFile? pickedFile = await _picker.pickImage(
               source: source,
@@ -199,15 +220,9 @@ class _MyHomePageState extends State<MyHomePage> {
       return retrieveError;
     }
     if (_controller == null) {
-      return const Text(
-        'You have not yet picked a video',
-        textAlign: TextAlign.center,
-      );
+      return const Text('You have not yet picked a video', textAlign: TextAlign.center);
     }
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: AspectRatioVideo(_controller),
-    );
+    return Padding(padding: const EdgeInsets.all(10.0), child: AspectRatioVideo(_controller));
   }
 
   Widget _previewImages() {
@@ -230,38 +245,31 @@ class _MyHomePageState extends State<MyHomePage> {
               child: kIsWeb
                   ? Image.network(_mediaFileList![index].path)
                   : (mime == null || mime.startsWith('image/')
-                      ? Image.file(
-                          File(_mediaFileList![index].path),
-                          errorBuilder: (BuildContext context, Object error,
-                              StackTrace? stackTrace) {
-                            return const Center(
-                                child:
-                                    Text('This image type is not supported'));
-                          },
-                        )
-                      : _buildInlineVideoPlayer(index)),
+                        ? Image.file(
+                            File(_mediaFileList![index].path),
+                            errorBuilder:
+                                (BuildContext context, Object error, StackTrace? stackTrace) {
+                                  return const Center(
+                                    child: Text('This image type is not supported'),
+                                  );
+                                },
+                          )
+                        : _buildInlineVideoPlayer(index)),
             );
           },
           itemCount: _mediaFileList!.length,
         ),
       );
     } else if (_pickImageError != null) {
-      return Text(
-        'Pick image error: $_pickImageError',
-        textAlign: TextAlign.center,
-      );
+      return Text('Pick image error: $_pickImageError', textAlign: TextAlign.center);
     } else {
-      return const Text(
-        'You have not yet picked an image.',
-        textAlign: TextAlign.center,
-      );
+      return const Text('You have not yet picked an image.', textAlign: TextAlign.center);
     }
   }
 
   Widget _buildInlineVideoPlayer(int index) {
-    final VideoPlayerController controller =
-        VideoPlayerController.file(File(_mediaFileList![index].path));
-    const double volume = kIsWeb ? 0.0 : 1.0;
+    final controller = VideoPlayerController.file(File(_mediaFileList![index].path));
+    const volume = kIsWeb ? 0.0 : 1.0;
     controller.setVolume(volume);
     controller.initialize();
     controller.setLooping(true);
@@ -304,9 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title!),
-      ),
+      appBar: AppBar(title: Text(widget.title!)),
       body: Center(
         child: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
             ? FutureBuilder<void>(
@@ -349,7 +355,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 _onImageButtonPressed(ImageSource.gallery, context: context);
               },
               heroTag: 'image0',
-              tooltip: 'Pick Image from gallery',
+              tooltip: 'Pick image from gallery',
               child: const Icon(Icons.photo),
             ),
           ),
@@ -358,48 +364,40 @@ class _MyHomePageState extends State<MyHomePage> {
             child: FloatingActionButton(
               onPressed: () {
                 isVideo = false;
+                _onImageButtonPressed(ImageSource.gallery, context: context, allowMultiple: true);
+              },
+              heroTag: 'image1',
+              tooltip: 'Pick multiple images',
+              child: const Icon(Icons.photo_library),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: FloatingActionButton(
+              onPressed: () {
+                isVideo = false;
+                _onImageButtonPressed(ImageSource.gallery, context: context, isMedia: true);
+              },
+              heroTag: 'media',
+              tooltip: 'Pick item from gallery',
+              child: const Icon(Icons.photo_outlined),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: FloatingActionButton(
+              onPressed: () {
+                isVideo = false;
                 _onImageButtonPressed(
                   ImageSource.gallery,
                   context: context,
-                  isMultiImage: true,
+                  allowMultiple: true,
                   isMedia: true,
                 );
               },
               heroTag: 'multipleMedia',
-              tooltip: 'Pick Multiple Media from gallery',
-              child: const Icon(Icons.photo_library),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: FloatingActionButton(
-              onPressed: () {
-                isVideo = false;
-                _onImageButtonPressed(
-                  ImageSource.gallery,
-                  context: context,
-                  isMedia: true,
-                );
-              },
-              heroTag: 'media',
-              tooltip: 'Pick Single Media from gallery',
-              child: const Icon(Icons.photo_library),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: FloatingActionButton(
-              onPressed: () {
-                isVideo = false;
-                _onImageButtonPressed(
-                  ImageSource.gallery,
-                  context: context,
-                  isMultiImage: true,
-                );
-              },
-              heroTag: 'image1',
-              tooltip: 'Pick Multiple Image from gallery',
-              child: const Icon(Icons.photo_library),
+              tooltip: 'Pick multiple items',
+              child: const Icon(Icons.photo_library_outlined),
             ),
           ),
           if (_picker.supportsImageSource(ImageSource.camera))
@@ -411,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   _onImageButtonPressed(ImageSource.camera, context: context);
                 },
                 heroTag: 'image2',
-                tooltip: 'Take a Photo',
+                tooltip: 'Take a photo',
                 child: const Icon(Icons.camera_alt),
               ),
             ),
@@ -423,8 +421,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 isVideo = true;
                 _onImageButtonPressed(ImageSource.gallery, context: context);
               },
-              heroTag: 'video0',
-              tooltip: 'Pick Video from gallery',
+              heroTag: 'video',
+              tooltip: 'Pick video from gallery',
+              child: const Icon(Icons.video_file),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: FloatingActionButton(
+              backgroundColor: Colors.red,
+              onPressed: () {
+                isVideo = true;
+                _onImageButtonPressed(ImageSource.gallery, context: context, allowMultiple: true);
+              },
+              heroTag: 'multiVideo',
+              tooltip: 'Pick multiple videos',
               child: const Icon(Icons.video_library),
             ),
           ),
@@ -437,8 +448,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   isVideo = true;
                   _onImageButtonPressed(ImageSource.camera, context: context);
                 },
-                heroTag: 'video1',
-                tooltip: 'Take a Video',
+                heroTag: 'takeVideo',
+                tooltip: 'Take a video',
                 child: const Icon(Icons.videocam),
               ),
             ),
@@ -449,7 +460,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Text? _getRetrieveErrorWidget() {
     if (_retrieveDataError != null) {
-      final Text result = Text(_retrieveDataError!);
+      final result = Text(_retrieveDataError!);
       _retrieveDataError = null;
       return result;
     }
@@ -457,77 +468,76 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _displayPickImageDialog(
-      BuildContext context, bool isMulti, OnPickImageCallback onPick) async {
+    BuildContext context,
+    bool isMulti,
+    OnPickImageCallback onPick,
+  ) async {
     return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Add optional parameters'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: maxWidthController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: 'Enter maxWidth if desired'),
-                ),
-                TextField(
-                  controller: maxHeightController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: 'Enter maxHeight if desired'),
-                ),
-                TextField(
-                  controller: qualityController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: 'Enter quality if desired'),
-                ),
-                if (isMulti)
-                  TextField(
-                    controller: limitController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        hintText: 'Enter limit if desired'),
-                  ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('CANCEL'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add optional parameters'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: maxWidthController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(hintText: 'Enter maxWidth if desired'),
               ),
-              TextButton(
-                  child: const Text('PICK'),
-                  onPressed: () {
-                    final double? width = maxWidthController.text.isNotEmpty
-                        ? double.parse(maxWidthController.text)
-                        : null;
-                    final double? height = maxHeightController.text.isNotEmpty
-                        ? double.parse(maxHeightController.text)
-                        : null;
-                    final int? quality = qualityController.text.isNotEmpty
-                        ? int.parse(qualityController.text)
-                        : null;
-                    final int? limit = limitController.text.isNotEmpty
-                        ? int.parse(limitController.text)
-                        : null;
-                    onPick(width, height, quality, limit);
-                    Navigator.of(context).pop();
-                  }),
+              TextField(
+                controller: maxHeightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(hintText: 'Enter maxHeight if desired'),
+              ),
+              TextField(
+                controller: qualityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Enter quality if desired'),
+              ),
+              if (isMulti)
+                TextField(
+                  controller: limitController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(hintText: 'Enter limit if desired'),
+                ),
             ],
-          );
-        });
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('PICK'),
+              onPressed: () {
+                final double? width = maxWidthController.text.isNotEmpty
+                    ? double.parse(maxWidthController.text)
+                    : null;
+                final double? height = maxHeightController.text.isNotEmpty
+                    ? double.parse(maxHeightController.text)
+                    : null;
+                final int? quality = qualityController.text.isNotEmpty
+                    ? int.parse(qualityController.text)
+                    : null;
+                final int? limit = limitController.text.isNotEmpty
+                    ? int.parse(limitController.text)
+                    : null;
+                onPick(width, height, quality, limit);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
-typedef OnPickImageCallback = void Function(
-    double? maxWidth, double? maxHeight, int? quality, int? limit);
+typedef OnPickImageCallback =
+    void Function(double? maxWidth, double? maxHeight, int? quality, int? limit);
 
 class AspectRatioVideo extends StatefulWidget {
   const AspectRatioVideo(this.controller, {super.key});

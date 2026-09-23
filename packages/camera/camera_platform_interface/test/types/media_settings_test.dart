@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,13 @@ import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test(
-      'MediaSettings non-parametrized constructor should have correct initial values',
-      () {
-    const MediaSettings settingsWithNoParameters = MediaSettings();
+  test('MediaSettings non-parametrized constructor should have correct initial values', () {
+    const settingsWithNoParameters = MediaSettings();
 
     expect(
       settingsWithNoParameters.resolutionPreset,
       isNull,
-      reason:
-          'MediaSettings constructor should have null default resolutionPreset',
+      reason: 'MediaSettings constructor should have null default resolutionPreset',
     );
 
     expect(
@@ -46,7 +43,7 @@ void main() {
   });
 
   test('MediaSettings fps should hold parameters', () {
-    const MediaSettings settings = MediaSettings(
+    const settings = MediaSettings(
       resolutionPreset: ResolutionPreset.low,
       fps: 20,
       videoBitrate: 128000,
@@ -57,15 +54,10 @@ void main() {
     expect(
       settings.resolutionPreset,
       ResolutionPreset.low,
-      reason:
-          'MediaSettings constructor should hold resolutionPreset parameter',
+      reason: 'MediaSettings constructor should hold resolutionPreset parameter',
     );
 
-    expect(
-      settings.fps,
-      20,
-      reason: 'MediaSettings constructor should hold fps parameter',
-    );
+    expect(settings.fps, 20, reason: 'MediaSettings constructor should hold fps parameter');
 
     expect(
       settings.videoBitrate,
@@ -87,7 +79,7 @@ void main() {
   });
 
   test('MediaSettings hash should be Object.hash of passed parameters', () {
-    const MediaSettings settings = MediaSettings(
+    const settings = MediaSettings(
       resolutionPreset: ResolutionPreset.low,
       fps: 20,
       videoBitrate: 128000,
@@ -98,17 +90,16 @@ void main() {
     expect(
       settings.hashCode,
       Object.hash(ResolutionPreset.low, 20, 128000, 32000, true),
-      reason:
-          'MediaSettings hash() should be equal to Object.hash of parameters',
+      reason: 'MediaSettings hash() should be equal to Object.hash of parameters',
     );
   });
 
   group('MediaSettings == operator', () {
     const ResolutionPreset preset1 = ResolutionPreset.low;
-    const int fps1 = 20;
-    const int videoBitrate1 = 128000;
-    const int audioBitrate1 = 32000;
-    const bool enableAudio1 = true;
+    const fps1 = 20;
+    const videoBitrate1 = 128000;
+    const audioBitrate1 = 32000;
+    const enableAudio1 = true;
 
     const ResolutionPreset preset2 = ResolutionPreset.high;
     const int fps2 = fps1 + 10;
@@ -116,7 +107,7 @@ void main() {
     const int audioBitrate2 = audioBitrate1 * 2;
     const bool enableAudio2 = !enableAudio1;
 
-    const MediaSettings settings1 = MediaSettings(
+    const settings1 = MediaSettings(
       resolutionPreset: ResolutionPreset.low,
       fps: 20,
       videoBitrate: 128000,
@@ -125,7 +116,7 @@ void main() {
     );
 
     test('should compare resolutionPreset', () {
-      const MediaSettings settings2 = MediaSettings(
+      const settings2 = MediaSettings(
         resolutionPreset: preset2,
         fps: fps1,
         videoBitrate: videoBitrate1,
@@ -137,7 +128,7 @@ void main() {
     });
 
     test('should compare fps', () {
-      const MediaSettings settings2 = MediaSettings(
+      const settings2 = MediaSettings(
         resolutionPreset: preset1,
         fps: fps2,
         videoBitrate: videoBitrate1,
@@ -149,7 +140,7 @@ void main() {
     });
 
     test('should compare videoBitrate', () {
-      const MediaSettings settings2 = MediaSettings(
+      const settings2 = MediaSettings(
         resolutionPreset: preset1,
         fps: fps1,
         videoBitrate: videoBitrate2,
@@ -161,7 +152,7 @@ void main() {
     });
 
     test('should compare audioBitrate', () {
-      const MediaSettings settings2 = MediaSettings(
+      const settings2 = MediaSettings(
         resolutionPreset: preset1,
         fps: fps1,
         videoBitrate: videoBitrate1,
@@ -173,7 +164,7 @@ void main() {
     });
 
     test('should compare enableAudio', () {
-      const MediaSettings settings2 = MediaSettings(
+      const settings2 = MediaSettings(
         resolutionPreset: preset1,
         fps: fps1,
         videoBitrate: videoBitrate1,
@@ -186,7 +177,7 @@ void main() {
     });
 
     test('should return true when all parameters are equal', () {
-      const MediaSettings sameSettings = MediaSettings(
+      const sameSettings = MediaSettings(
         resolutionPreset: preset1,
         fps: fps1,
         videoBitrate: videoBitrate1,
@@ -194,20 +185,16 @@ void main() {
         enableAudio: enableAudio1,
       );
 
-      expect(
-        settings1 == sameSettings,
-        isTrue,
-      );
+      expect(settings1 == sameSettings, isTrue);
     });
 
     test('Identical objects should be equal', () {
-      const MediaSettings settingsIdentical = settings1;
+      const settingsIdentical = settings1;
 
       expect(
         settings1 == settingsIdentical,
         isTrue,
-        reason:
-            'MediaSettings == operator should return true for identical objects',
+        reason: 'MediaSettings == operator should return true for identical objects',
       );
     });
 
@@ -215,8 +202,7 @@ void main() {
       expect(
         settings1 == Object(),
         isFalse,
-        reason:
-            'MediaSettings == operator should return false for objects of different types',
+        reason: 'MediaSettings == operator should return false for objects of different types',
       );
     });
   });

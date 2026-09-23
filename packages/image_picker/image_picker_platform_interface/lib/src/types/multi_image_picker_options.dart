@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,7 @@ import 'image_options.dart';
 /// Specifies options for picking multiple images from the device's gallery.
 class MultiImagePickerOptions {
   /// Creates an instance with the given [imageOptions] and [limit].
-  const MultiImagePickerOptions({
-    this.imageOptions = const ImageOptions(),
-    this.limit,
-  });
+  const MultiImagePickerOptions({this.imageOptions = const ImageOptions(), this.limit});
 
   /// Creates an instance with the given [imageOptions] and [limit].
   ///
@@ -36,7 +33,7 @@ class MultiImagePickerOptions {
   /// Throws if limit is lower than 2.
   static void _validate({int? limit}) {
     if (limit != null && limit < 2) {
-      throw ArgumentError.value(limit, 'limit', 'cannot be lower then 2');
+      throw ArgumentError.value(limit, 'limit', 'cannot be lower than 2');
     }
   }
 }

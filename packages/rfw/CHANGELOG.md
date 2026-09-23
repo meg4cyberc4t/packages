@@ -1,3 +1,49 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 1.1.4
+
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* Fixes `fontWeight` not being applied in release mode for `Text` and `StrutStyle` widgets.
+
+## 1.1.3
+
+* Fixes dartdoc comments that accidentally used HTML.
+
+## 1.1.2
+
+* Removes outdated call for feedback from the README.
+
+## 1.1.1
+
+* Removes obsolete scripting language integration section in README.md.
+
+## 1.1.0
+
+* Adds support for the `Flexible` core widget.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 1.0.32
+
+* Updates broken links in README.md.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+* Removes the wasm example.
+
+## 1.0.31
+
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+* Fixes an issue where Widget Builders didn't work properly with Loops.
+
+## 1.0.30
+
+* Adds `missing_code_block_language_in_doc_comment` lint.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 1.0.29
+
+* Adds support for the `Slider` Material widget.
+
 ## 1.0.28
 
 * Updates documentation to WidgetStateProperty and ButtonBar.

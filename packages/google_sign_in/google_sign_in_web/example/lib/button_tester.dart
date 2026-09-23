@@ -1,27 +1,22 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import 'package:google_sign_in_web/google_sign_in_web.dart';
+import 'package:google_sign_in_web/web_only.dart';
 
 import 'src/button_configuration_column.dart';
 
-// The instance of the plugin is automatically created by Flutter before calling
-// our main code, let's grab it directly from the Platform interface of the plugin.
-final GoogleSignInPlugin _plugin =
-    GoogleSignInPlatform.instance as GoogleSignInPlugin;
+// Let's use the Platform Interface directly, no need to use anything web-specific
+// from it. (In a normal app, we'd use the plugin interface!)
+// All the web-specific imports come from the `web_only.dart` library.
+final GoogleSignInPlatform _platform = GoogleSignInPlatform.instance;
 
 Future<void> main() async {
-  await _plugin.initWithParams(const SignInInitParameters(
-    clientId: 'your-client_id.apps.googleusercontent.com',
-  ));
+  await _platform.init(const InitParameters(clientId: 'your-client_id.apps.googleusercontent.com'));
   runApp(
-    const MaterialApp(
-      title: 'Sign in with Google button Tester',
-      home: ButtonConfiguratorDemo(),
-    ),
+    const MaterialApp(title: 'Sign in with Google button Tester', home: ButtonConfiguratorDemo()),
   );
 }
 
@@ -41,19 +36,21 @@ class _ButtonConfiguratorState extends State<ButtonConfiguratorDemo> {
   @override
   void initState() {
     super.initState();
-    _plugin.userDataEvents?.listen((GoogleSignInUserData? userData) {
+    _platform.authenticationEvents?.listen((AuthenticationEvent authEvent) {
       setState(() {
-        _userData = userData;
+        switch (authEvent) {
+          case AuthenticationEventSignIn():
+            _userData = authEvent.user;
+          case AuthenticationEventSignOut():
+          case AuthenticationEventException():
+            _userData = null;
+        }
       });
     });
   }
 
   void _handleSignOut() {
-    _plugin.signOut();
-    setState(() {
-      // signOut does not broadcast through the userDataEvents, so we fake it.
-      _userData = null;
-    });
+    _platform.signOut(const SignOutParams());
   }
 
   void _handleNewWebButtonConfiguration(GSIButtonConfiguration newConfig) {
@@ -69,15 +66,11 @@ class _ButtonConfiguratorState extends State<ButtonConfiguratorDemo> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (_userData == null)
-                _plugin.renderButton(configuration: _buttonConfiguration),
+              if (_userData == null) renderButton(configuration: _buttonConfiguration),
               if (_userData != null) ...<Widget>[
                 Text('Hello, ${_userData!.displayName}!'),
-                ElevatedButton(
-                  onPressed: _handleSignOut,
-                  child: const Text('SIGN OUT'),
-                ),
-              ]
+                ElevatedButton(onPressed: _handleSignOut, child: const Text('SIGN OUT')),
+              ],
             ],
           ),
         ),
@@ -92,12 +85,8 @@ class _ButtonConfiguratorState extends State<ButtonConfiguratorDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Sign in with Google button Tester'),
-        ),
-        body: ConstrainedBox(
-          constraints: const BoxConstraints.expand(),
-          child: _buildBody(),
-        ));
+      appBar: AppBar(title: const Text('Sign in with Google button Tester')),
+      body: ConstrainedBox(constraints: const BoxConstraints.expand(), child: _buildBody()),
+    );
   }
 }

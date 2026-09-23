@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,17 +14,17 @@ typedef LatLngCallback = void Function(gmaps.LatLng latLng);
 /// The base class for all "geometry" group controllers.
 ///
 /// This lets all Geometry controllers ([MarkersController], [CirclesController],
-/// [PolygonsController], [PolylinesController]) to be bound to a [gmaps.GMap]
+/// [PolygonsController], [PolylinesController]) to be bound to a [gmaps.Map]
 /// instance and our internal `mapId` value.
 abstract class GeometryController {
   /// The GMap instance that this controller operates on.
-  late gmaps.GMap googleMap;
+  late gmaps.Map googleMap;
 
   /// The map ID for events.
   late int mapId;
 
-  /// Binds a `mapId` and the [gmaps.GMap] instance to this controller.
-  void bindToMap(int mapId, gmaps.GMap googleMap) {
+  /// Binds a `mapId` and the [gmaps.Map] instance to this controller.
+  void bindToMap(int mapId, gmaps.Map googleMap) {
     this.mapId = mapId;
     this.googleMap = googleMap;
   }

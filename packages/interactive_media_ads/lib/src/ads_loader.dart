@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,13 @@ import 'package:flutter/foundation.dart';
 
 import 'ad_display_container.dart';
 import 'ads_manager_delegate.dart';
+import 'ads_rendering_settings.dart';
+import 'ads_request.dart';
+import 'ima_settings.dart';
 import 'platform_interface/platform_interface.dart';
 
-/// Handles playing ads after they've been received from the server.
+/// Allows publishers to request ads from ad servers or a dynamic ad insertion
+/// stream.
 ///
 /// ## Platform-Specific Features
 /// This class contains an underlying implementation provided by the current
@@ -39,15 +43,17 @@ class AdsLoader {
     required AdDisplayContainer container,
     required void Function(OnAdsLoadedData data) onAdsLoaded,
     required void Function(AdsLoadErrorData data) onAdsLoadError,
+    ImaSettings? settings,
   }) : this.fromPlatformCreationParams(
-          PlatformAdsLoaderCreationParams(
-            container: container.platform,
-            onAdsLoaded: (PlatformOnAdsLoadedData data) {
-              onAdsLoaded(OnAdsLoadedData._(platform: data));
-            },
-            onAdsLoadError: onAdsLoadError,
-          ),
-        );
+         PlatformAdsLoaderCreationParams(
+           container: container.platform,
+           settings: settings?.platform ?? ImaSettings().platform,
+           onAdsLoaded: (PlatformOnAdsLoadedData data) {
+             onAdsLoaded(OnAdsLoadedData._(platform: data));
+           },
+           onAdsLoadError: onAdsLoadError,
+         ),
+       );
 
   /// Constructs an [AdsLoader] from creation params for a specific platform.
   ///
@@ -76,9 +82,8 @@ class AdsLoader {
   /// );
   /// ```
   /// {@endtemplate}
-  AdsLoader.fromPlatformCreationParams(
-    PlatformAdsLoaderCreationParams params,
-  ) : this.fromPlatform(PlatformAdsLoader(params));
+  AdsLoader.fromPlatformCreationParams(PlatformAdsLoaderCreationParams params)
+    : this.fromPlatform(PlatformAdsLoader(params));
 
   /// Constructs a [AdsLoader] from a specific platform implementation.
   AdsLoader.fromPlatform(this.platform);
@@ -86,14 +91,20 @@ class AdsLoader {
   /// Implementation of [PlatformAdsLoader] for the current platform.
   final PlatformAdsLoader platform;
 
+  /// Defines general SDK settings.
+  ImaSettings get settings => ImaSettings.fromPlatform(platform.params.settings);
+
   /// Signals to the SDK that the content has completed.
   Future<void> contentComplete() {
     return platform.contentComplete();
   }
 
   /// Requests ads from a server.
+  ///
+  /// Ads cannot be requested until the `AdDisplayContainer` has been added to
+  /// the native View hierarchy. See [AdDisplayContainer.onContainerAdded].
   Future<void> requestAds(AdsRequest request) {
-    return platform.requestAds(request);
+    return platform.requestAds(request.platform);
   }
 }
 
@@ -139,9 +150,14 @@ class AdsManager {
   /// Implementation of [PlatformAdsManager] for the current platform.
   final PlatformAdsManager platform;
 
+  /// List of content time offsets at which ad breaks are scheduled.
+  ///
+  /// The list will be empty for single ads or if no ad breaks are scheduled.
+  List<Duration> get adCuePoints => platform.adCuePoints;
+
   /// Initializes the ad experience using default rendering settings.
-  Future<void> init() {
-    return platform.init(AdsManagerInitParams());
+  Future<void> init({AdsRenderingSettings? settings}) {
+    return platform.init(settings: settings?.platform);
   }
 
   /// Starts playing the ads.
@@ -152,6 +168,30 @@ class AdsManager {
   /// The [AdsManagerDelegate] to notify with events during ad playback.
   Future<void> setAdsManagerDelegate(AdsManagerDelegate delegate) {
     return platform.setAdsManagerDelegate(delegate.platform);
+  }
+
+  /// Pauses the current ad.
+  Future<void> pause() {
+    return platform.pause();
+  }
+
+  /// Resumes the current ad.
+  Future<void> resume() {
+    return platform.resume();
+  }
+
+  /// Skips the current ad.
+  ///
+  /// This only skips ads if IMA does not render the 'Skip ad' button.
+  Future<void> skip() {
+    return platform.skip();
+  }
+
+  /// Discards current ad break and resumes content.
+  ///
+  /// If there is no current ad then the next ad break is discarded.
+  Future<void> discardAdBreak() {
+    return platform.discardAdBreak();
   }
 
   /// Stops the ad and all tracking, then releases all assets that were loaded

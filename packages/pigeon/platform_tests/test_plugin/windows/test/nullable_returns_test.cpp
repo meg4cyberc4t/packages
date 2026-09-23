@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,10 @@ TEST(NullableReturns, HostNullableArgNonNull) {
   NullableArgHostApi::SetUp(&messenger, &api);
 
   int64_t result = 0;
+  int64_t seven = 7;
   messenger.SendHostMessage(
       "dev.flutter.pigeon.pigeon_integration_tests.NullableArgHostApi.doit",
-      EncodableValue(EncodableList({EncodableValue(7)})),
+      EncodableValue(EncodableList({EncodableValue(seven)})),
       [&result](const EncodableValue& reply) {
         result = GetResult(reply).LongValue();
       });

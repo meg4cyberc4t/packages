@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,11 +44,8 @@ class GooglePlayUserChoiceDetails {
   }
 
   @override
-  int get hashCode => Object.hash(
-        originalExternalTransactionId,
-        externalTransactionToken,
-        products.hashCode,
-      );
+  int get hashCode =>
+      Object.hash(originalExternalTransactionId, externalTransactionToken, products.hashCode);
 }
 
 /// Data structure representing a UserChoiceDetails product.
@@ -57,8 +54,11 @@ class GooglePlayUserChoiceDetails {
 @immutable
 class GooglePlayUserChoiceDetailsProduct {
   /// Creates UserChoiceDetailsProduct.
-  const GooglePlayUserChoiceDetailsProduct(
-      {required this.id, required this.offerToken, required this.productType});
+  const GooglePlayUserChoiceDetailsProduct({
+    required this.id,
+    required this.offerToken,
+    required this.productType,
+  });
 
   /// Returns the id of the product being purchased.
   final String id;
@@ -84,11 +84,7 @@ class GooglePlayUserChoiceDetailsProduct {
   }
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        offerToken,
-        productType,
-      );
+  int get hashCode => Object.hash(id, offerToken, productType);
 }
 
 /// This wraps [`com.android.billingclient.api.BillingClient.ProductType`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient.ProductType)
@@ -97,5 +93,5 @@ enum GooglePlayProductType {
   inapp,
 
   /// A Product type for Android apps subscriptions.
-  subs
+  subs,
 }

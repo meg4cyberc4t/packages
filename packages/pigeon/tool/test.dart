@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,26 +23,28 @@ const String _testFlag = 'test';
 const String _noGen = 'no-generation';
 const String _listFlag = 'list';
 const String _format = 'format';
+const String _overflow = 'overflow';
 
 Future<void> main(List<String> args) async {
-  final ArgParser parser = ArgParser()
+  final parser = ArgParser()
     ..addMultiOption(_testFlag, abbr: 't', help: 'Only run specified tests.')
-    ..addFlag(_noGen,
-        abbr: 'g', help: 'Skips the generation step.', negatable: false)
-    ..addFlag(_format,
-        abbr: 'f', help: 'Formats generated test files before running tests.')
-    ..addFlag(_listFlag,
-        negatable: false, abbr: 'l', help: 'List available tests.')
-    ..addFlag('help',
-        negatable: false, abbr: 'h', help: 'Print this reference.');
+    ..addFlag(_noGen, abbr: 'g', help: 'Skips the generation step.', negatable: false)
+    ..addFlag(_format, abbr: 'f', help: 'Formats generated test files before running tests.')
+    ..addFlag(
+      _overflow,
+      help:
+          'Generates overflow files for integration tests, runs tests with and without overflow files.',
+      abbr: 'o',
+    )
+    ..addFlag(_listFlag, negatable: false, abbr: 'l', help: 'List available tests.')
+    ..addFlag('help', negatable: false, abbr: 'h', help: 'Print this reference.');
 
   final ArgResults argResults = parser.parse(args);
-  List<String> testsToRun = <String>[];
+  var testsToRun = <String>[];
   if (argResults.wasParsed(_listFlag)) {
     print('available tests:');
 
-    final int columnWidth =
-        testSuites.keys.map((String key) => key.length).reduce(max) + 4;
+    final int columnWidth = testSuites.keys.map((String key) => key.length).reduce(max) + 4;
 
     for (final MapEntry<String, TestInfo> info in testSuites.entries) {
       print('${info.key.padRight(columnWidth)}- ${info.value.description}');
@@ -62,51 +64,35 @@ ${parser.usage}''');
   // If no tests are provided, run everything that is supported on the current
   // platform.
   if (testsToRun.isEmpty) {
-    const List<String> dartTests = <String>[
-      dartUnitTests,
-      flutterUnitTests,
-      commandLineTests,
-    ];
-    const List<String> androidTests = <String>[
+    const dartTests = <String>[dartUnitTests, flutterUnitTests, commandLineTests];
+    const androidTests = <String>[
       androidJavaUnitTests,
       androidKotlinUnitTests,
       androidJavaIntegrationTests,
       androidKotlinIntegrationTests,
       androidJavaLint,
+      androidKotlinLint,
     ];
-    const List<String> iOSTests = <String>[
+    const iOSTests = <String>[
       iOSObjCUnitTests,
       iOSObjCIntegrationTests,
       iOSSwiftUnitTests,
       iOSSwiftIntegrationTests,
     ];
-    const List<String> macOSTests = <String>[
+    const linuxTests = <String>[linuxUnitTests, linuxIntegrationTests];
+    const macOSTests = <String>[
       macOSObjCIntegrationTests,
       macOSSwiftUnitTests,
-      macOSSwiftIntegrationTests
+      macOSSwiftIntegrationTests,
     ];
-    const List<String> windowsTests = <String>[
-      windowsUnitTests,
-      windowsIntegrationTests,
-    ];
+    const windowsTests = <String>[windowsUnitTests, windowsIntegrationTests];
 
     if (Platform.isMacOS) {
-      testsToRun = <String>[
-        ...dartTests,
-        ...androidTests,
-        ...iOSTests,
-        ...macOSTests,
-      ];
+      testsToRun = <String>[...dartTests, ...androidTests, ...iOSTests, ...macOSTests];
     } else if (Platform.isWindows) {
-      testsToRun = <String>[
-        ...dartTests,
-        ...windowsTests,
-      ];
+      testsToRun = <String>[...dartTests, ...windowsTests];
     } else if (Platform.isLinux) {
-      testsToRun = <String>[
-        ...dartTests,
-        ...androidTests,
-      ];
+      testsToRun = <String>[...dartTests, ...androidTests, ...linuxTests];
     } else {
       print('Unsupported host platform.');
       exit(1);
@@ -117,5 +103,6 @@ ${parser.usage}''');
     testsToRun,
     runGeneration: !argResults.wasParsed(_noGen),
     runFormat: argResults.wasParsed(_format),
+    includeOverflow: argResults.wasParsed(_overflow),
   );
 }

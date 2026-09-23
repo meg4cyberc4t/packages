@@ -1,12 +1,15 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'src/event_channel_messages.g.dart';
 import 'src/messages.g.dart';
 
 // #docregion main-dart-flutter
@@ -16,12 +19,14 @@ class _ExampleFlutterApi implements MessageFlutterApi {
     return aString ?? '';
   }
 }
+
 // #enddocregion main-dart-flutter
 
 void main() {
-// #docregion main-dart-flutter
+  WidgetsFlutterBinding.ensureInitialized();
+  // #docregion main-dart-flutter
   MessageFlutterApi.setUp(_ExampleFlutterApi());
-// #enddocregion main-dart-flutter
+  // #enddocregion main-dart-flutter
   runApp(const MyApp());
 }
 
@@ -70,10 +75,10 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Sends message through host api using `MessageData` class
   /// and api `sendMessage` method.
   Future<bool> sendMessage(String messageText) {
-    final MessageData message = MessageData(
+    final message = MessageData(
       code: Code.one,
-      data: <String?, String?>{'header': 'this is a header'},
-      description: 'uri text',
+      data: <String, String>{'header': 'this is a header'},
+      messageDescription: 'uri text',
     );
     try {
       return _api.sendMessage(message);
@@ -82,20 +87,41 @@ class _MyHomePageState extends State<MyHomePage> {
       return Future<bool>(() => true);
     }
   }
+
   // #enddocregion main-dart
+
+  // #docregion main-dart-event
+  Stream<String> getEventStream() async* {
+    final Stream<PlatformEvent> events = streamEvents();
+    await for (final PlatformEvent event in events) {
+      switch (event) {
+        case IntEvent():
+          final int intData = event.data;
+          yield '$intData, ';
+        case StringEvent():
+          final String stringData = event.data;
+          yield '$stringData, ';
+      }
+    }
+  }
+
+  // #enddocregion main-dart-event
 
   @override
   void initState() {
     super.initState();
-    _hostApi.getHostLanguage().then((String response) {
-      setState(() {
-        _hostCallResult = 'Hello from $response!';
-      });
-    }).onError<PlatformException>((PlatformException error, StackTrace _) {
-      setState(() {
-        _hostCallResult = 'Failed to get host language: ${error.message}';
-      });
-    });
+    _hostApi
+        .getHostLanguage()
+        .then((String response) {
+          setState(() {
+            _hostCallResult = 'Hello from $response!';
+          });
+        })
+        .onError<PlatformException>((PlatformException error, StackTrace _) {
+          setState(() {
+            _hostCallResult = 'Failed to get host language: ${error.message}';
+          });
+        });
   }
 
   @override
@@ -109,10 +135,21 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              _hostCallResult ?? 'Waiting for host language...',
-            ),
+            Text(_hostCallResult ?? 'Waiting for host language...'),
             if (_hostCallResult == null) const CircularProgressIndicator(),
+            if (Platform.isAndroid || Platform.isIOS)
+              StreamBuilder<String>(
+                stream: getEventStream(),
+                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(snapshot.data ?? '');
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              )
+            else
+              const Text('event channels are not supported on this platform'),
           ],
         ),
       ),

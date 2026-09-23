@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,7 @@ import '../router.dart';
 /// when routing from anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
   /// Default constructor for the inherited go router.
-  const InheritedGoRouter({
-    required super.child,
-    required this.goRouter,
-    super.key,
-  });
+  const InheritedGoRouter({required super.child, required this.goRouter, super.key});
 
   /// The [GoRouter] that is made available to the widget tree.
   final GoRouter goRouter;

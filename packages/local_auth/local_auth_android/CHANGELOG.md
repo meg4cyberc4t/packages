@@ -1,3 +1,134 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.2.0
+
+* Adjusts visibilty modifiers to support the migration of unit tests to Kotlin.
+
+## 2.1.0
+
+* Converts the implementation to Kotlin.
+
+## 2.0.10
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+
+## 2.0.9
+
+* Migrates to Built-in Kotlin to support AGP 9.
+* Updates minimum supported SDK version to Flutter 3.44/Dart 3.12.
+
+## 2.0.8
+
+* Updates internal implementation to use Kotlin Pigeon.
+
+## 2.0.7
+
+* Updates build files from Groovy to Kotlin.
+
+## 2.0.6
+
+* Bumps androidx.core:core from 1.17.0 to 1.18.0.
+
+## 2.0.5
+
+* Adds platform-specific setup instructions to README.
+
+## 2.0.4
+
+* Bumps androidx.core:core from 1.13.1 to 1.17.0.
+
+## 2.0.3
+
+* Bumps com.android.tools.build:gradle from 8.12.1 to 8.13.1.
+
+## 2.0.2
+
+* Updates to Pigeon 26.
+
+## 2.0.1
+
+* Removed mockito-inline and updated to mockito-core 5.17.0.
+
+## 2.0.0
+
+* **BREAKING CHANGES:**
+  * Switches to `LocalAuthException` for error reporting.
+  * Removes support for `useErrorDialogs`.
+  * Renames `biometricHint` to `signInHint` to reflect its usage.
+
+## 1.0.56
+
+* Updates Java compatibility version to 17 and minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 1.0.55
+
+* Resolves Gradle 9 deprecations.
+
+## 1.0.54
+
+* Bumps `androidx.fragment:fragment` from `1.8.8` to `1.8.9`.
+
+## 1.0.53
+
+* Removes obsolete code related to supporting SDK <24.
+* Updates minimum supported SDK version to Flutter 3.35.
+
+## 1.0.52
+
+* Bumps com.android.tools.build:gradle to 8.12.1.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 1.0.51
+
+* Updates kotlin version to 2.2.0 to enable gradle 8.11 support.
+
+## 1.0.50
+
+* Updates `androidx.fragment:fragment` to 1.8.8.
+
+## 1.0.49
+
+* Removes obsolete code related to supporting SDK <21.
+
+## 1.0.48
+
+* Updates compileSdk 34 to flutter.compileSdkVersion.
+
+## 1.0.47
+
+* Adds compatibility with `intl` 0.20.0.
+
+## 1.0.46
+
+* Updates Java compatibility version to 11.
+
+## 1.0.45
+
+* Updates to the latest version of Pigeon.
+
+## 1.0.44
+
+* Removes dependency on org.jetbrains.kotlin:kotlin-bom.
+* Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+
+## 1.0.43
+
+* Updates lint checks to ignore NewerVersionAvailable.
+
+## 1.0.42
+
+* Updates AGP version to 8.5.0.
+
+## 1.0.41
+
+* Updates espresso to 3.6.1.
+
+## 1.0.40
+
+* Updates androidx.core version to 1.13.1.
+
 ## 1.0.39
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.

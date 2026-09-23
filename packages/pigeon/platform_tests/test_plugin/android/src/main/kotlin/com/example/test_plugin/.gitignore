@@ -4,3 +4,11 @@
 *.kt
 !TestPlugin.kt
 !CoreTests.gen.kt
+# This contains the declaration of the test classes wrapped by the ProxyApi tests and the
+# implementations of their APIs.
+!ProxyApiTestApiImpls.kt
+
+# Including these makes it easier to review code generation changes.
+!ProxyApiTests.gen.kt
+!EventChannelTests.gen.kt
+!NativeInteropTests.gen.kt

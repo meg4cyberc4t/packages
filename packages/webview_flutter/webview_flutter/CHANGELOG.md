@@ -1,3 +1,51 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 4.14.1
+
+* Adds documentation for `NavigationDelegate` callback parameters.
+
+## 4.14.0
+
+* Add method to retrieve cookies. See `WebViewCookieManager.getCookies`.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 4.13.1
+
+* Fixes HTML in legacy dartdocs.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+
+## 4.13.0
+
+* Adds support to respond to recoverable SSL certificate errors. See `NavigationDelegate(onSSlAuthError)`.
+
+## 4.12.0
+
+* Adds support to set whether to draw the scrollbar. See
+  `WebViewController.setVerticalScrollBarEnabled`,
+  `WebViewController.setHorizontalScrollBarEnabled`,
+  `WebViewController.supportsSetScrollBarsEnabled`.
+* Updates README to indicate that Android SDK <21 is no longer supported.
+
+## 4.11.0
+
+* Adds support to set the over-scroll mode for the WebView. See `WebViewController.setOverScrollMode`.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 4.10.0
+
+* Updates minimum supported `webview_flutter_android` from 3.16.0 to 4.0.0.
+
+## 4.9.0
+
+* Adds endorsed macOS support.
+* Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+
 ## 4.8.0
 
 * Adds `onHttpError` callback to `NavigationDelegate` to catch HTTP error status codes.

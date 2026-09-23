@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,13 @@ import 'types.dart';
 class ClusterManagerUpdates extends MapsObjectUpdates<ClusterManager> {
   /// Computes [ClusterManagerUpdates] given previous and current [ClusterManager]s.
   ClusterManagerUpdates.from(super.previous, super.current)
-      : super.from(objectName: 'clusterManager');
+    : super.from(objectName: 'clusterManager');
 
   /// Set of Clusters to be added in this update.
   Set<ClusterManager> get clusterManagersToAdd => objectsToAdd;
 
   /// Set of ClusterManagerIds to be removed in this update.
-  Set<ClusterManagerId> get clusterManagerIdsToRemove =>
-      objectIdsToRemove.cast<ClusterManagerId>();
+  Set<ClusterManagerId> get clusterManagerIdsToRemove => objectIdsToRemove.cast<ClusterManagerId>();
 
   /// Set of Clusters to be changed in this update.
   Set<ClusterManager> get clusterManagersToChange => objectsToChange;

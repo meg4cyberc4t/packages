@@ -1,10 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package androidx.test.espresso.flutter.action;
 
-import androidx.test.annotation.ExperimentalTestApi;
 import androidx.test.espresso.flutter.api.WidgetAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +43,6 @@ public final class FlutterActions {
    * by directly injecting key events to the Android system. Uses this {@link #syntheticClick()}
    * only when there are special cases that {@link #click()} cannot handle properly.
    */
-  @ExperimentalTestApi()
   public static WidgetAction syntheticClick() {
     return new SyntheticClickAction();
   }

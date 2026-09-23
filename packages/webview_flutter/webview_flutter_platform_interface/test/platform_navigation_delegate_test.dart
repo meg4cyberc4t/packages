@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@ void main() {
   });
 
   test('Cannot be implemented with `implements`', () {
-    const PlatformNavigationDelegateCreationParams params =
-        PlatformNavigationDelegateCreationParams();
-    when(WebViewPlatform.instance!.createPlatformNavigationDelegate(params))
-        .thenReturn(ImplementsPlatformNavigationDelegate());
+    const params = PlatformNavigationDelegateCreationParams();
+    when(
+      WebViewPlatform.instance!.createPlatformNavigationDelegate(params),
+    ).thenReturn(ImplementsPlatformNavigationDelegate());
 
     expect(() {
       PlatformNavigationDelegate(params);
@@ -33,69 +33,56 @@ void main() {
   });
 
   test('Can be extended', () {
-    const PlatformNavigationDelegateCreationParams params =
-        PlatformNavigationDelegateCreationParams();
-    when(WebViewPlatform.instance!.createPlatformNavigationDelegate(params))
-        .thenReturn(ExtendsPlatformNavigationDelegate(params));
+    const params = PlatformNavigationDelegateCreationParams();
+    when(
+      WebViewPlatform.instance!.createPlatformNavigationDelegate(params),
+    ).thenReturn(ExtendsPlatformNavigationDelegate(params));
 
     expect(PlatformNavigationDelegate(params), isNotNull);
   });
 
   test('Can be mocked with `implements`', () {
-    const PlatformNavigationDelegateCreationParams params =
-        PlatformNavigationDelegateCreationParams();
-    when(WebViewPlatform.instance!.createPlatformNavigationDelegate(params))
-        .thenReturn(MockNavigationDelegate());
+    const params = PlatformNavigationDelegateCreationParams();
+    when(
+      WebViewPlatform.instance!.createPlatformNavigationDelegate(params),
+    ).thenReturn(MockNavigationDelegate());
 
     expect(PlatformNavigationDelegate(params), isNotNull);
   });
 
-  test(
-      'Default implementation of setOnNavigationRequest should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
+  test('Default implementation of setOnNavigationRequest should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
+    );
 
     expect(
       () => callbackDelegate.setOnNavigationRequest(
-          (NavigationRequest navigationRequest) => NavigationDecision.navigate),
+        (NavigationRequest navigationRequest) => NavigationDecision.navigate,
+      ),
       throwsUnimplementedError,
     );
   });
 
-  test(
-      'Default implementation of setOnPageStarted should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
-
-    expect(
-      () => callbackDelegate.setOnPageStarted((String url) {}),
-      throwsUnimplementedError,
+  test('Default implementation of setOnPageStarted should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
     );
+
+    expect(() => callbackDelegate.setOnPageStarted((String url) {}), throwsUnimplementedError);
   });
 
-  test(
-      'Default implementation of setOnPageFinished should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
-
-    expect(
-      () => callbackDelegate.setOnPageFinished((String url) {}),
-      throwsUnimplementedError,
+  test('Default implementation of setOnPageFinished should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
     );
+
+    expect(() => callbackDelegate.setOnPageFinished((String url) {}), throwsUnimplementedError);
   });
 
-  test(
-      'Default implementation of setOnHttpError should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
+  test('Default implementation of setOnHttpError should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
+    );
 
     expect(
       () => callbackDelegate.setOnHttpError((HttpResponseError error) {}),
@@ -104,25 +91,21 @@ void main() {
   });
 
   test(
-      // ignore: lines_longer_than_80_chars
-      'Default implementation of setOnProgress should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
+    // ignore: lines_longer_than_80_chars
+    'Default implementation of setOnProgress should throw unimplemented error',
+    () {
+      final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+        const PlatformNavigationDelegateCreationParams(),
+      );
 
-    expect(
-      () => callbackDelegate.setOnProgress((int progress) {}),
-      throwsUnimplementedError,
+      expect(() => callbackDelegate.setOnProgress((int progress) {}), throwsUnimplementedError);
+    },
+  );
+
+  test('Default implementation of setOnWebResourceError should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
     );
-  });
-
-  test(
-      'Default implementation of setOnWebResourceError should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
 
     expect(
       () => callbackDelegate.setOnWebResourceError((WebResourceError error) {}),
@@ -130,28 +113,32 @@ void main() {
     );
   });
 
-  test(
-      'Default implementation of setOnUrlChange should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
+  test('Default implementation of setOnUrlChange should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
+    );
+
+    expect(() => callbackDelegate.setOnUrlChange((UrlChange change) {}), throwsUnimplementedError);
+  });
+
+  test('Default implementation of setOnHttpAuthRequest should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
+    );
 
     expect(
-      () => callbackDelegate.setOnUrlChange((UrlChange change) {}),
+      () => callbackDelegate.setOnHttpAuthRequest((HttpAuthRequest request) {}),
       throwsUnimplementedError,
     );
   });
 
-  test(
-      'Default implementation of setOnHttpAuthRequest should throw unimplemented error',
-      () {
-    final PlatformNavigationDelegate callbackDelegate =
-        ExtendsPlatformNavigationDelegate(
-            const PlatformNavigationDelegateCreationParams());
+  test('Default implementation of setOnSSlAuthError should throw unimplemented error', () {
+    final PlatformNavigationDelegate callbackDelegate = ExtendsPlatformNavigationDelegate(
+      const PlatformNavigationDelegateCreationParams(),
+    );
 
     expect(
-      () => callbackDelegate.setOnHttpAuthRequest((HttpAuthRequest request) {}),
+      () => callbackDelegate.setOnSSlAuthError((PlatformSslAuthError eror) {}),
       throwsUnimplementedError,
     );
   });
@@ -162,8 +149,7 @@ class MockWebViewPlatformWithMixin extends MockWebViewPlatform
         // ignore: prefer_mixin
         MockPlatformInterfaceMixin {}
 
-class ImplementsPlatformNavigationDelegate
-    implements PlatformNavigationDelegate {
+class ImplementsPlatformNavigationDelegate implements PlatformNavigationDelegate {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -172,8 +158,7 @@ class MockNavigationDelegate extends Mock
     with
         // ignore: prefer_mixin
         MockPlatformInterfaceMixin
-    implements
-        PlatformNavigationDelegate {}
+    implements PlatformNavigationDelegate {}
 
 class ExtendsPlatformNavigationDelegate extends PlatformNavigationDelegate {
   ExtendsPlatformNavigationDelegate(super.params) : super.implementation();

@@ -8,13 +8,9 @@ A Flutter plugin for launching a URL.
 
 |             | Android | iOS   | Linux | macOS  | Web | Windows     |
 |-------------|---------|-------|-------|--------|-----|-------------|
-| **Support** | SDK 16+ | 12.0+ | Any   | 10.14+ | Any | Windows 10+ |
+| **Support** | SDK 24+ | 13.0+ | Any   | 10.15+ | Any | Windows 10+ |
 
-## Usage
-
-To use this plugin, add `url_launcher` as a [dependency in your pubspec.yaml file](https://flutter.dev/platform-plugins/).
-
-### Example
+## Example
 
 <?code-excerpt "lib/basic.dart (basic-example)"?>
 ```dart
@@ -24,23 +20,21 @@ import 'package:url_launcher/url_launcher.dart';
 final Uri _url = Uri.parse('https://flutter.dev');
 
 void main() => runApp(
-      const MaterialApp(
-        home: Material(
-          child: Center(
-            child: ElevatedButton(
-              onPressed: _launchUrl,
-              child: Text('Show Flutter homepage'),
-            ),
-          ),
-        ),
+  const MaterialApp(
+    home: Material(
+      child: Center(
+        child: ElevatedButton(onPressed: _launchUrl, child: Text('Show Flutter homepage')),
       ),
-    );
+    ),
+  ),
+);
 
 Future<void> _launchUrl() async {
   if (!await launchUrl(_url)) {
     throw Exception('Could not launch $_url');
   }
 }
+
 ```
 
 See the example app for more complex examples.
@@ -158,12 +152,15 @@ converted to `+` in many cases.
 ```dart
 String? encodeQueryParameters(Map<String, String> params) {
   return params.entries
-      .map((MapEntry<String, String> e) =>
-          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .map(
+        (MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+      )
       .join('&');
 }
+
 // ···
-  final Uri emailLaunchUri = Uri(
+  final emailLaunchUri = Uri(
     scheme: 'mailto',
     path: 'smith@example.com',
     query: encodeQueryParameters(<String, String>{
@@ -172,19 +169,6 @@ String? encodeQueryParameters(Map<String, String> params) {
   );
 
   launchUrl(emailLaunchUri);
-```
-
-Encoding for `sms` is slightly different:
-
-<?code-excerpt "lib/encoding.dart (sms)"?>
-```dart
-final Uri smsLaunchUri = Uri(
-  scheme: 'sms',
-  path: '0118 999 881 999 119 7253',
-  queryParameters: <String, String>{
-    'body': Uri.encodeComponent('Example Subject & Symbols are allowed!'),
-  },
-);
 ```
 
 ### URLs not handled by `Uri`
@@ -208,7 +192,7 @@ Example:
 <?code-excerpt "lib/files.dart (file)"?>
 ```dart
 final String filePath = testFile.absolute.path;
-final Uri uri = Uri.file(filePath);
+final uri = Uri.file(filePath);
 
 if (!File(uri.toFilePath()).existsSync()) {
   throw Exception('$uri does not exist!');

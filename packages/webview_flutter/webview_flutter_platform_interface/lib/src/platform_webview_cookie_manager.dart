@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,7 @@ import 'webview_platform.dart' show WebViewPlatform;
 /// [PlatformWebViewCookieManager] methods.
 abstract class PlatformWebViewCookieManager extends PlatformInterface {
   /// Creates a new [PlatformWebViewCookieManager]
-  factory PlatformWebViewCookieManager(
-      PlatformWebViewCookieManagerCreationParams params) {
+  factory PlatformWebViewCookieManager(PlatformWebViewCookieManagerCreationParams params) {
     assert(
       WebViewPlatform.instance != null,
       'A platform implementation for `webview_flutter` has not been set. Please '
@@ -27,8 +26,8 @@ abstract class PlatformWebViewCookieManager extends PlatformInterface {
       '`WebViewPlatform.instance` before use. For unit testing, '
       '`WebViewPlatform.instance` can be set with your own test implementation.',
     );
-    final PlatformWebViewCookieManager cookieManagerDelegate =
-        WebViewPlatform.instance!.createPlatformCookieManager(params);
+    final PlatformWebViewCookieManager cookieManagerDelegate = WebViewPlatform.instance!
+        .createPlatformCookieManager(params);
     PlatformInterface.verify(cookieManagerDelegate, _token);
     return cookieManagerDelegate;
   }
@@ -39,8 +38,7 @@ abstract class PlatformWebViewCookieManager extends PlatformInterface {
   /// Should only be used by platform implementations because they can't extend
   /// a class that only contains a factory constructor.
   @protected
-  PlatformWebViewCookieManager.implementation(this.params)
-      : super(token: _token);
+  PlatformWebViewCookieManager.implementation(this.params) : super(token: _token);
 
   static final Object _token = Object();
 
@@ -51,13 +49,17 @@ abstract class PlatformWebViewCookieManager extends PlatformInterface {
   ///
   /// Returns true if cookies were present before clearing, else false.
   Future<bool> clearCookies() {
-    throw UnimplementedError(
-        'clearCookies is not implemented on the current platform');
+    throw UnimplementedError('clearCookies is not implemented on the current platform');
   }
 
   /// Sets a cookie for all [WebView] instances.
   Future<void> setCookie(WebViewCookie cookie) {
-    throw UnimplementedError(
-        'setCookie is not implemented on the current platform');
+    throw UnimplementedError('setCookie is not implemented on the current platform');
+  }
+
+  /// Returns a list of existing cookies for the specified domain from all
+  /// [WebView] instances of the application.
+  Future<List<WebViewCookie>> getCookies(Uri url) {
+    throw UnimplementedError('getCookies is not implemented on the current platform');
   }
 }

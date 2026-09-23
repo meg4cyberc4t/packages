@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,20 @@ import FlutterMacOS
 private class PigeonApiImplementation: ExampleHostApi {
   func getHostLanguage() throws -> String {
     return "Swift"
+  }
+
+  func add(_ a: Int64, to b: Int64) throws -> Int64 {
+    if a < 0 || b < 0 {
+      throw PigeonError(code: "code", message: "message", details: "details")
+    }
+    return a + b
+  }
+
+  func sendMessage(message: MessageData) async throws -> Bool {
+    if message.code == Code.one {
+      throw PigeonError(code: "code", message: "message", details: "details")
+    }
+    return true
   }
 }
 

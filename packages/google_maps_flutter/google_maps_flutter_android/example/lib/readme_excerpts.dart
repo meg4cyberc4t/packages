@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,7 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 
 void main() {
   // Require Hybrid Composition mode on Android.
-  final GoogleMapsFlutterPlatform mapsImplementation =
-      GoogleMapsFlutterPlatform.instance;
+  final GoogleMapsFlutterPlatform mapsImplementation = GoogleMapsFlutterPlatform.instance;
   if (mapsImplementation is GoogleMapsFlutterAndroid) {
     // Force Hybrid Composition mode.
     mapsImplementation.useAndroidViewSurface = true;
@@ -21,6 +20,7 @@ void main() {
   runApp(const MyApp());
   // #docregion DisplayMode
 }
+
 // #enddocregion DisplayMode
 
 class MyApp extends StatefulWidget {
@@ -39,9 +39,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('README snippet app'),
-        ),
+        appBar: AppBar(title: const Text('README snippet app')),
         body: const Text('See example in main.dart'),
       ),
     );
@@ -49,12 +47,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> initializeLatestMapRenderer() async {
     // #docregion MapRenderer
-    final GoogleMapsFlutterPlatform mapsImplementation =
-        GoogleMapsFlutterPlatform.instance;
+    final GoogleMapsFlutterPlatform mapsImplementation = GoogleMapsFlutterPlatform.instance;
     if (mapsImplementation is GoogleMapsFlutterAndroid) {
       WidgetsFlutterBinding.ensureInitialized();
-      mapRenderer = await mapsImplementation
-          .initializeWithRenderer(AndroidMapRenderer.latest);
+      mapRenderer = await mapsImplementation.initializeWithRenderer(AndroidMapRenderer.latest);
     }
     // #enddocregion MapRenderer
   }

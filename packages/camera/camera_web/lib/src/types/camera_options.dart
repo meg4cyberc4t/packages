@@ -1,8 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:js_interop';
+
 import 'package:flutter/foundation.dart';
+import 'package:web/web.dart' as web;
 
 /// Options used to create a camera with the given
 /// [audio] and [video] media constraints.
@@ -16,11 +19,9 @@ import 'package:flutter/foundation.dart';
 class CameraOptions {
   /// Creates a new instance of [CameraOptions]
   /// with the given [audio] and [video] constraints.
-  const CameraOptions({
-    AudioConstraints? audio,
-    VideoConstraints? video,
-  })  : audio = audio ?? const AudioConstraints(),
-        video = video ?? const VideoConstraints();
+  const CameraOptions({AudioConstraints? audio, VideoConstraints? video})
+    : audio = audio ?? const AudioConstraints(),
+      video = video ?? const VideoConstraints();
 
   /// The audio constraints for the camera.
   final AudioConstraints audio;
@@ -28,12 +29,12 @@ class CameraOptions {
   /// The video constraints for the camera.
   final VideoConstraints video;
 
-  /// Converts the current instance to a Map.
-  Map<String, dynamic> toJson() {
-    return <String, Object>{
-      'audio': audio.toJson(),
-      'video': video.toJson(),
-    };
+  /// Converts `this` to something that can be used by the browser.
+  web.MediaStreamConstraints toMediaStreamConstraints() {
+    return web.MediaStreamConstraints(
+      audio: audio.toMediaStreamConstraints(),
+      video: video.toMediaStreamConstraints(),
+    );
   }
 
   @override
@@ -42,9 +43,7 @@ class CameraOptions {
       return true;
     }
 
-    return other is CameraOptions &&
-        other.audio == audio &&
-        other.video == video;
+    return other is CameraOptions && other.audio == audio && other.video == video;
   }
 
   @override
@@ -63,8 +62,8 @@ class AudioConstraints {
   /// Whether the audio track should be enabled.
   final bool enabled;
 
-  /// Converts the current instance to a Map.
-  Object toJson() => enabled;
+  /// Convert `this` to something that can be used on the browser.
+  JSAny toMediaStreamConstraints() => enabled.toJS;
 
   @override
   bool operator ==(Object other) {
@@ -85,12 +84,7 @@ class AudioConstraints {
 class VideoConstraints {
   /// Creates a new instance of [VideoConstraints]
   /// with the given constraints.
-  const VideoConstraints({
-    this.facingMode,
-    this.width,
-    this.height,
-    this.deviceId,
-  });
+  const VideoConstraints({this.facingMode, this.width, this.height, this.deviceId});
 
   /// The facing mode of the video track.
   final FacingModeConstraint? facingMode;
@@ -104,24 +98,19 @@ class VideoConstraints {
   /// The device id of the video track.
   final String? deviceId;
 
-  /// Converts the current instance to a Map.
-  Object toJson() {
-    final Map<String, dynamic> json = <String, dynamic>{};
+  // TODO(dit): package:web has a class for this. Use it instead of jsify and toJson.
+  /// Convert `this` to something that can be used on the browser.
+  JSAny toMediaStreamConstraints() {
+    final constraints = <String, Object>{
+      if (width != null) 'width': width!.toJson(),
+      if (height != null) 'height': height!.toJson(),
+      if (facingMode != null) 'facingMode': facingMode!.toJson(),
+      if (deviceId != null) 'deviceId': <String, Object>{'exact': deviceId!},
+    };
 
-    if (width != null) {
-      json['width'] = width!.toJson();
-    }
-    if (height != null) {
-      json['height'] = height!.toJson();
-    }
-    if (facingMode != null) {
-      json['facingMode'] = facingMode!.toJson();
-    }
-    if (deviceId != null) {
-      json['deviceId'] = <String, Object>{'exact': deviceId!};
-    }
-
-    return json;
+    // Return true instead of empty object for better browser compatibility.
+    // Firefox Android rejects getUserMedia({video: {}}) but accepts {video: true}.
+    return constraints.isEmpty ? true.toJS : constraints.jsify()!;
   }
 
   @override
@@ -162,13 +151,13 @@ enum CameraType {
   String toString() => _type;
 }
 
+// TODO(dit): package:web has a class for this. Use it instead of toJson.
 /// Indicates the direction in which the desired camera should be pointing.
 @immutable
 class FacingModeConstraint {
   /// Creates a new instance of [FacingModeConstraint]
   /// with [ideal] constraint set to [type].
-  factory FacingModeConstraint(CameraType type) =>
-      FacingModeConstraint._(ideal: type);
+  factory FacingModeConstraint(CameraType type) => FacingModeConstraint._(ideal: type);
 
   /// Creates a new instance of [FacingModeConstraint]
   /// with the given [ideal] and [exact] constraints.
@@ -176,8 +165,7 @@ class FacingModeConstraint {
 
   /// Creates a new instance of [FacingModeConstraint]
   /// with [exact] constraint set to [type].
-  factory FacingModeConstraint.exact(CameraType type) =>
-      FacingModeConstraint._(exact: type);
+  factory FacingModeConstraint.exact(CameraType type) => FacingModeConstraint._(exact: type);
 
   /// The ideal facing mode constraint.
   ///
@@ -191,6 +179,7 @@ class FacingModeConstraint {
   /// the desired facing [type] to be considered acceptable.
   final CameraType? exact;
 
+  // TODO(dit): package:web has a class for this. Use it instead of toJson.
   /// Converts the current instance to a Map.
   Object toJson() {
     return <String, Object>{
@@ -205,15 +194,14 @@ class FacingModeConstraint {
       return true;
     }
 
-    return other is FacingModeConstraint &&
-        other.ideal == ideal &&
-        other.exact == exact;
+    return other is FacingModeConstraint && other.ideal == ideal && other.exact == exact;
   }
 
   @override
   int get hashCode => Object.hash(ideal, exact);
 }
 
+// TODO(dit): package:web has a class for this. Use it instead of toJson.
 /// The size of the requested video track used in
 /// [VideoConstraints.width] and [VideoConstraints.height].
 ///
@@ -240,9 +228,10 @@ class VideoSizeConstraint {
   /// The maximum video size.
   final int? maximum;
 
+  // TODO(dit): package:web has a class for this. Use it instead of toJson.
   /// Converts the current instance to a Map.
   Object toJson() {
-    final Map<String, dynamic> json = <String, dynamic>{};
+    final json = <String, dynamic>{};
 
     if (ideal != null) {
       json['ideal'] = ideal;

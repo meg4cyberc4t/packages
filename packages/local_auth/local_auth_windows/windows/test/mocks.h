@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ using ::testing::_;
 
 class MockUserConsentVerifier : public UserConsentVerifier {
  public:
-  explicit MockUserConsentVerifier(){};
+  explicit MockUserConsentVerifier() {}
   virtual ~MockUserConsentVerifier() = default;
 
   MOCK_METHOD(winrt::Windows::Foundation::IAsyncOperation<

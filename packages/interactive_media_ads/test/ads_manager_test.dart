@@ -1,6 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,71 +13,108 @@ import 'test_stubs.dart';
 
 void main() {
   test('init', () async {
-    final TestAdsManager platformManager = TestAdsManager(
-      onInit: expectAsync1((_) async {}),
+    final adsRenderingSettings = AdsRenderingSettings.fromPlatform(
+      TestAdsRenderingSettings(const PlatformAdsRenderingSettingsCreationParams()),
+    );
+
+    final settingsCompleter = Completer<PlatformAdsRenderingSettings>();
+
+    final platformManager = TestAdsManager(
+      onInit: ({PlatformAdsRenderingSettings? settings}) async {
+        settingsCompleter.complete(settings);
+      },
     );
 
     final AdsManager manager = createAdsManager(platformManager);
-    await manager.init();
+    await manager.init(settings: adsRenderingSettings);
+    expect(await settingsCompleter.future, adsRenderingSettings.platform);
   });
 
   test('start', () async {
-    final TestAdsManager platformManager = TestAdsManager(
-      onStart: expectAsync1((_) async {}),
-    );
+    final platformManager = TestAdsManager(onStart: expectAsync1((_) async {}));
 
     final AdsManager manager = createAdsManager(platformManager);
     await manager.start();
   });
 
   test('setAdsManagerDelegate', () async {
-    final TestAdsManager platformManager = TestAdsManager(
-      onSetAdsManagerDelegate: expectAsync1((_) async {}),
-    );
+    final platformManager = TestAdsManager(onSetAdsManagerDelegate: expectAsync1((_) async {}));
 
     final AdsManager manager = createAdsManager(platformManager);
-    await manager.setAdsManagerDelegate(AdsManagerDelegate.fromPlatform(
-      TestPlatformAdsManagerDelegate(
-        const PlatformAdsManagerDelegateCreationParams(),
+    await manager.setAdsManagerDelegate(
+      AdsManagerDelegate.fromPlatform(
+        TestPlatformAdsManagerDelegate(const PlatformAdsManagerDelegateCreationParams()),
       ),
-    ));
+    );
+  });
+
+  test('discardAdBreak', () async {
+    final platformManager = TestAdsManager(onDiscardAdBreak: expectAsync0(() async {}));
+
+    final AdsManager manager = createAdsManager(platformManager);
+    await manager.discardAdBreak();
+  });
+
+  test('pause', () async {
+    final platformManager = TestAdsManager(onPause: expectAsync0(() async {}));
+
+    final AdsManager manager = createAdsManager(platformManager);
+    await manager.pause();
+  });
+
+  test('resume', () async {
+    final platformManager = TestAdsManager(onResume: expectAsync0(() async {}));
+
+    final AdsManager manager = createAdsManager(platformManager);
+    await manager.resume();
+  });
+
+  test('skip', () async {
+    final platformManager = TestAdsManager(onSkip: expectAsync0(() async {}));
+
+    final AdsManager manager = createAdsManager(platformManager);
+    await manager.skip();
   });
 
   test('destroy', () async {
-    final TestAdsManager platformManager = TestAdsManager(
-      onDestroy: expectAsync0(() async {}),
-    );
+    final platformManager = TestAdsManager(onDestroy: expectAsync0(() async {}));
 
     final AdsManager manager = createAdsManager(platformManager);
     await manager.destroy();
+  });
+
+  test('adCuePoints', () async {
+    final platformManager = TestAdsManager(adCuePoints: const <Duration>[Duration(seconds: 5)]);
+
+    final AdsManager manager = createAdsManager(platformManager);
+    expect(platformManager.adCuePoints, manager.adCuePoints);
   });
 }
 
 AdsManager createAdsManager(PlatformAdsManager platformManager) {
   InteractiveMediaAdsPlatform.instance = TestInteractiveMediaAdsPlatform(
     onCreatePlatformAdsLoader: (PlatformAdsLoaderCreationParams params) {
-      return TestPlatformAdsLoader(params,
-          onContentComplete: () async {},
-          onRequestAds: (AdsRequest request) async {});
+      return TestPlatformAdsLoader(
+        params,
+        onContentComplete: () async {},
+        onRequestAds: (PlatformAdsRequest request) async {},
+      );
     },
-    onCreatePlatformAdsManagerDelegate:
-        (PlatformAdsManagerDelegateCreationParams params) {
+    onCreatePlatformAdsManagerDelegate: (PlatformAdsManagerDelegateCreationParams params) {
       throw UnimplementedError();
     },
-    onCreatePlatformAdDisplayContainer:
-        (PlatformAdDisplayContainerCreationParams params) {
+    onCreatePlatformAdDisplayContainer: (PlatformAdDisplayContainerCreationParams params) {
       throw UnimplementedError();
     },
+    onCreatePlatformContentProgressProvider: (_) => throw UnimplementedError(),
   );
 
   late final AdsManager manager;
 
-  final AdsLoader loader = AdsLoader(
+  final loader = AdsLoader(
     container: AdDisplayContainer.fromPlatform(
       platform: TestPlatformAdDisplayContainer(
-        PlatformAdDisplayContainerCreationParams(
-          onContainerAdded: (_) {},
-        ),
+        PlatformAdDisplayContainerCreationParams(onContainerAdded: (_) {}),
         onBuild: (_) => Container(),
       ),
     ),
@@ -85,9 +124,7 @@ AdsManager createAdsManager(PlatformAdsManager platformManager) {
     onAdsLoadError: (_) {},
   );
 
-  loader.platform.params.onAdsLoaded(PlatformOnAdsLoadedData(
-    manager: platformManager,
-  ));
+  loader.platform.params.onAdsLoaded(PlatformOnAdsLoadedData(manager: platformManager));
 
   return manager;
 }

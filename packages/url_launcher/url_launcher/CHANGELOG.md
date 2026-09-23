@@ -1,3 +1,22 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+
+## 6.3.2
+
+* Updates README to indicate that Andoid SDK <21 is no longer supported.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+* Ensures that `launch` with `forceSafariVC: false`, `forceWebView: true` and a non-web scheme throws a `PlatformException`.
+
+## 6.3.1
+
+* Removes incorrect SMS instructions from README.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
 ## 6.3.0
 
 * Adds `BrowserConfiguration` parameter, to configure in-app browser views, such as Android Custom Tabs or SFSafariViewController.

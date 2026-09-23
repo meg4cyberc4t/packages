@@ -1,5 +1,25 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.0.2
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 2.0.1
+
+* Updates to Pigeon 26.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 2.0.0
+
+* Switches to `LocalAuthException` for error reporting.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 1.0.11
+
+* Updates to pigeon 21.
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
 ## 1.0.10

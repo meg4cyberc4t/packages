@@ -1,9 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart'
-    show immutable, objectRuntimeType, visibleForTesting;
+import 'package:flutter/foundation.dart' show immutable, objectRuntimeType, visibleForTesting;
 
 /// A pair of latitude and longitude coordinates, stored as degrees.
 @immutable
@@ -16,12 +15,11 @@ class LatLng {
   /// The longitude is normalized to the half-open interval from -180.0
   /// (inclusive) to +180.0 (exclusive).
   const LatLng(double latitude, double longitude)
-      : latitude =
-            latitude < -90.0 ? -90.0 : (90.0 < latitude ? 90.0 : latitude),
-        // Avoids normalization if possible to prevent unnecessary loss of precision
-        longitude = longitude >= -180 && longitude < 180
-            ? longitude
-            : (longitude + 180.0) % 360.0 - 180.0;
+    : latitude = latitude < -90.0 ? -90.0 : (90.0 < latitude ? 90.0 : latitude),
+      // Avoids normalization if possible to prevent unnecessary loss of precision
+      longitude = longitude >= -180 && longitude < 180
+          ? longitude
+          : (longitude + 180.0) % 360.0 - 180.0;
 
   /// The latitude in degrees between -90.0 and 90.0, both inclusive.
   final double latitude;
@@ -40,19 +38,16 @@ class LatLng {
       return null;
     }
     assert(json is List && json.length == 2);
-    final List<Object?> list = json as List<Object?>;
+    final list = json as List<Object?>;
     return LatLng(list[0]! as double, list[1]! as double);
   }
 
   @override
-  String toString() =>
-      '${objectRuntimeType(this, 'LatLng')}($latitude, $longitude)';
+  String toString() => '${objectRuntimeType(this, 'LatLng')}($latitude, $longitude)';
 
   @override
   bool operator ==(Object other) {
-    return other is LatLng &&
-        other.latitude == latitude &&
-        other.longitude == longitude;
+    return other is LatLng && other.latitude == latitude && other.longitude == longitude;
   }
 
   @override
@@ -74,7 +69,7 @@ class LatLngBounds {
   /// The latitude of the southwest corner cannot be larger than the
   /// latitude of the northeast corner.
   LatLngBounds({required this.southwest, required this.northeast})
-      : assert(southwest.latitude <= northeast.latitude);
+    : assert(southwest.latitude <= northeast.latitude);
 
   /// The southwest corner of the rectangle.
   final LatLng southwest;
@@ -89,8 +84,7 @@ class LatLngBounds {
 
   /// Returns whether this rectangle contains the given [LatLng].
   bool contains(LatLng point) {
-    return _containsLatitude(point.latitude) &&
-        _containsLongitude(point.longitude);
+    return _containsLatitude(point.latitude) && _containsLongitude(point.longitude);
   }
 
   bool _containsLatitude(double lat) {
@@ -112,11 +106,8 @@ class LatLngBounds {
       return null;
     }
     assert(json is List && json.length == 2);
-    final List<Object?> list = json as List<Object?>;
-    return LatLngBounds(
-      southwest: LatLng.fromJson(list[0])!,
-      northeast: LatLng.fromJson(list[1])!,
-    );
+    final list = json as List<Object?>;
+    return LatLngBounds(southwest: LatLng.fromJson(list[0])!, northeast: LatLng.fromJson(list[1])!);
   }
 
   @override
@@ -126,9 +117,7 @@ class LatLngBounds {
 
   @override
   bool operator ==(Object other) {
-    return other is LatLngBounds &&
-        other.southwest == southwest &&
-        other.northeast == northeast;
+    return other is LatLngBounds && other.southwest == southwest && other.northeast == northeast;
   }
 
   @override

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ import 'model.dart';
 /// The numbers represented must be in the range -9,223,372,036,854,775,808 to
 /// 9,223,372,036,854,775,807.
 ///
-/// ```
+/// ```bnf
 /// double ::= "-"? digit+ ("." digit+)? (("e" | "E") "-"? digit+)?
 /// ```
 ///
@@ -169,7 +169,7 @@ import 'model.dart';
 ///    Remote Flutter Widgets text library files.
 ///  * [decodeDataBlob], which decodes the binary variant of this format.
 DynamicMap parseDataFile(String file) {
-  final _Parser parser = _Parser(_tokenize(file), null);
+  final parser = _Parser(_tokenize(file), null);
   return parser.readDataFile();
 }
 
@@ -224,13 +224,13 @@ DynamicMap parseDataFile(String file) {
 ///
 /// Imports have this form:
 ///
-/// ```
+/// ```none
 /// import library.name;
 /// ```
 ///
 /// For example:
 ///
-/// ```
+/// ```none
 /// import core.widgets;
 /// ```
 ///
@@ -245,7 +245,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// To declare a widget named A in terms of a widget B, the following form is used:
 ///
-/// ```
+/// ```none
 /// widget A = B();
 /// ```
 ///
@@ -253,14 +253,14 @@ DynamicMap parseDataFile(String file) {
 ///
 /// If the widget A is to be stateful, a map is inserted before the equals sign:
 ///
-/// ```
+/// ```none
 /// widget A { } = B();
 /// ```
 ///
 /// The map describes the default values of the state. For example, a button
 /// might have a "down" state, which is initially false:
 ///
-/// ```
+/// ```none
 /// widget Button { down: false } = Container();
 /// ```
 ///
@@ -277,7 +277,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// In this example, several constructor calls are nested together:
 ///
-/// ```
+/// ```none
 /// widget Foo = Column(
 ///   children: [
 ///     Container(
@@ -306,7 +306,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// In this example several widget builders are nested together:
 ///
-/// ```
+/// ```none
 /// widget Foo {text: 'this is cool'} = Builder(
 ///   builder: (foo) => Builder(
 ///     builder: (bar) => Builder(
@@ -374,21 +374,21 @@ DynamicMap parseDataFile(String file) {
 ///
 /// For example, suppose one instantiated a widget Foo as follows:
 ///
-/// ```
+/// ```none
 /// Foo(name: "Bobbins")
 /// ```
 ///
 /// ...then in the definition of Foo, one might pass the value of this "name"
 /// argument to another widget, say a Text widget, as follows:
 ///
-/// ```
+/// ```none
 /// widget Foo = Text(text: args.name);
 /// ```
 ///
 /// The arguments can have structure. For example, if the argument passed to Foo
 /// was:
 ///
-/// ```
+/// ```none
 /// Foo(show: { name: "Cracking the Cryptic", phrase: "Bobbins" })
 /// ```
 ///
@@ -396,7 +396,7 @@ DynamicMap parseDataFile(String file) {
 /// would specify an argument reference consisting of the values "show" and
 /// "phrase", as in `args.show.phrase`. For example:
 ///
-/// ```
+/// ```none
 /// widget Foo = Text(text: args.show.phrase);
 /// ```
 ///
@@ -410,7 +410,7 @@ DynamicMap parseDataFile(String file) {
 /// doubles, bools, and strings (see [DynamicContent]). For example, if the data
 /// model looks like this:
 ///
-/// ```
+/// ```none
 /// { server: { cart: [ { name: "Apple"}, { name: "Banana"} ] }
 /// ```
 ///
@@ -418,7 +418,7 @@ DynamicMap parseDataFile(String file) {
 /// would specify a data model reference consisting of the values "server",
 /// "cart", 1, and "name", as in `data.server.cart.1.name`. For example:
 ///
-/// ```
+/// ```none
 /// Text(text: data.server.cart.1.name)
 /// ```
 ///
@@ -433,7 +433,7 @@ DynamicMap parseDataFile(String file) {
 /// A widget that shows all the values from a list in a [ListView] might look
 /// like this:
 ///
-/// ```
+/// ```none
 /// widget Items = ListView(
 ///   children: [
 ///     ...for item in args.list:
@@ -444,7 +444,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// Such a widget would be used like this:
 ///
-/// ```
+/// ```none
 /// Items(list: [ "Hello", "World" ])
 /// ```
 ///
@@ -461,7 +461,7 @@ DynamicMap parseDataFile(String file) {
 /// Loop references use the _ident_. In the example above, that is `item`. In
 /// more elaborate examples, it can include subreferences. For example:
 ///
-/// ```
+/// ```none
 /// widget Items = ListView(
 ///   children: [
 ///     Text(text: 'Products:'),
@@ -474,7 +474,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// This might be used as follows:
 ///
-/// ```
+/// ```none
 /// Items(products: [
 ///   { name: { abbreviation: "TI4", displayName: "Twilight Imperium IV" }, price: 120.0 },
 ///   { name: { abbreviation: "POK", displayName: "Prophecy of Kings" }, price: 100.0 },
@@ -490,7 +490,7 @@ DynamicMap parseDataFile(String file) {
 /// Here a button is described as having a "down" state whose first value is
 /// "false":
 ///
-/// ```
+/// ```none
 /// widget Button { down: false } = Container(
 ///   // ...
 /// );
@@ -503,7 +503,7 @@ DynamicMap parseDataFile(String file) {
 /// Here, the button's state is referenced (in a pretty nonsensical way;
 /// controlling whether its label wraps based on the value of the state):
 ///
-/// ```
+/// ```none
 /// widget Button { down: false } = Container(
 ///   child: Text(text: 'Hello World', softWrap: state.down),
 /// );
@@ -523,7 +523,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// The syntax for a switch uses the following form:
 ///
-/// ```
+/// ```none
 /// switch value {
 ///   case1: template1,
 ///   case2: template2,
@@ -546,7 +546,7 @@ DynamicMap parseDataFile(String file) {
 /// appeared pressed when the "down" state was true (but note that we still
 /// don't have anything to toggle that state!):
 ///
-/// ```
+/// ```none
 /// widget Button { down: false } = Container(
 ///   margin: switch state.down {
 ///     false: [ 0.0, 0.0, 8.0, 8.0 ],
@@ -565,7 +565,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// Signalling event handlers have a name and an arguments map:
 ///
-/// ```
+/// ```none
 /// event "..." { }
 /// ```
 ///
@@ -575,7 +575,7 @@ DynamicMap parseDataFile(String file) {
 /// For example, the event handler in the following sequence sends the event
 /// called "hello" with a map containing just one key, "id", whose value is 1:
 ///
-/// ```
+/// ```none
 /// Button(
 ///   onPressed: event "hello" { id: 1 },
 ///   child: Text(text: "Greetings"),
@@ -586,7 +586,7 @@ DynamicMap parseDataFile(String file) {
 /// to assign to that state. Such handlers are only meaningful within widgets
 /// that have state, as described above. They have this form:
 ///
-/// ```
+/// ```none
 /// set state.foo.bar = value
 /// ```
 ///
@@ -595,7 +595,7 @@ DynamicMap parseDataFile(String file) {
 ///
 /// This lets us finish the earlier button:
 ///
-/// ```
+/// ```none
 /// widget Button { down: false } = GestureDetector(
 ///   onTapDown: set state.down = true,
 ///   onTapUp: set state.down = false,
@@ -628,7 +628,7 @@ DynamicMap parseDataFile(String file) {
 ///    Remote Flutter Widgets text data files.
 ///  * [decodeLibraryBlob], which decodes the binary variant of this format.
 RemoteWidgetLibrary parseLibraryFile(String file, { Object? sourceIdentifier }) {
-  final _Parser parser = _Parser(_tokenize(file), sourceIdentifier);
+  final parser = _Parser(_tokenize(file), sourceIdentifier);
   return parser.readLibraryFile();
 }
 
@@ -814,12 +814,12 @@ String _describeRune(int current) {
 
 Iterable<_Token> _tokenize(String file) sync* {
   final List<int> characters = file.runes.toList();
-  int start = 0;
-  int index = 0;
-  int line = 1;
-  int column = 0;
-  final List<int> buffer = <int>[];
-  final List<int> buffer2 = <int>[];
+  var start = 0;
+  var index = 0;
+  var line = 1;
+  var column = 0;
+  final buffer = <int>[];
+  final buffer2 = <int>[];
   _TokenizerMode mode = _TokenizerMode.main;
   while (true) {
     final int current;
@@ -2065,7 +2065,6 @@ Iterable<_Token> _tokenize(String file) sync* {
           default:
             // ignored, comment
             mode = _TokenizerMode.blockComment;
-            break;
         }
     }
   }
@@ -2264,7 +2263,7 @@ class _Parser {
     List<String> widgetBuilderScope = const <String>[],
   }) {
     final Object value = _readValue(extended: true, widgetBuilderScope: widgetBuilderScope);
-    final Map<Object?, Object> cases = <Object?, Object>{};
+    final cases = <Object?, Object>{};
     _expectSymbol(_SymbolToken.openBrace);
     while (_source.current is! _SymbolToken) {
       final Object? key;
@@ -2297,7 +2296,7 @@ class _Parser {
     if (optional && !_foundSymbol(_SymbolToken.dot)) {
       return const <Object>[];
     }
-    final List<Object> results = <Object>[];
+    final results = <Object>[];
     do {
       _expectSymbol(_SymbolToken.dot);
       if (_source.current is _IntegerToken) {
@@ -2479,7 +2478,7 @@ class _Parser {
   Import _readImport() {
     final SourceLocation? start = _getSourceLocation();
     _expectIdentifier('import');
-    final List<String> parts = <String>[];
+    final parts = <String>[];
     do {
       parts.add(_readKey());
     } while (_maybeReadSymbol(_SymbolToken.dot));
@@ -2500,7 +2499,7 @@ class _Parser {
   }
 
   RemoteWidgetLibrary readLibraryFile() {
-    final RemoteWidgetLibrary result = RemoteWidgetLibrary(
+    final result = RemoteWidgetLibrary(
       _readImports().toList(),
       _readWidgetDeclarations().toList(),
     );

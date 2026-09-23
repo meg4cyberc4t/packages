@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'page.dart';
 
 class PlaceCirclePage extends GoogleMapExampleAppPage {
-  const PlaceCirclePage({Key? key})
-      : super(const Icon(Icons.linear_scale), 'Place circle', key: key);
+  const PlaceCirclePage({super.key}) : super(const Icon(Icons.linear_scale), 'Place circle');
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +36,7 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
   // Values when toggling circle color
   int fillColorsIndex = 0;
   int strokeColorsIndex = 0;
-  List<Color> colors = <Color>[
-    Colors.purple,
-    Colors.red,
-    Colors.green,
-    Colors.pink,
-  ];
+  List<Color> colors = <Color>[Colors.purple, Colors.red, Colors.green, Colors.pink];
 
   // Values when toggling circle stroke width
   int widthsIndex = 0;
@@ -82,11 +76,11 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
       return;
     }
 
-    final String circleIdVal = 'circle_id_$_circleIdCounter';
+    final circleIdVal = 'circle_id_$_circleIdCounter';
     _circleIdCounter++;
-    final CircleId circleId = CircleId(circleIdVal);
+    final circleId = CircleId(circleIdVal);
 
-    final Circle circle = Circle(
+    final circle = Circle(
       circleId: circleId,
       consumeTapEvents: true,
       strokeColor: Colors.orange,
@@ -107,9 +101,7 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
   void _toggleVisible(CircleId circleId) {
     final Circle circle = circles[circleId]!;
     setState(() {
-      circles[circleId] = circle.copyWith(
-        visibleParam: !circle.visible,
-      );
+      circles[circleId] = circle.copyWith(visibleParam: !circle.visible);
     });
   }
 
@@ -134,9 +126,7 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
   void _changeStrokeWidth(CircleId circleId) {
     final Circle circle = circles[circleId]!;
     setState(() {
-      circles[circleId] = circle.copyWith(
-        strokeWidthParam: widths[++widthsIndex % widths.length],
-      );
+      circles[circleId] = circle.copyWith(strokeWidthParam: widths[++widthsIndex % widths.length]);
     });
   }
 
@@ -170,20 +160,13 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
                   children: <Widget>[
                     Column(
                       children: <Widget>[
+                        TextButton(onPressed: _add, child: const Text('add')),
                         TextButton(
-                          onPressed: _add,
-                          child: const Text('add'),
-                        ),
-                        TextButton(
-                          onPressed: (selectedId == null)
-                              ? null
-                              : () => _remove(selectedId),
+                          onPressed: (selectedId == null) ? null : () => _remove(selectedId),
                           child: const Text('remove'),
                         ),
                         TextButton(
-                          onPressed: (selectedId == null)
-                              ? null
-                              : () => _toggleVisible(selectedId),
+                          onPressed: (selectedId == null) ? null : () => _toggleVisible(selectedId),
                           child: const Text('toggle visible'),
                         ),
                       ],
@@ -209,9 +192,9 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
                           child: const Text('change fill color'),
                         ),
                       ],
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),

@@ -1,3 +1,4 @@
+# This builds the modern all_packages app and the legacy all_packages app.
 tasks:
   - name: prepare tool
     script: .ci/scripts/prepare_tool.sh

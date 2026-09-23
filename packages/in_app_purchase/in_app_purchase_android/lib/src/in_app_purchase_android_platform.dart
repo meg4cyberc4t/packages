@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,12 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   /// Creates a new InAppPurchaseAndroidPlatform instance, and configures it
   /// for use.
   @visibleForTesting
-  InAppPurchaseAndroidPlatform(
-      {@visibleForTesting BillingClientManager? manager})
-      : billingClientManager = manager ?? BillingClientManager() {
+  InAppPurchaseAndroidPlatform({@visibleForTesting BillingClientManager? manager})
+    : billingClientManager = manager ?? BillingClientManager() {
     // Register [InAppPurchaseAndroidPlatformAddition].
-    InAppPurchasePlatformAddition.instance =
-        InAppPurchaseAndroidPlatformAddition(billingClientManager);
+    InAppPurchasePlatformAddition.instance = InAppPurchaseAndroidPlatformAddition(
+      billingClientManager,
+    );
 
     billingClientManager.purchasesUpdatedStream
         .asyncMap(_getPurchaseDetailsFromResult)
@@ -56,8 +56,7 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
       StreamController<List<PurchaseDetails>>.broadcast();
 
   @override
-  late final Stream<List<PurchaseDetails>> purchaseStream =
-      _purchaseUpdatedController.stream;
+  late final Stream<List<PurchaseDetails>> purchaseStream = _purchaseUpdatedController.stream;
 
   /// The [BillingClient] that's abstracted by [GooglePlayConnection].
   ///
@@ -69,108 +68,119 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
 
   @override
   Future<bool> isAvailable() async {
-    return billingClientManager
-        .runWithClientNonRetryable((BillingClient client) => client.isReady());
+    return billingClientManager.runWithClientNonRetryable(
+      (BillingClient client) => client.isReady(),
+    );
   }
 
   /// Performs a network query for the details of products available.
   @override
-  Future<ProductDetailsResponse> queryProductDetails(
-    Set<String> identifiers,
-  ) async {
+  Future<ProductDetailsResponse> queryProductDetails(Set<String> identifiers) async {
     List<ProductDetailsResponseWrapper>? productResponses;
     PlatformException? exception;
 
     try {
-      productResponses = await Future.wait(
-        <Future<ProductDetailsResponseWrapper>>[
-          billingClientManager.runWithClient(
-            (BillingClient client) => client.queryProductDetails(
-              productList: identifiers
-                  .map((String productId) => ProductWrapper(
-                      productId: productId, productType: ProductType.inapp))
-                  .toList(),
-            ),
+      productResponses = await Future.wait(<Future<ProductDetailsResponseWrapper>>[
+        billingClientManager.runWithClient(
+          (BillingClient client) => client.queryProductDetails(
+            productList: identifiers
+                .map(
+                  (String productId) =>
+                      ProductWrapper(productId: productId, productType: ProductType.inapp),
+                )
+                .toList(),
           ),
-          billingClientManager.runWithClient(
-            (BillingClient client) => client.queryProductDetails(
-              productList: identifiers
-                  .map((String productId) => ProductWrapper(
-                      productId: productId, productType: ProductType.subs))
-                  .toList(),
-            ),
+        ),
+        billingClientManager.runWithClient(
+          (BillingClient client) => client.queryProductDetails(
+            productList: identifiers
+                .map(
+                  (String productId) =>
+                      ProductWrapper(productId: productId, productType: ProductType.subs),
+                )
+                .toList(),
           ),
-        ],
-      );
+        ),
+      ]);
     } on PlatformException catch (e) {
       exception = e;
       productResponses = <ProductDetailsResponseWrapper>[
         ProductDetailsResponseWrapper(
-            billingResult: BillingResultWrapper(
-                responseCode: BillingResponse.error, debugMessage: e.code),
-            productDetailsList: const <ProductDetailsWrapper>[]),
+          billingResult: BillingResultWrapper(
+            responseCode: BillingResponse.error,
+            debugMessage: e.code,
+          ),
+          productDetailsList: const <ProductDetailsWrapper>[],
+        ),
         ProductDetailsResponseWrapper(
-            billingResult: BillingResultWrapper(
-                responseCode: BillingResponse.error, debugMessage: e.code),
-            productDetailsList: const <ProductDetailsWrapper>[])
+          billingResult: BillingResultWrapper(
+            responseCode: BillingResponse.error,
+            debugMessage: e.code,
+          ),
+          productDetailsList: const <ProductDetailsWrapper>[],
+        ),
       ];
     }
-    final List<ProductDetails> productDetailsList =
-        productResponses.expand((ProductDetailsResponseWrapper response) {
-      return response.productDetailsList;
-    }).expand((ProductDetailsWrapper productDetailWrapper) {
-      return GooglePlayProductDetails.fromProductDetails(productDetailWrapper);
-    }).toList();
+    final List<ProductDetails> productDetailsList = productResponses
+        .expand((ProductDetailsResponseWrapper response) {
+          return response.productDetailsList;
+        })
+        .expand((ProductDetailsWrapper productDetailWrapper) {
+          return GooglePlayProductDetails.fromProductDetails(productDetailWrapper);
+        })
+        .toList();
 
     final Set<String> successIDS = productDetailsList
         .map((ProductDetails productDetails) => productDetails.id)
         .toSet();
-    final List<String> notFoundIDS =
-        identifiers.difference(successIDS).toList();
+    final List<String> notFoundIDS = identifiers.difference(successIDS).toList();
     return ProductDetailsResponse(
-        productDetails: productDetailsList,
-        notFoundIDs: notFoundIDS,
-        error: exception == null
-            ? null
-            : IAPError(
-                source: kIAPSource,
-                code: exception.code,
-                message: exception.message ?? '',
-                details: exception.details));
+      productDetails: productDetailsList,
+      notFoundIDs: notFoundIDS,
+      error: exception == null
+          ? null
+          : IAPError(
+              source: kIAPSource,
+              code: exception.code,
+              message: exception.message ?? '',
+              details: exception.details,
+            ),
+    );
   }
 
   @override
   Future<bool> buyNonConsumable({required PurchaseParam purchaseParam}) async {
     ChangeSubscriptionParam? changeSubscriptionParam;
+    String? offerToken;
+    String? obfuscatedProfileId;
 
     if (purchaseParam is GooglePlayPurchaseParam) {
       changeSubscriptionParam = purchaseParam.changeSubscriptionParam;
+      offerToken = purchaseParam.offerToken;
+      obfuscatedProfileId = purchaseParam.obfuscatedProfileId;
     }
 
-    String? offerToken;
-    if (purchaseParam.productDetails is GooglePlayProductDetails) {
-      offerToken =
-          (purchaseParam.productDetails as GooglePlayProductDetails).offerToken;
+    if (offerToken == null && purchaseParam.productDetails is GooglePlayProductDetails) {
+      offerToken = (purchaseParam.productDetails as GooglePlayProductDetails).offerToken;
     }
 
-    final BillingResultWrapper billingResultWrapper =
-        await billingClientManager.runWithClient(
+    final BillingResultWrapper billingResultWrapper = await billingClientManager.runWithClient(
       (BillingClient client) => client.launchBillingFlow(
-          product: purchaseParam.productDetails.id,
-          offerToken: offerToken,
-          accountId: purchaseParam.applicationUserName,
-          oldProduct: changeSubscriptionParam?.oldPurchaseDetails.productID,
-          purchaseToken: changeSubscriptionParam
-              ?.oldPurchaseDetails.verificationData.serverVerificationData,
-          prorationMode: changeSubscriptionParam?.prorationMode,
-          replacementMode: changeSubscriptionParam?.replacementMode),
+        product: purchaseParam.productDetails.id,
+        offerToken: offerToken,
+        accountId: purchaseParam.applicationUserName,
+        obfuscatedProfileId: obfuscatedProfileId,
+        oldProduct: changeSubscriptionParam?.oldPurchaseDetails.productID,
+        purchaseToken:
+            changeSubscriptionParam?.oldPurchaseDetails.verificationData.serverVerificationData,
+        replacementMode: changeSubscriptionParam?.replacementMode,
+      ),
     );
     return billingResultWrapper.responseCode == BillingResponse.ok;
   }
 
   @override
-  Future<bool> buyConsumable(
-      {required PurchaseParam purchaseParam, bool autoConsume = true}) {
+  Future<bool> buyConsumable({required PurchaseParam purchaseParam, bool autoConsume = true}) {
     if (autoConsume) {
       _productIdsToConsume.add(purchaseParam.productDetails.id);
     }
@@ -178,30 +188,26 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   }
 
   @override
-  Future<BillingResultWrapper> completePurchase(
-      PurchaseDetails purchase) async {
+  Future<BillingResultWrapper> completePurchase(PurchaseDetails purchase) async {
     assert(
       purchase is GooglePlayPurchaseDetails,
       'On Android, the `purchase` should always be of type `GooglePlayPurchaseDetails`.',
     );
 
-    final GooglePlayPurchaseDetails googlePurchase =
-        purchase as GooglePlayPurchaseDetails;
+    final googlePurchase = purchase as GooglePlayPurchaseDetails;
 
     if (googlePurchase.billingClientPurchase.isAcknowledged) {
       return const BillingResultWrapper(responseCode: BillingResponse.ok);
     }
 
     return billingClientManager.runWithClient(
-      (BillingClient client) => client.acknowledgePurchase(
-          purchase.verificationData.serverVerificationData),
+      (BillingClient client) =>
+          client.acknowledgePurchase(purchase.verificationData.serverVerificationData),
     );
   }
 
   @override
-  Future<void> restorePurchases({
-    String? applicationUserName,
-  }) async {
+  Future<void> restorePurchases({String? applicationUserName}) async {
     List<PurchasesResultWrapper> responses;
 
     responses = await Future.wait(<Future<PurchasesResultWrapper>>[
@@ -214,21 +220,19 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
     ]);
 
     final Set<String> errorCodeSet = responses
-        .where((PurchasesResultWrapper response) =>
-            response.responseCode != BillingResponse.ok)
-        .map((PurchasesResultWrapper response) =>
-            response.responseCode.toString())
+        .where((PurchasesResultWrapper response) => response.responseCode != BillingResponse.ok)
+        .map((PurchasesResultWrapper response) => response.responseCode.toString())
         .toSet();
 
-    final String errorMessage =
-        errorCodeSet.isNotEmpty ? errorCodeSet.join(', ') : '';
+    final String errorMessage = errorCodeSet.isNotEmpty ? errorCodeSet.join(', ') : '';
 
     final List<PurchaseDetails> pastPurchases = responses
         .expand((PurchasesResultWrapper response) => response.purchasesList)
-        .expand((PurchaseWrapper purchaseWrapper) =>
-            GooglePlayPurchaseDetails.fromPurchase(purchaseWrapper))
-        .map((GooglePlayPurchaseDetails details) =>
-            details..status = PurchaseStatus.restored)
+        .expand(
+          (PurchaseWrapper purchaseWrapper) =>
+              GooglePlayPurchaseDetails.fromPurchase(purchaseWrapper),
+        )
+        .map((GooglePlayPurchaseDetails details) => details..status = PurchaseStatus.restored)
         .toList();
 
     if (errorMessage.isNotEmpty) {
@@ -242,16 +246,14 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
     _purchaseUpdatedController.add(pastPurchases);
   }
 
-  Future<PurchaseDetails> _maybeAutoConsumePurchase(
-      PurchaseDetails purchaseDetails) async {
+  Future<PurchaseDetails> _maybeAutoConsumePurchase(PurchaseDetails purchaseDetails) async {
     if (!(purchaseDetails.status == PurchaseStatus.purchased &&
         _productIdsToConsume.contains(purchaseDetails.productID))) {
       return purchaseDetails;
     }
 
     final BillingResultWrapper billingResult =
-        await (InAppPurchasePlatformAddition.instance!
-                as InAppPurchaseAndroidPlatformAddition)
+        await (InAppPurchasePlatformAddition.instance! as InAppPurchaseAndroidPlatformAddition)
             .consumePurchase(purchaseDetails);
     final BillingResponse consumedResponse = billingResult.responseCode;
     if (consumedResponse != BillingResponse.ok) {
@@ -269,7 +271,8 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   }
 
   Future<List<PurchaseDetails>> _getPurchaseDetailsFromResult(
-      PurchasesResultWrapper resultWrapper) async {
+    PurchasesResultWrapper resultWrapper,
+  ) async {
     IAPError? error;
     if (resultWrapper.responseCode != BillingResponse.ok) {
       error = IAPError(
@@ -280,15 +283,15 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
       );
     }
     final List<Future<PurchaseDetails>> purchases = resultWrapper.purchasesList
-        .expand((PurchaseWrapper purchase) =>
-            GooglePlayPurchaseDetails.fromPurchase(purchase))
+        .expand((PurchaseWrapper purchase) => GooglePlayPurchaseDetails.fromPurchase(purchase))
         .map((GooglePlayPurchaseDetails purchaseDetails) {
-      purchaseDetails.error = error;
-      if (resultWrapper.responseCode == BillingResponse.userCanceled) {
-        purchaseDetails.status = PurchaseStatus.canceled;
-      }
-      return _maybeAutoConsumePurchase(purchaseDetails);
-    }).toList();
+          purchaseDetails.error = error;
+          if (resultWrapper.responseCode == BillingResponse.userCanceled) {
+            purchaseDetails.status = PurchaseStatus.canceled;
+          }
+          return _maybeAutoConsumePurchase(purchaseDetails);
+        })
+        .toList();
     if (purchases.isNotEmpty) {
       return Future.wait(purchases);
     } else {
@@ -309,7 +312,7 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
             serverVerificationData: '',
             source: kIAPSource,
           ),
-        )..error = error
+        )..error = error,
       ];
     }
   }
@@ -320,8 +323,9 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   /// See: https://unicode.org/cldr/charts/latest/supplemental/territory_containment_un_m_49.html
   @override
   Future<String> countryCode() async {
-    final BillingConfigWrapper billingConfig = await billingClientManager
-        .runWithClient((BillingClient client) => client.getBillingConfig());
+    final BillingConfigWrapper billingConfig = await billingClientManager.runWithClient(
+      (BillingClient client) => client.getBillingConfig(),
+    );
     return billingConfig.countryCode;
   }
 

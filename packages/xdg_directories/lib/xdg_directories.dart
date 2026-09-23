@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,12 @@ class _DefaultProcessRunner implements XdgProcessRunner {
   const _DefaultProcessRunner();
 
   @override
-  ProcessResult runSync(String executable, List<String> arguments,
-      {Encoding? stdoutEncoding = systemEncoding,
-      Encoding? stderrEncoding = systemEncoding}) {
+  ProcessResult runSync(
+    String executable,
+    List<String> arguments, {
+    Encoding? stdoutEncoding = systemEncoding,
+    Encoding? stderrEncoding = systemEncoding,
+  }) {
     return Process.runSync(
       executable,
       arguments,
@@ -75,19 +78,22 @@ set xdgProcessRunner(XdgProcessRunner processRunner) {
 
 XdgProcessRunner _processRunner = const _DefaultProcessRunner();
 
-List<Directory> _directoryListFromEnvironment(
-    String envVar, List<Directory> fallback) {
+List<Directory> _directoryListFromEnvironment(String envVar, List<Directory> fallback) {
   ArgumentError.checkNotNull(envVar);
   ArgumentError.checkNotNull(fallback);
   final String? value = _getenv(envVar);
   if (value == null || value.isEmpty) {
     return fallback;
   }
-  return value.split(':').where((String value) {
-    return value.isNotEmpty;
-  }).map<Directory>((String entry) {
-    return Directory(entry);
-  }).toList();
+  return value
+      .split(':')
+      .where((String value) {
+        return value.isNotEmpty;
+      })
+      .map<Directory>((String entry) {
+        return Directory(entry);
+      })
+      .toList();
 }
 
 Directory? _directoryFromEnvironment(String envVar) {
@@ -99,8 +105,7 @@ Directory? _directoryFromEnvironment(String envVar) {
   return Directory(value);
 }
 
-Directory _directoryFromEnvironmentWithFallback(
-    String envVar, String fallback) {
+Directory _directoryFromEnvironmentWithFallback(String envVar, String fallback) {
   ArgumentError.checkNotNull(envVar);
   final String? value = _getenv(envVar);
   if (value == null || value.isEmpty) {
@@ -116,8 +121,9 @@ Directory _getDirectory(String subdir) {
   final String? homeDir = _getenv('HOME');
   if (homeDir == null || homeDir.isEmpty) {
     throw StateError(
-        'The "HOME" environment variable is not set. This package (and POSIX) '
-        'requires that HOME be set.');
+      'The "HOME" environment variable is not set. This package (and POSIX) '
+      'requires that HOME be set.',
+    );
   }
   return Directory(path.joinAll(<String>[homeDir, subdir]));
 }
@@ -127,8 +133,7 @@ Directory _getDirectory(String subdir) {
 /// `$XDG_CACHE_HOME`).
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
-Directory get cacheHome =>
-    _directoryFromEnvironmentWithFallback('XDG_CACHE_HOME', '.cache');
+Directory get cacheHome => _directoryFromEnvironmentWithFallback('XDG_CACHE_HOME', '.cache');
 
 /// The list of preference-ordered base directories relative to
 /// which configuration files should be searched. (Corresponds to
@@ -136,36 +141,31 @@ Directory get cacheHome =>
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
 List<Directory> get configDirs {
-  return _directoryListFromEnvironment(
-    'XDG_CONFIG_DIRS',
-    <Directory>[Directory('/etc/xdg')],
-  );
+  return _directoryListFromEnvironment('XDG_CONFIG_DIRS', <Directory>[Directory('/etc/xdg')]);
 }
 
 /// The a single base directory relative to which user-specific
 /// configuration files should be written. (Corresponds to `$XDG_CONFIG_HOME`).
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
-Directory get configHome =>
-    _directoryFromEnvironmentWithFallback('XDG_CONFIG_HOME', '.config');
+Directory get configHome => _directoryFromEnvironmentWithFallback('XDG_CONFIG_HOME', '.config');
 
 /// The list of preference-ordered base directories relative to
 /// which data files should be searched. (Corresponds to `$XDG_DATA_DIRS`).
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
 List<Directory> get dataDirs {
-  return _directoryListFromEnvironment(
-    'XDG_DATA_DIRS',
-    <Directory>[Directory('/usr/local/share'), Directory('/usr/share')],
-  );
+  return _directoryListFromEnvironment('XDG_DATA_DIRS', <Directory>[
+    Directory('/usr/local/share'),
+    Directory('/usr/share'),
+  ]);
 }
 
 /// The base directory relative to which user-specific data files should be
 /// written. (Corresponds to `$XDG_DATA_HOME`).
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
-Directory get dataHome =>
-    _directoryFromEnvironmentWithFallback('XDG_DATA_HOME', '.local/share');
+Directory get dataHome => _directoryFromEnvironmentWithFallback('XDG_DATA_HOME', '.local/share');
 
 /// The base directory relative to which user-specific runtime
 /// files and other file objects should be placed. (Corresponds to
@@ -173,6 +173,12 @@ Directory get dataHome =>
 ///
 /// Throws [StateError] if the HOME environment variable is not set.
 Directory? get runtimeDir => _directoryFromEnvironment('XDG_RUNTIME_DIR');
+
+/// The base directory relative to which user-specific state data should be
+/// written. (Corresponds to `$XDG_STATE_HOME`).
+///
+/// Throws [StateError] if the HOME environment variable is not set.
+Directory get stateHome => _directoryFromEnvironmentWithFallback('XDG_STATE_HOME', '.local/state');
 
 /// Gets the xdg user directory named by `dirName`.
 ///
@@ -182,11 +188,7 @@ Directory? get runtimeDir => _directoryFromEnvironment('XDG_RUNTIME_DIR');
 Directory? getUserDirectory(String dirName) {
   final ProcessResult result;
   try {
-    result = _processRunner.runSync(
-      'xdg-user-dir',
-      <String>[dirName],
-      stdoutEncoding: utf8,
-    );
+    result = _processRunner.runSync('xdg-user-dir', <String>[dirName], stdoutEncoding: utf8);
   } on ProcessException catch (e) {
     // Silently return null if it's missing, otherwise pass the exception up.
     if (e.errorCode == _noSuchFileError) {
@@ -206,17 +208,16 @@ Directory? getUserDirectory(String dirName) {
 /// These are the names of the variables in "[configHome]/user-dirs.dirs", with
 /// the `XDG_` prefix removed and the `_DIR` suffix removed.
 Set<String> getUserDirectoryNames() {
-  final File configFile = File(path.join(configHome.path, 'user-dirs.dirs'));
+  final configFile = File(path.join(configHome.path, 'user-dirs.dirs'));
   List<String> contents;
   try {
     contents = configFile.readAsLinesSync();
   } on FileSystemException {
     return const <String>{};
   }
-  final Set<String> result = <String>{};
-  final RegExp dirRegExp =
-      RegExp(r'^\s*XDG_(?<dirname>[^=]*)_DIR\s*=\s*(?<dir>.*)\s*$');
-  for (final String line in contents) {
+  final result = <String>{};
+  final dirRegExp = RegExp(r'^\s*XDG_(?<dirname>[^=]*)_DIR\s*=\s*(?<dir>.*)\s*$');
+  for (final line in contents) {
     final RegExpMatch? match = dirRegExp.firstMatch(line);
     if (match == null) {
       continue;

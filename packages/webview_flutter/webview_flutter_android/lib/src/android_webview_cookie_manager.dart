@@ -1,11 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
-import 'android_webview.dart';
+import 'android_webkit.g.dart';
 import 'android_webview_controller.dart';
 
 /// Object specifying creation parameters for creating a [AndroidWebViewCookieManager].
@@ -14,8 +14,7 @@ import 'android_webview_controller.dart';
 /// value to avoid breaking changes. See [PlatformWebViewCookieManagerCreationParams] for
 /// more information.
 @immutable
-class AndroidWebViewCookieManagerCreationParams
-    extends PlatformWebViewCookieManagerCreationParams {
+class AndroidWebViewCookieManagerCreationParams extends PlatformWebViewCookieManagerCreationParams {
   /// Creates a new [AndroidWebViewCookieManagerCreationParams] instance.
   const AndroidWebViewCookieManagerCreationParams._(
     // This parameter prevents breaking changes later.
@@ -25,7 +24,8 @@ class AndroidWebViewCookieManagerCreationParams
 
   /// Creates a [AndroidWebViewCookieManagerCreationParams] instance based on [PlatformWebViewCookieManagerCreationParams].
   factory AndroidWebViewCookieManagerCreationParams.fromPlatformWebViewCookieManagerCreationParams(
-      PlatformWebViewCookieManagerCreationParams params) {
+    PlatformWebViewCookieManagerCreationParams params,
+  ) {
     return AndroidWebViewCookieManagerCreationParams._(params);
   }
 }
@@ -36,13 +36,14 @@ class AndroidWebViewCookieManager extends PlatformWebViewCookieManager {
   AndroidWebViewCookieManager(
     PlatformWebViewCookieManagerCreationParams params, {
     CookieManager? cookieManager,
-  })  : _cookieManager = cookieManager ?? CookieManager.instance,
-        super.implementation(
-          params is AndroidWebViewCookieManagerCreationParams
-              ? params
-              : AndroidWebViewCookieManagerCreationParams
-                  .fromPlatformWebViewCookieManagerCreationParams(params),
-        );
+  }) : _cookieManager = cookieManager ?? CookieManager.instance,
+       super.implementation(
+         params is AndroidWebViewCookieManagerCreationParams
+             ? params
+             : AndroidWebViewCookieManagerCreationParams.fromPlatformWebViewCookieManagerCreationParams(
+                 params,
+               ),
+       );
 
   final CookieManager _cookieManager;
 
@@ -54,8 +55,7 @@ class AndroidWebViewCookieManager extends PlatformWebViewCookieManager {
   @override
   Future<void> setCookie(WebViewCookie cookie) {
     if (!_isValidPath(cookie.path)) {
-      throw ArgumentError(
-          'The path property for the provided cookie was not given a legal value.');
+      throw ArgumentError('The path property for the provided cookie was not given a legal value.');
     }
     return _cookieManager.setCookie(
       cookie.domain,
@@ -75,16 +75,29 @@ class AndroidWebViewCookieManager extends PlatformWebViewCookieManager {
 
   /// Sets whether the WebView should allow third party cookies to be set.
   ///
-  /// Apps that target `Build.VERSION_CODES.KITKAT` or below default to allowing
-  /// third party cookies. Apps targeting `Build.VERSION_CODES.LOLLIPOP` or
-  /// later default to disallowing third party cookies.
-  Future<void> setAcceptThirdPartyCookies(
-    AndroidWebViewController controller,
-    bool accept,
-  ) {
-    // ignore: invalid_use_of_visible_for_testing_member
-    final WebView webView = WebView.api.instanceManager
-        .getInstanceWithWeakReference(controller.webViewIdentifier)!;
+  /// Defaults to false.
+  Future<void> setAcceptThirdPartyCookies(AndroidWebViewController controller, bool accept) {
+    final WebView webView = PigeonInstanceManager.instance.getInstanceWithWeakReference(
+      controller.webViewIdentifier,
+    )!;
     return _cookieManager.setAcceptThirdPartyCookies(webView, accept);
+  }
+
+  @override
+  Future<List<WebViewCookie>> getCookies(Uri url) async {
+    final String? cookies = await _cookieManager.getCookies(url.toString());
+    if (cookies == null || cookies.isEmpty) {
+      return [];
+    }
+
+    final webViewCookies = <WebViewCookie>[];
+    for (final String cookie in cookies.split('; ')) {
+      final List<String> cookieValue = cookie.split('=');
+      webViewCookies.add(
+        WebViewCookie(name: cookieValue.first, value: cookieValue.last, domain: url.toString()),
+      );
+    }
+
+    return webViewCookies;
   }
 }

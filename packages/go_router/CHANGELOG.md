@@ -1,3 +1,226 @@
+## 18.0.1
+
+Clarifies `onEnter` documentation regarding evaluation order relative to `redirect:` chains.
+
+## 18.0.0
+
+- Migrates to material_ui and cupertino_ui.
+- Updates minimum supported SDK version to Flutter 3.44/Dart 3.12.
+
+## 17.5.0
+
+- Adds route `metadata` support, including inheritance and override behavior with exposure on `GoRouterState`.
+- Documents support for regular expression constraints in GoRoute path parameters.
+
+## 17.4.0
+
+- Fixes onExit ignored for GoRoute nested inside ShellRoute
+- Adds `BlockedInitialNavigationException` (a `GoException` subtype), raised when the initial navigation is blocked by `onEnter` with no prior route to restore, so apps can distinguish this case in `onException` without string matching.
+
+## 17.3.0
+
+- Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+- Adds `hasOverriddenOnExit` parameter to `GoRouteData.$route` and `RelativeGoRouteData.$route` helper methods for type-safe routes. When set to `true`, enables custom `onExit` callback invocation from route data classes extending `GoRouteData` or `RelativeGoRouteData` when the route is removed from the navigation stack.
+
+## 17.2.3
+
+- Fixes an assertion failure when navigating to URLs with hash fragments missing a leading slash.
+
+## 17.2.2
+
+- Fixes `pop()` restoring stale configuration when route has `onExit`, which could cause the popped route to reappear with async redirects.
+
+## 17.2.1
+
+- Fixes chained top-level redirects not being fully resolved (e.g. `/ → /a → /b` stopping at `/a`).
+- Fixes route-level redirects not triggering top-level redirect re-evaluation on the new location.
+
+## 17.2.0
+
+- Fixes `Block.then()` and `Allow.then()` navigation callbacks being silently lost when triggered by `refreshListenable` due to re-entrant route processing.
+- Adds `encoder`, `decoder` and `compare` parameters to `TypedQueryParameter` annotation for custom encoding, decoding and comparison of query parameters in `TypedGoRoute` constructors.
+
+## 17.1.0
+
+- Adds `TypedQueryParameter` annotation to override parameter names in `TypedGoRoute` constructors.
+
+## 17.0.1
+
+- Fixes an issue where `onEnter` blocking causes navigation stack loss (stale state restoration).
+- Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 17.0.0
+
+- **BREAKING CHANGE**
+  - `ShellRoute`'s navigating changes notify `GoRouter`'s observers by default.
+  - Adds `notifyRootObserver` to `ShellRouteBase`, `ShellRoute`, `StatefulShellRoute`, `ShellRouteData.$route`, `TypedShellRoute`, `TypedStatefulShellRoute`.
+
+## 16.3.0
+
+- Adds a top-level `onEnter` callback with access to current and next route states.
+
+## 16.2.5
+
+- Fixes `GoRouter.of(context)` access inside redirect callbacks by providing router access through Zone-based context tracking.
+- Adds support for using context extension methods (e.g., `context.namedLocation()`, `context.go()`) within redirect callbacks.
+
+## 16.2.4
+
+- Fix Android Cold Start deep link with empty path losing scheme and authority.
+
+## 16.2.3
+
+- Fixes an issue where iOS back gesture pops entire ShellRoute instead of the active sub-route.
+
+## 16.2.2
+
+- Fixes broken links in readme.
+
+## 16.2.1
+
+- Adds state restoration topic to documentation.
+
+## 16.2.0
+
+- Adds `RelativeGoRouteData` and `TypedRelativeGoRoute`.
+- Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 16.1.0
+
+- Adds annotation for go_router_builder that enable custom string encoder/decoder [#110781](https://github.com/flutter/flutter/issues/110781). **Requires go_router_builder >= 3.1.0**.
+
+## 16.0.0
+
+- **BREAKING CHANGE**
+  - Bump major version for `GoRouteData` breaking changes.
+  - (Previously 15.2.4) Fixes routing to treat URLs with different cases (e.g., `/Home` vs `/home`) as distinct routes.
+  - (Previously 15.2.3) Updates Type-safe routes topic documentation to use the mixin from `go_router_builder` 3.0.0.
+  - (Previously 15.2.2) Fixes calling `PopScope.onPopInvokedWithResult` in branch routes.
+  - (Previously 15.2.1) Fixes Popping state and re-rendering scaffold at the same time doesn't update the URL on web.
+  - (Previously 15.2.0) `GoRouteData` now defines `.location`, `.go(context)`, `.push(context)`, `.pushReplacement(context)`, and `replace(context)` to be used for [Type-safe routing](https://pub.dev/documentation/go_router/latest/topics/Type-safe%20routes-topic.html). **Requires go_router_builder >= 3.0.0**.
+
+## 15.1.3
+
+- Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+- Fixes typo in API docs.
+
+## 15.1.2
+
+- Fixes focus request propagation from `GoRouter` to `Navigator` by properly handling the `requestFocus` parameter.
+
+## 15.1.1
+
+- Adds missing `caseSensitive` to `GoRouteData.$route`.
+
+## 15.1.0
+
+- Adds `caseSensitive` to `TypedGoRoute`.
+
+## 15.0.0
+
+- **BREAKING CHANGE**
+  - URLs are now case sensitive.
+  - Adds `caseSensitive` parameter to `GoRouter` (default to `true`).
+  - See [Migrating to 15.0.0](https://flutter.dev/go/go-router-v15-breaking-changes)
+
+## 14.8.1
+
+- Secured canPop method for the lack of matches in routerDelegate's configuration.
+
+## 14.8.0
+
+- Adds `preload` parameter to `StatefulShellBranchData.$branch`.
+
+## 14.7.2
+
+- Add missing `await` keyword to `onTap` callback in `navigation.md`.
+
+## 14.7.1
+
+- Fixes return type of current state getter on `GoRouter` and `GoRouterDelegate` to be non-nullable.
+
+## 14.7.0
+
+- Adds fragment support to GoRouter, enabling direct specification and automatic handling of fragments in routes.
+
+## 14.6.4
+
+- Rephrases readme.
+
+## 14.6.3
+
+- Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+- Updates readme.
+
+## 14.6.2
+
+- Replaces deprecated collection method usage.
+
+## 14.6.1
+
+- Fixed `PopScope`, and `WillPopScop` was not handled properly in the Root routes.
+
+## 14.6.0
+
+- Allows going to a path relatively by prefixing `./`
+
+## 14.5.0
+
+- Adds preload support to StatefulShellRoute, configurable via `preload` parameter on StatefulShellBranch.
+
+## 14.4.1
+
+- Adds `missing_code_block_language_in_doc_comment` lint.
+
+## 14.4.0
+
+- Adds current state getter on `GoRouter` that returns the current `GoRouterState`.
+
+## 14.3.0
+
+- Adds missing implementation for the routerNeglect parameter in GoRouter.
+
+## 14.2.9
+
+- Relaxes route path requirements. Both root and child routes can now start with or without '/'.
+
+## 14.2.8
+
+- Updated custom_stateful_shell_route example to better support swiping in TabView as well as demonstration of the use of PageView.
+
+## 14.2.7
+
+- Fixes issue so that the parseRouteInformationWithContext can handle non-http Uris.
+
+## 14.2.6
+
+- Fixes replace and pushReplacement uri when only one route match in current route match list.
+
+## 14.2.5
+
+- Fixes an issue where android back button pops pages in the wrong order.
+
+## 14.2.4
+
+- Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+- Fix GoRouter configuration in `upgrading.md`
+
+## 14.2.3
+
+- Fixes redirect example's signature in `route.dart`.
+
+## 14.2.2
+
+- Adds section for "Stateful nested navigation" to configuration.md.
+
+## 14.2.1
+
+- Makes GoRouterState lookup more robust.
+
+## 14.2.0
+
+- Added proper `redirect` handling for `ShellRoute.$route` and `StatefulShellRoute.$route` for proper redirection handling in case of code generation.
+
 ## 14.1.4
 
 - Fixes a URL in `navigation.md`.
@@ -251,7 +474,7 @@
 
 ## 7.0.1
 
-- Adds a workaround for the `dart fix --apply` issue, https://github.com/dart-lang/sdk/issues/52233.
+- Adds a workaround for the `dart fix --apply` issue, <https://github.com/dart-lang/sdk/issues/52233>.
 
 ## 7.0.0
 
@@ -734,7 +957,7 @@
 ## 2.2.8
 
 - reformatted CHANGELOG file; lets see if pub.dev is still ok with it...
-- staged an in-progress doc site at https://docs.page/csells/go_router
+- staged an in-progress doc site at <https://docs.page/csells/go_router>
 - tightened up a test that was silently failing
 - fixed a bug that dropped parent params in sub-route redirects
 

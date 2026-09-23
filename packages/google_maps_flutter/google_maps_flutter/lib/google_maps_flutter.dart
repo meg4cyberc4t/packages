@@ -1,11 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 library google_maps_flutter;
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -15,36 +14,59 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 
 export 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart'
     show
+        AdvancedMarker,
+        AdvancedMarkerGlyph,
         ArgumentCallback,
         ArgumentCallbacks,
+        AssetMapBitmap,
         BitmapDescriptor,
+        BitmapGlyph,
+        BytesMapBitmap,
         CameraPosition,
         CameraPositionCallback,
         CameraTargetBounds,
         CameraUpdate,
         Cap,
         Circle,
+        CircleGlyph,
         CircleId,
+        Cluster,
+        ClusterManager,
+        ClusterManagerId,
+        GroundOverlay,
+        GroundOverlayId,
+        Heatmap,
+        HeatmapGradient,
+        HeatmapGradientColor,
+        HeatmapId,
+        HeatmapRadius,
         InfoWindow,
         JointType,
         LatLng,
         LatLngBounds,
+        MapBitmapScaling,
+        MapColorScheme,
         MapStyleException,
         MapType,
         Marker,
+        MarkerCollisionBehavior,
         MarkerId,
         MinMaxZoomPreference,
         PatternItem,
+        PinConfig,
         Polygon,
         PolygonId,
         Polyline,
         PolylineId,
         ScreenCoordinate,
+        TextGlyph,
         Tile,
         TileOverlay,
         TileOverlayId,
         TileProvider,
-        WebGestureHandling;
+        WebCameraControlPosition,
+        WebGestureHandling,
+        WeightedLatLng;
 
 part 'src/controller.dart';
 part 'src/google_map.dart';

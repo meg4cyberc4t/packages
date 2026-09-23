@@ -1,9 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../data.dart';
 import '../widgets/author_list.dart';
@@ -18,14 +18,12 @@ class AuthorsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text(title),
-        ),
-        body: AuthorList(
-          authors: libraryInstance.allAuthors,
-          onTap: (Author author) {
-            context.go('/author/${author.id}');
-          },
-        ),
-      );
+    appBar: AppBar(title: const Text(title)),
+    body: AuthorList(
+      authors: libraryInstance.allAuthors,
+      onTap: (Author author) {
+        context.go('/author/${author.id}');
+      },
+    ),
+  );
 }

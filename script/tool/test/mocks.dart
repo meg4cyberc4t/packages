@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,32 +7,40 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
+import 'package:flutter_plugin_tools/src/common/process_runner.dart';
 import 'package:mockito/mockito.dart';
-import 'package:platform/platform.dart';
+import 'package:platform/testing.dart';
 
-class MockPlatform extends Mock implements Platform {
-  MockPlatform({
-    this.isLinux = false,
-    this.isMacOS = false,
-    this.isWindows = false,
-  });
+import 'common/package_command_test.mocks.dart';
 
-  @override
-  bool isLinux;
-
-  @override
-  bool isMacOS;
-
-  @override
-  bool isWindows;
-
-  @override
-  Uri get script => isWindows
-      ? Uri.file(r'C:\foo\bar', windows: true)
-      : Uri.file('/foo/bar', windows: false);
-
-  @override
-  Map<String, String> environment = <String, String>{};
+// TODO(stuartmorgan): Consider updating call sites to use TestNativePlatform directly; this is a
+// shim from the previous implementation, which mocked Platform directly, to fix tests when the
+// ability to mock Platform was removed.
+NativePlatform createMockPlatform({
+  bool isLinux = false,
+  bool isMacOS = false,
+  bool isWindows = false,
+}) {
+  assert(
+    !(isLinux && isMacOS) && !(isLinux && isWindows) && !(isMacOS && isWindows),
+    'Only one platform can be selected.',
+  );
+  final String platform;
+  if (isMacOS) {
+    platform = NativePlatform.macOS;
+  } else if (isWindows) {
+    platform = NativePlatform.windows;
+  } else {
+    platform = NativePlatform.linux;
+  }
+  return TestNativePlatform(
+    operatingSystem: platform,
+    script: isWindows
+        ? Uri.file(r'C:\foo\bar', windows: true)
+        : Uri.file('/foo/bar', windows: false),
+    environment: <String, String>{},
+    pathSeparator: isWindows ? r'\' : '/',
+  );
 }
 
 class MockProcess extends Mock implements io.Process {
@@ -59,10 +67,8 @@ class MockProcess extends Mock implements io.Process {
   }
 
   final int _exitCode;
-  final StreamController<List<int>> _stdoutController =
-      StreamController<List<int>>();
-  final StreamController<List<int>> _stderrController =
-      StreamController<List<int>>();
+  final StreamController<List<int>> _stdoutController = StreamController<List<int>>();
+  final StreamController<List<int>> _stderrController = StreamController<List<int>>();
   final MockIOSink stdinMock = MockIOSink();
 
   @override
@@ -89,4 +95,28 @@ class MockIOSink extends Mock implements IOSink {
 
   @override
   void writeln([Object? obj = '']) => lines.add(obj.toString());
+}
+
+/// Creates a mockGitDir that uses [packagesDir]'s parent as its root, and
+/// forwards any git commands to [processRunner] to make it easy to mock their
+/// output the same way other process calls are mocked.
+///
+/// The first argument to any `git` command is added to the command to make
+/// targeting the mock results easier. For example, `git ls ...` will become
+/// a `git-ls ...` call to [processRunner].
+///
+MockGitDir createForwardingMockGitDir({
+  required Directory packagesDir,
+  required ProcessRunner processRunner,
+}) {
+  final gitDir = MockGitDir();
+  when(gitDir.path).thenReturn(packagesDir.parent.path);
+  when(gitDir.runCommand(any, throwOnError: anyNamed('throwOnError'))).thenAnswer((
+    Invocation invocation,
+  ) {
+    final arguments = List<String>.from(invocation.positionalArguments[0]! as List<String>);
+    final String gitCommand = arguments.removeAt(0);
+    return processRunner.run('git-$gitCommand', arguments);
+  });
+  return gitDir;
 }

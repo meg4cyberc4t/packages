@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,13 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import junit.framework.TestCase
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
-class NullableReturnsTest : TestCase() {
+class NullableReturnsTest {
+
   @Test
   fun testNullableParameterHost() {
     val binaryMessenger = mockk<BinaryMessenger>(relaxed = true)
@@ -43,7 +46,7 @@ class NullableReturnsTest : TestCase() {
   }
 
   @Test
-  fun testNullableParameterFlutter() {
+  fun testNullableParameterFlutter() = runTest {
     val binaryMessenger = mockk<BinaryMessenger>()
     val api = NullableReturnFlutterApi(binaryMessenger)
 
@@ -58,12 +61,7 @@ class NullableReturnsTest : TestCase() {
           reply.reply(replyData)
         }
 
-    var didCall = false
-    api.doit {
-      didCall = true
-      assertEquals(output, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.doit()
+    assertEquals(output, res)
   }
 }

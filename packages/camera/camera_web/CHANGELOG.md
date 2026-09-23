@@ -1,5 +1,48 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 0.3.5+6
+
+* Fixes a `TypeError` in `setFlashMode` and `takePicture` caused by browsers reporting the
+  `torch` capability as a `boolean` instead of the `boolean` sequence the Image Capture
+  specification describes.
+
+## 0.3.5+5
+
+* Removes invalid @JS annotation from extension type constructors.
+
+## 0.3.5+4
+
+* Fixes a `TypeError` in `availableCameras()` caused by browsers (e.g. Firefox) returning
+  an invalid `facingMode` capability value instead of the expected `DOMString` sequence.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.3.5+3
+
+* Fixes camera initialization failure on Safari by fixing a null check operator error using
+  a nullable getter and null-safe practices.
+
+## 0.3.5+2
+
+* Fixes camera initialization failure on Firefox Android by using `{video: true}` instead
+  of `{video: {}}` when no video constraints are specified.
+
+## 0.3.5+1
+
+* Uses `CanvasRenderingContext2D.drawImage` instead of the deprecated `drawImageScaled`.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 0.3.5
+
+* Migrates to package:web to support WASM
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 0.3.4
+
+* Removes `maxVideoDuration`/`maxDuration`, as the feature was never exposed at
+  the app-facing package level, and is deprecated at the platform interface
+  level.
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
 ## 0.3.3

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@ class _DummyPlatformView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String viewType = 'dummy_platform_view';
-    final Map<String, dynamic> creationParams = <String, dynamic>{};
+    const viewType = 'dummy_platform_view';
+    final creationParams = <String, dynamic>{};
 
     return UiKitView(
       viewType: viewType,
@@ -38,31 +38,31 @@ class PointerInterceptorIOSExample extends StatefulWidget {
   }
 }
 
-class _PointerInterceptorIOSExampleState
-    extends State<PointerInterceptorIOSExample> {
+class _PointerInterceptorIOSExampleState extends State<PointerInterceptorIOSExample> {
   bool _buttonTapped = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Center(
-      child: Stack(
-        alignment: AlignmentDirectional.center,
-        children: <Widget>[
-          const _DummyPlatformView(),
-          PointerInterceptorPlatform.instance.buildWidget(
+      body: Center(
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: <Widget>[
+            const _DummyPlatformView(),
+            PointerInterceptorPlatform.instance.buildWidget(
               child: TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: _buttonTapped
-                      ? const Text('Tapped')
-                      : const Text('Initial'),
-                  onPressed: () {
-                    setState(() {
-                      _buttonTapped = !_buttonTapped;
-                    });
-                  })),
-        ],
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: _buttonTapped ? const Text('Tapped') : const Text('Initial'),
+                onPressed: () {
+                  setState(() {
+                    _buttonTapped = !_buttonTapped;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

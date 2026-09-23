@@ -1,3 +1,90 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.3.1
+
+* Removes dependency on `PathUtils` to avoid a potential
+  `ClassNotFoundException` when running in release mode.
+
+## 2.3.0
+
+* Changes internal implementation to use JNI.
+
+## 2.2.23
+
+* Updates build files from Groovy to Kotlin.
+
+## 2.2.22
+
+* Bumps com.android.tools.build:gradle from 8.12.1 to 8.13.1.
+
+## 2.2.21
+
+* Updates to Pigeon 26.
+
+## 2.2.20
+
+* Updates Java compatibility version to 17 and minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.2.19
+
+* Resolves Gradle 9 deprecations.
+
+## 2.2.18
+
+* Bumps com.android.tools.build:gradle to 8.12.1.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 2.2.17
+
+* Removes obsolete code related to supporting SDK <21.
+
+## 2.2.16
+
+* Updates compileSdk 34 to flutter.compileSdkVersion.
+
+## 2.2.15
+
+* Removes unnecessary native code.
+
+## 2.2.14
+
+* Updates annotations lib to 1.9.1.
+
+## 2.2.13
+
+* Updates annotations lib to 1.9.0.
+
+## 2.2.12
+
+* Updates Pigeon for non-nullable collection type support.
+
+## 2.2.11
+
+* Updates Java compatibility version to 11.
+* Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+
+## 2.2.10
+
+* Updates annotations lib to 1.8.2.
+
+## 2.2.9
+
+* Updates annotations lib to 1.8.1.
+
+## 2.2.8
+
+* Updates lint checks to ignore NewerVersionAvailable.
+
+## 2.2.7
+
+* Updates AGP version to 8.5.0.
+
+## 2.2.6
+
+* Updates annotations lib to 1.8.0.
+
 ## 2.2.5
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.

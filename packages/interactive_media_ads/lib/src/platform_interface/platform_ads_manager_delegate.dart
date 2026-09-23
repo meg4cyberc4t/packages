@@ -1,11 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/foundation.dart';
 
-import 'ad_event.dart';
 import 'interactive_media_ads_platform.dart';
+import 'platform_ad_event.dart';
 
 /// Object specifying creation parameters for creating a
 /// [PlatformAdsManagerDelegate].
@@ -42,13 +42,10 @@ import 'interactive_media_ads_platform.dart';
 @immutable
 base class PlatformAdsManagerDelegateCreationParams {
   /// Used by the platform implementation to create a new [PlatformAdsManagerDelegate].
-  const PlatformAdsManagerDelegateCreationParams({
-    this.onAdEvent,
-    this.onAdErrorEvent,
-  });
+  const PlatformAdsManagerDelegateCreationParams({this.onAdEvent, this.onAdErrorEvent});
 
-  /// Invoked when there is an [AdEvent].
-  final void Function(AdEvent event)? onAdEvent;
+  /// Invoked when there is an [PlatformAdEvent].
+  final void Function(PlatformAdEvent event)? onAdEvent;
 
   /// Invoked when there was an error playing the ad. Log the error and resume
   /// playing content.
@@ -58,9 +55,7 @@ base class PlatformAdsManagerDelegateCreationParams {
 /// Interface for a platform implementation of a `AdsManagerDelegate`.
 abstract base class PlatformAdsManagerDelegate {
   /// Creates a new [PlatformAdsManagerDelegate]
-  factory PlatformAdsManagerDelegate(
-    PlatformAdsManagerDelegateCreationParams params,
-  ) {
+  factory PlatformAdsManagerDelegate(PlatformAdsManagerDelegateCreationParams params) {
     assert(
       InteractiveMediaAdsPlatform.instance != null,
       'A platform implementation for `interactive_media_ads` has not been set. '
@@ -69,9 +64,8 @@ abstract base class PlatformAdsManagerDelegate {
       'unit testing, `InteractiveMediaAdsPlatform.instance` can be set with '
       'your own test implementation.',
     );
-    final PlatformAdsManagerDelegate implementation =
-        InteractiveMediaAdsPlatform.instance!
-            .createPlatformAdsManagerDelegate(params);
+    final PlatformAdsManagerDelegate implementation = InteractiveMediaAdsPlatform.instance!
+        .createPlatformAdsManagerDelegate(params);
     return implementation;
   }
 

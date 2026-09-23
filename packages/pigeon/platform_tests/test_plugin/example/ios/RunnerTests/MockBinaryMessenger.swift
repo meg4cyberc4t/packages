@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@ import Flutter
 
 @testable import test_plugin
 
-class MockBinaryMessenger<T>: NSObject, FlutterBinaryMessenger {
+final class MockBinaryMessenger<T>: NSObject, FlutterBinaryMessenger, @unchecked Sendable {
   let codec: FlutterMessageCodec
   var result: T?
   private(set) var handlers: [String: FlutterBinaryMessageHandler] = [:]

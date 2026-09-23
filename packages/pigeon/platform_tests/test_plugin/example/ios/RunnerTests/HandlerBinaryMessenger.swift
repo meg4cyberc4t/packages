@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@ import Foundation
 
 typealias HandlerBinaryMessengerHandler = ([Any?]) -> Any
 
-class HandlerBinaryMessenger: NSObject, FlutterBinaryMessenger {
+final class HandlerBinaryMessenger: NSObject, FlutterBinaryMessenger, @unchecked Sendable {
   let codec: FlutterMessageCodec
   let handler: HandlerBinaryMessengerHandler
   private var count = 0

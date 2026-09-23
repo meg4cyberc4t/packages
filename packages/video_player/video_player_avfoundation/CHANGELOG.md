@@ -1,3 +1,156 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.12.0
+
+* Routes video over AirPlay when an external screen is active, by setting
+  `usesExternalPlaybackWhileExternalScreenIsActive` on the `AVPlayer`. Selecting
+  an AirPlay route previously moved only the audio, leaving the video on the
+  device while the receiver showed a mirrored screen.
+
+## 2.11.1
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+
+## 2.11.0
+
+* Implements `setPreventsDisplaySleepDuringVideoPlayback` using
+  `AVPlayer.preventsDisplaySleepDuringVideoPlayback`.
+
+## 2.10.0
+
+* Implements `getVideoTracks()` and `selectVideoTrack()` methods for video track (quality) selection using AVFoundation.
+* Video track selection requires iOS 15+ / macOS 12+ for HLS streams.
+
+## 2.9.7
+
+* Forces tone-mapping to SDR on iOS to prevent washed-out HDR video playback.
+
+## 2.9.6
+
+* Adds a Swift version to fix a potential build issue when using CocoaPods.
+
+## 2.9.5
+
+* Converts portions of the native code to Swift for improved maintainability.
+
+## 2.9.4
+
+* Ensures that the display link does not continue requesting frames after a player is disposed.
+
+## 2.9.3
+
+* Fixes a regression where HTTP headers were ignored.
+
+## 2.9.2
+
+* Refactors for improved testability.
+
+## 2.9.1
+
+* Refactors native code for improved testability.
+
+## 2.9.0
+
+* Implements `getAudioTracks()` and `selectAudioTrack()` methods.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 2.8.10
+
+* Improves compatibility with `UIScene`.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 2.8.9
+
+* Resolve `tracksWithMediaType:` deprecations.
+* Use `loadTracksWithMediaType:completionHandler:` for iOS 15.0+/macOS 12.0+.
+
+## 2.8.8
+
+* Refactors Dart internals for maintainability.
+
+## 2.8.7
+
+* Updates to Pigeon 26.
+
+## 2.8.6
+
+* Fixes a bug where the video player fails to initialize when `AVFoundation` reports a duration of zero.
+* Fixes a bug in the example app that some widgets stop updating after GlobalKey reparenting.
+* Updates the `VideoProgressIndicator` widget in the example app to handle zero-duration videos.
+
+## 2.8.5
+
+* Updates minimum supported version to iOS 13 and macOS 10.15.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.8.4
+
+* Simplifies native code.
+
+## 2.8.3
+
+* Removes calls to self from init and dealloc, for maintainability.
+
+## 2.8.2
+
+* Restructure internals of Dart notification of video player events.
+
+## 2.8.1
+
+* Restructures internal logic to move more code to Dart.
+
+## 2.8.0
+
+* Adds platform view support for macOS.
+
+## 2.7.3
+
+* Restructures the communication between Dart and native code.
+
+## 2.7.2
+
+* Uses `CADisplayLink` on macOS 14.0+.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+* Refactors native code for improved testing.
+
+## 2.7.1
+
+* Adds possibility to play videos at more than 30 FPS.
+* Fixes playing state not updating in some paths.
+
+## 2.7.0
+
+* Adds support for platform views as an optional way of displaying a video.
+
+## 2.6.7
+
+* Fixes playback speed resetting.
+
+## 2.6.6
+
+* Fixes changing global audio session category to be collision free across plugins.
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+
+## 2.6.5
+
+* Bugfix to allow the audio-only HLS (.m3u8) on iOS.
+
+## 2.6.4
+
+* Refactors native code structure.
+
+## 2.6.3
+
+* Fixes VideoPlayerController.initialize() future never resolving with invalid video file.
+* Adds more details to the error message returned by VideoPlayerController.initialize().
+
+## 2.6.2
+
+* Updates Pigeon for non-nullable collection type support.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
 ## 2.6.1
 
 * Adds files to make include directory permanent.

@@ -1,967 +1,1251 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:args/command_runner.dart';
 import 'package:file/file.dart';
-import 'package:file/memory.dart';
 import 'package:flutter_plugin_tools/src/common/core.dart';
 import 'package:flutter_plugin_tools/src/common/file_utils.dart';
 import 'package:flutter_plugin_tools/src/format_command.dart';
+import 'package:git/git.dart';
 import 'package:path/path.dart' as p;
+import 'package:platform/platform.dart';
 import 'package:test/test.dart';
 
 import 'mocks.dart';
 import 'util.dart';
 
+const String _languageVersion = '3.8';
+const String _dartConstraint = '^$_languageVersion.0';
+
 void main() {
-  late FileSystem fileSystem;
-  late MockPlatform mockPlatform;
-  late Directory packagesDir;
-  late RecordingProcessRunner processRunner;
-  late FormatCommand analyzeCommand;
-  late CommandRunner<void> runner;
-  late String javaFormatPath;
-  late String kotlinFormatPath;
-
-  setUp(() {
-    fileSystem = MemoryFileSystem();
-    mockPlatform = MockPlatform();
-    packagesDir = createPackagesDirectory(fileSystem: fileSystem);
-    processRunner = RecordingProcessRunner();
-    analyzeCommand = FormatCommand(
-      packagesDir,
-      processRunner: processRunner,
-      platform: mockPlatform,
-    );
-
-    // Create the Java and Kotlin formatter files that the command checks for,
-    // to avoid a download.
-    final p.Context path = analyzeCommand.path;
-    javaFormatPath = path.join(path.dirname(path.fromUri(mockPlatform.script)),
-        'google-java-format-1.3-all-deps.jar');
-    fileSystem.file(javaFormatPath).createSync(recursive: true);
-    kotlinFormatPath = path.join(
-        path.dirname(path.fromUri(mockPlatform.script)),
-        'ktfmt-0.46-jar-with-dependencies.jar');
-    fileSystem.file(kotlinFormatPath).createSync(recursive: true);
-
-    runner = CommandRunner<void>('format_command', 'Test for format_command');
-    runner.addCommand(analyzeCommand);
-  });
-
-  /// Returns a modified version of a list of [relativePaths] that are relative
-  /// to [package] to instead be relative to [packagesDir].
-  List<String> getPackagesDirRelativePaths(
-      RepositoryPackage package, List<String> relativePaths) {
-    final p.Context path = analyzeCommand.path;
-    final String relativeBase =
-        path.relative(package.path, from: packagesDir.path);
-    return relativePaths
-        .map((String relativePath) => path.join(relativeBase, relativePath))
-        .toList();
+  /// Creates the .dart_tool directory for [package] to simulate (as much as
+  /// this command requires) `pub get` having been run.
+  void fakePubGet(RepositoryPackage package, {String languageVersion = _languageVersion}) {
+    final File configFile = package.directory
+        .childDirectory('.dart_tool')
+        .childFile('package_config.json');
+    configFile.createSync(recursive: true);
+    configFile.writeAsStringSync('''
+{
+  "packages": [
+    {
+      "name": "some_other_package",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "${package.directory.basename}",
+      "languageVersion": "$languageVersion"
+    }
+  ]
+}
+''');
   }
 
-  /// Returns a list of [count] relative paths to pass to [createFakePlugin]
-  /// or [createFakePackage] with name [packageName] such that each path will
-  /// be 99 characters long relative to [packagesDir].
-  ///
-  /// This is for each of testing batching, since it means each file will
-  /// consume 100 characters of the batch length.
-  List<String> get99CharacterPathExtraFiles(String packageName, int count) {
-    final int padding = 99 -
-        packageName.length -
-        1 - // the path separator after the package name
-        1 - // the path separator after the padding
-        10; // the file name
-    const int filenameBase = 10000;
+  group('non-Windows', () {
+    late NativePlatform mockPlatform;
+    late Directory packagesDir;
+    late RecordingProcessRunner processRunner;
+    late RecordingProcessRunner gitProcessRunner;
+    late FormatCommand analyzeCommand;
+    late CommandRunner<void> runner;
+    late String javaFormatPath;
+    late String kotlinFormatPath;
 
-    final p.Context path = analyzeCommand.path;
-    return <String>[
-      for (int i = filenameBase; i < filenameBase + count; ++i)
-        path.join('a' * padding, '$i.dart'),
-    ];
-  }
-
-  test('formats .dart files', () async {
-    const List<String> files = <String>[
-      'lib/a.dart',
-      'lib/src/b.dart',
-      'lib/src/c.dart',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          ProcessCall(
-              'dart',
-              <String>['format', ...getPackagesDirRelativePaths(plugin, files)],
-              packagesDir.path),
-        ]));
-  });
-
-  test('does not format .dart files with pragma', () async {
-    const List<String> formattedFiles = <String>[
-      'lib/a.dart',
-      'lib/src/b.dart',
-      'lib/src/c.dart',
-    ];
-    const String unformattedFile = 'lib/src/d.dart';
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: <String>[
-        ...formattedFiles,
-        unformattedFile,
-      ],
-    );
-
-    final p.Context posixContext = p.posix;
-    childFileWithSubcomponents(
-            plugin.directory, posixContext.split(unformattedFile))
-        .writeAsStringSync(
-            '// copyright bla bla\n// This file is hand-formatted.\ncode...');
-
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          ProcessCall(
-              'dart',
-              <String>[
-                'format',
-                ...getPackagesDirRelativePaths(plugin, formattedFiles)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('fails if dart format fails', () async {
-    const List<String> files = <String>[
-      'lib/a.dart',
-      'lib/src/b.dart',
-      'lib/src/c.dart',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['dart'] = <FakeProcessInfo>[
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['format'])
-    ];
-    Error? commandError;
-    final List<String> output = await runCapturingPrint(
-        runner, <String>['format'], errorHandler: (Error e) {
-      commandError = e;
-    });
-
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains('Failed to format Dart files: exit code 1.'),
-        ]));
-  });
-
-  test('skips dart if --no-dart flag is provided', () async {
-    const List<String> files = <String>[
-      'lib/a.dart',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    await runCapturingPrint(runner, <String>['format', '--no-dart']);
-    expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
-  });
-
-  test('formats .java files', () async {
-    const List<String> files = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
-      'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          const ProcessCall('java', <String>['-version'], null),
-          ProcessCall(
-              'java',
-              <String>[
-                '-jar',
-                javaFormatPath,
-                '--replace',
-                ...getPackagesDirRelativePaths(plugin, files)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('fails with a clear message if Java is not in the path', () async {
-    const List<String> files = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
-      'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['java'] = <FakeProcessInfo>[
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['-version'])
-    ];
-    Error? commandError;
-    final List<String> output = await runCapturingPrint(
-        runner, <String>['format'], errorHandler: (Error e) {
-      commandError = e;
-    });
-
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains(
-              'Unable to run "java". Make sure that it is in your path, or '
-              'provide a full path with --java-path.'),
-        ]));
-  });
-
-  test('fails if Java formatter fails', () async {
-    const List<String> files = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
-      'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['java'] = <FakeProcessInfo>[
-      FakeProcessInfo(
-          MockProcess(), <String>['-version']), // check for working java
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['-jar']), // format
-    ];
-    Error? commandError;
-    final List<String> output = await runCapturingPrint(
-        runner, <String>['format'], errorHandler: (Error e) {
-      commandError = e;
-    });
-
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains('Failed to format Java files: exit code 1.'),
-        ]));
-  });
-
-  test('honors --java-path flag', () async {
-    const List<String> files = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
-      'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    await runCapturingPrint(
-        runner, <String>['format', '--java-path=/path/to/java']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          const ProcessCall('/path/to/java', <String>['--version'], null),
-          ProcessCall(
-              '/path/to/java',
-              <String>[
-                '-jar',
-                javaFormatPath,
-                '--replace',
-                ...getPackagesDirRelativePaths(plugin, files)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('skips Java if --no-java flag is provided', () async {
-    const List<String> files = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    await runCapturingPrint(runner, <String>['format', '--no-java']);
-    expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
-  });
-
-  test('formats c-ish files', () async {
-    const List<String> files = <String>[
-      'ios/Classes/Foo.h',
-      'ios/Classes/Foo.m',
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-      'macos/Classes/Foo.mm',
-      'windows/foo_plugin.cpp',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          const ProcessCall('clang-format', <String>['--version'], null),
-          ProcessCall(
-              'clang-format',
-              <String>[
-                '-i',
-                '--style=file',
-                ...getPackagesDirRelativePaths(plugin, files)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('fails with a clear message if clang-format is not in the path',
-      () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['clang-format'] =
-        <FakeProcessInfo>[FakeProcessInfo(MockProcess(exitCode: 1))];
-    Error? commandError;
-    final List<String> output = await runCapturingPrint(
-        runner, <String>['format'], errorHandler: (Error e) {
-      commandError = e;
-    });
-
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains('Unable to run "clang-format". Make sure that it is in your '
-              'path, or provide a full path with --clang-format-path.'),
-        ]));
-  });
-
-  test('falls back to working clang-format in the path', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    processRunner.mockProcessesForExecutable['clang-format'] =
-        <FakeProcessInfo>[FakeProcessInfo(MockProcess(exitCode: 1))];
-    processRunner.mockProcessesForExecutable['which'] = <FakeProcessInfo>[
-      FakeProcessInfo(
-          MockProcess(
-              stdout:
-                  '/usr/local/bin/clang-format\n/path/to/working-clang-format'),
-          <String>['-a', 'clang-format'])
-    ];
-    processRunner.mockProcessesForExecutable['/usr/local/bin/clang-format'] =
-        <FakeProcessInfo>[FakeProcessInfo(MockProcess(exitCode: 1))];
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
-        processRunner.recordedCalls,
-        containsAll(<ProcessCall>[
-          const ProcessCall(
-              '/path/to/working-clang-format', <String>['--version'], null),
-          ProcessCall(
-              '/path/to/working-clang-format',
-              <String>[
-                '-i',
-                '--style=file',
-                ...getPackagesDirRelativePaths(plugin, files)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('honors --clang-format-path flag', () async {
-    const List<String> files = <String>[
-      'windows/foo_plugin.cpp',
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: files,
-    );
-
-    await runCapturingPrint(runner,
-        <String>['format', '--clang-format-path=/path/to/clang-format']);
-
-    expect(
-        processRunner.recordedCalls,
-        orderedEquals(<ProcessCall>[
-          const ProcessCall(
-              '/path/to/clang-format', <String>['--version'], null),
-          ProcessCall(
-              '/path/to/clang-format',
-              <String>[
-                '-i',
-                '--style=file',
-                ...getPackagesDirRelativePaths(plugin, files)
-              ],
-              packagesDir.path),
-        ]));
-  });
-
-  test('fails if clang-format fails', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['clang-format'] =
-        <FakeProcessInfo>[
-      FakeProcessInfo(MockProcess(),
-          <String>['--version']), // check for working clang-format
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['-i']), // format
-    ];
-    Error? commandError;
-    final List<String> output = await runCapturingPrint(
-        runner, <String>['format'], errorHandler: (Error e) {
-      commandError = e;
-    });
-
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains(
-              'Failed to format C, C++, and Objective-C files: exit code 1.'),
-        ]));
-  });
-
-  test('skips clang-format if --no-clang-format flag is provided', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    await runCapturingPrint(runner, <String>['format', '--no-clang-format']);
-    expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
-  });
-
-  group('kotlin-format', () {
-    test('formats .kt files', () async {
-      const List<String> files = <String>[
-        'android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt',
-        'android/src/main/kotlin/io/flutter/plugins/a_plugin/b.kt',
-      ];
-      final RepositoryPackage plugin = createFakePlugin(
-        'a_plugin',
-        packagesDir,
-        extraFiles: files,
+    setUp(() {
+      mockPlatform = createMockPlatform();
+      final GitDir gitDir;
+      (:packagesDir, :processRunner, :gitProcessRunner, :gitDir) = configureBaseCommandMocks(
+        platform: mockPlatform,
       );
+      analyzeCommand = FormatCommand(
+        packagesDir,
+        processRunner: processRunner,
+        platform: mockPlatform,
+        gitDir: gitDir,
+      );
+
+      // Create the Java and Kotlin formatter files that the command checks for,
+      // to avoid a download.
+      javaFormatPath = analyzeCommand.javaFormatterFile.path;
+      packagesDir.fileSystem.file(javaFormatPath).createSync(recursive: true);
+      kotlinFormatPath = analyzeCommand.kotlinFormatterFile.path;
+      packagesDir.fileSystem.file(kotlinFormatPath).createSync(recursive: true);
+
+      runner = CommandRunner<void>('format_command', 'Test for format_command');
+      runner.addCommand(analyzeCommand);
+    });
+
+    /// Convenience wrapper for [_getPackagesDirRelativePaths], passing the correct context.
+    List<String> getPackagesDirRelativePaths(
+      RepositoryPackage package,
+      List<String> relativePaths,
+    ) {
+      return _getPackagesDirRelativePaths(
+        package,
+        relativePaths,
+        path: analyzeCommand.path,
+        packagesDir: packagesDir,
+      );
+    }
+
+    /// Convenience wrapper for [_get99CharacterPathExtraFiles], passing the correct context.
+    List<String> get99CharacterPathExtraFiles(int count) {
+      return _get99CharacterPathExtraFiles(count, path: analyzeCommand.path);
+    }
+
+    group('dart format', () {
+      test('formats .dart files', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('dart', const <String>['format', ...files], plugin.path),
+          ]),
+        );
+      });
+
+      test('does not format .dart files with pragma', () async {
+        const formattedFiles = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        const unformattedFile = 'lib/src/d.dart';
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: <String>[...formattedFiles, unformattedFile],
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        final p.Context posixContext = p.posix;
+        childFileWithSubcomponents(
+          plugin.directory,
+          posixContext.split(unformattedFile),
+        ).writeAsStringSync('// copyright bla bla\n// This file is hand-formatted.\ncode...');
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('dart', const <String>['format', ...formattedFiles], plugin.path),
+          ]),
+        );
+      });
+
+      test('fails if dart format fails', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        processRunner.mockProcessesForExecutable['dart'] = <FakeProcessInfo>[
+          FakeProcessInfo(MockProcess(exitCode: 1), <String>['format']),
+        ];
+        Error? commandError;
+        final List<String> output = await runCapturingPrint(
+          runner,
+          <String>['format'],
+          errorHandler: (Error e) {
+            commandError = e;
+          },
+        );
+
+        expect(commandError, isA<ToolExit>());
+        expect(
+          output,
+          containsAllInOrder(<Matcher>[contains('Failed to format Dart files: exit code 1.')]),
+        );
+      });
+
+      test('formats only staged files when --run-on-staged-packages is used', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        // Mock git diff --cached to return only lib/src/b.dart (called three times)
+        const stagedFilePath = 'packages/a_plugin/lib/src/b.dart';
+        gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+          3,
+          (_) => FakeProcessInfo(MockProcess(stdout: stagedFilePath)),
+        );
+
+        await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('dart', const <String>['format', 'lib/src/b.dart'], plugin.path),
+          ]),
+        );
+      });
+
+      test('skips formatting when there are no staged packages', () async {
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+          3,
+          (_) => FakeProcessInfo(MockProcess(stdout: '')),
+        );
+
+        await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+        expect(processRunner.recordedCalls, isEmpty);
+      });
+
+      test('formats only staged files across multiple packages', () async {
+        final RepositoryPackage pluginA = createFakePlugin(
+          'plugin_a',
+          packagesDir,
+          extraFiles: <String>['lib/a.dart', 'lib/src/unused_a.dart'],
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(pluginA);
+
+        final RepositoryPackage pluginB = createFakePlugin(
+          'plugin_b',
+          packagesDir,
+          extraFiles: <String>['lib/b.dart', 'lib/src/unused_b.dart'],
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(pluginB);
+
+        // Mock git diff to return both staged files (called three times)
+        const stagedFiles = 'packages/plugin_a/lib/a.dart\npackages/plugin_b/lib/b.dart\n';
+        gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+          3,
+          (_) => FakeProcessInfo(MockProcess(stdout: stagedFiles)),
+        );
+
+        await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+        expect(
+          processRunner.recordedCalls,
+          unorderedEquals(<ProcessCall>[
+            ProcessCall('dart', const <String>['format', 'lib/a.dart'], pluginA.path),
+            ProcessCall('dart', const <String>['format', 'lib/b.dart'], pluginB.path),
+          ]),
+        );
+      });
+
+      test(
+        'does not format staged files that are hand-formatted or in excluded directories when --run-on-staged-packages is used',
+        () async {
+          const files = <String>[
+            'lib/a.dart',
+            'lib/src/b.dart',
+            'example/build/a.dart',
+            '.dart_tool/a.dart',
+          ];
+          final RepositoryPackage plugin = createFakePlugin(
+            'a_plugin',
+            packagesDir,
+            extraFiles: files,
+            dartConstraint: _dartConstraint,
+          );
+          fakePubGet(plugin);
+
+          // Write pragma to lib/src/b.dart
+          final p.Context posixContext = p.posix;
+          childFileWithSubcomponents(
+            plugin.directory,
+            posixContext.split('lib/src/b.dart'),
+          ).writeAsStringSync('// This file is hand-formatted.\ncode...');
+
+          // Mock git diff to return all of them
+          final String stagedFiles = files.map((String f) => 'packages/a_plugin/$f').join('\n');
+          gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+            3,
+            (_) => FakeProcessInfo(MockProcess(stdout: stagedFiles)),
+          );
+
+          await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+          // Only lib/a.dart should be formatted.
+          // lib/src/b.dart is hand-formatted.
+          // example/build/a.dart is in excluded dir.
+          // .dart_tool/a.dart is in excluded dir.
+          expect(
+            processRunner.recordedCalls,
+            orderedEquals(<ProcessCall>[
+              ProcessCall('dart', const <String>['format', 'lib/a.dart'], plugin.path),
+            ]),
+          );
+        },
+      );
+
+      test('skips Java and Kotlin formatting when no Java or Kotlin files are staged', () async {
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: <String>[
+            'lib/a.dart',
+            'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
+            'android/src/main/kotlin/io/flutter/plugins/a_plugin/b.kt',
+          ],
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        // Mock git diff to return only the Dart file
+        const stagedFilePath = 'packages/a_plugin/lib/a.dart';
+        gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+          3,
+          (_) => FakeProcessInfo(MockProcess(stdout: stagedFilePath)),
+        );
+
+        await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+        // Should only run dart format, no java format
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('dart', const <String>['format', 'lib/a.dart'], plugin.path),
+          ]),
+        );
+      });
+
+      test('formats only staged Java files and skips Dart when only Java is staged', () async {
+        const javaFile = 'android/src/main/java/io/flutter/plugins/a_plugin/a.java';
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: <String>['lib/a.dart', javaFile],
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        // Mock git diff to return only the Java file
+        const stagedFilePath = 'packages/a_plugin/$javaFile';
+        gitProcessRunner.mockProcessesForExecutable['git-diff'] = List<FakeProcessInfo>.generate(
+          3,
+          (_) => FakeProcessInfo(MockProcess(stdout: stagedFilePath)),
+        );
+
+        await runCapturingPrint(runner, <String>['format', '--run-on-staged-packages']);
+
+        // Should only run java format, no dart format
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            const ProcessCall('java', <String>['-version'], null),
+            ProcessCall('java', <String>[
+              '-jar',
+              javaFormatPath,
+              '--replace',
+              ...getPackagesDirRelativePaths(plugin, <String>[javaFile]),
+            ], packagesDir.path),
+          ]),
+        );
+      });
+
+      test('skips dart if --no-dart flag is provided', () async {
+        const files = <String>['lib/a.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin);
+
+        await runCapturingPrint(runner, <String>['format', '--no-dart']);
+        expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
+      });
+
+      test('runs pub get if it has not been run', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('flutter', const <String>['pub', 'get'], plugin.directory.path),
+            ProcessCall('dart', const <String>['format', ...files], plugin.path),
+          ]),
+        );
+      });
+
+      test('runs pub get in subpackages if it has not been run', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        final RepositoryPackage subpackage = createFakePackage(
+          'subpackage',
+          plugin.directory.childDirectory('extras'),
+        );
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('flutter', const <String>['pub', 'get'], plugin.directory.path),
+            ProcessCall('dart', const <String>['pub', 'get'], subpackage.directory.path),
+            ProcessCall('dart', const <String>['format', ...files], plugin.path),
+          ]),
+        );
+      });
+
+      test('runs pub get if the resolved language version is stale', () async {
+        const files = <String>['lib/a.dart', 'lib/src/b.dart', 'lib/src/c.dart'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+          dartConstraint: _dartConstraint,
+        );
+        fakePubGet(plugin, languageVersion: '3.0');
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('flutter', const <String>['pub', 'get'], plugin.directory.path),
+            ProcessCall('dart', const <String>['format', ...files], plugin.path),
+          ]),
+        );
+      });
+    });
+
+    test('formats .java files', () async {
+      const files = <String>[
+        'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
+        'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
+      ];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
       await runCapturingPrint(runner, <String>['format']);
 
       expect(
-          processRunner.recordedCalls,
-          orderedEquals(<ProcessCall>[
-            const ProcessCall('java', <String>['-version'], null),
-            ProcessCall(
-                'java',
-                <String>[
-                  '-jar',
-                  kotlinFormatPath,
-                  ...getPackagesDirRelativePaths(plugin, files)
-                ],
-                packagesDir.path),
-          ]));
+        processRunner.recordedCalls,
+        orderedEquals(<ProcessCall>[
+          const ProcessCall('java', <String>['-version'], null),
+          ProcessCall('java', <String>[
+            '-jar',
+            javaFormatPath,
+            '--replace',
+            ...getPackagesDirRelativePaths(plugin, files),
+          ], packagesDir.path),
+        ]),
+      );
     });
 
-    test('fails if Kotlin formatter fails', () async {
-      const List<String> files = <String>[
-        'android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt',
-        'android/src/main/kotlin/io/flutter/plugins/a_plugin/b.kt',
+    test('fails with a clear message if Java is not in the path', () async {
+      const files = <String>[
+        'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
+        'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
       ];
-      createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
       processRunner.mockProcessesForExecutable['java'] = <FakeProcessInfo>[
-        FakeProcessInfo(
-            MockProcess(), <String>['-version']), // check for working java
+        FakeProcessInfo(MockProcess(exitCode: 1), <String>['-version']),
+      ];
+      Error? commandError;
+      final List<String> output = await runCapturingPrint(
+        runner,
+        <String>['format'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
+
+      expect(commandError, isA<ToolExit>());
+      expect(
+        output,
+        containsAllInOrder(<Matcher>[
+          contains(
+            'Unable to run "java". Make sure that it is in your path, or '
+            'provide a full path with --java-path.',
+          ),
+        ]),
+      );
+    });
+
+    test('fails if Java formatter fails', () async {
+      const files = <String>[
+        'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
+        'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
+      ];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      processRunner.mockProcessesForExecutable['java'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(), <String>['-version']), // check for working java
         FakeProcessInfo(MockProcess(exitCode: 1), <String>['-jar']), // format
       ];
       Error? commandError;
       final List<String> output = await runCapturingPrint(
-          runner, <String>['format'], errorHandler: (Error e) {
-        commandError = e;
-      });
+        runner,
+        <String>['format'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
 
       expect(commandError, isA<ToolExit>());
       expect(
-          output,
-          containsAllInOrder(<Matcher>[
-            contains('Failed to format Kotlin files: exit code 1.'),
-          ]));
-    });
-
-    test('skips Kotlin if --no-kotlin flag is provided', () async {
-      const List<String> files = <String>[
-        'android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt',
-      ];
-      createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-      await runCapturingPrint(runner, <String>['format', '--no-kotlin']);
-      expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
-    });
-  });
-
-  group('swift-format', () {
-    test('formats Swift if --swift-format flag is provided', () async {
-      const List<String> files = <String>[
-        'macos/foo.swift',
-      ];
-      final RepositoryPackage plugin = createFakePlugin(
-        'a_plugin',
-        packagesDir,
-        extraFiles: files,
+        output,
+        containsAllInOrder(<Matcher>[contains('Failed to format Java files: exit code 1.')]),
       );
+    });
 
-      await runCapturingPrint(runner, <String>[
-        'format',
-        '--swift',
-        '--swift-format-path=/path/to/swift-format'
-      ]);
+    test('honors --java-path flag', () async {
+      const files = <String>[
+        'android/src/main/java/io/flutter/plugins/a_plugin/a.java',
+        'android/src/main/java/io/flutter/plugins/a_plugin/b.java',
+      ];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      await runCapturingPrint(runner, <String>['format', '--java-path=/path/to/java']);
 
       expect(
-          processRunner.recordedCalls,
-          orderedEquals(<ProcessCall>[
-            const ProcessCall(
-              '/path/to/swift-format',
-              <String>['--version'],
-              null,
-            ),
-            ProcessCall(
-              '/path/to/swift-format',
-              <String>['-i', ...getPackagesDirRelativePaths(plugin, files)],
-              packagesDir.path,
-            ),
-            ProcessCall(
-              '/path/to/swift-format',
-              <String>[
-                'lint',
-                '--parallel',
-                '--strict',
-                ...getPackagesDirRelativePaths(plugin, files),
-              ],
-              packagesDir.path,
-            ),
-          ]));
+        processRunner.recordedCalls,
+        orderedEquals(<ProcessCall>[
+          const ProcessCall('/path/to/java', <String>['--version'], null),
+          ProcessCall('/path/to/java', <String>[
+            '-jar',
+            javaFormatPath,
+            '--replace',
+            ...getPackagesDirRelativePaths(plugin, files),
+          ], packagesDir.path),
+        ]),
+      );
     });
 
-    test('skips Swift if --no-swift flag is provided', () async {
-      const List<String> files = <String>[
-        'macos/foo.swift',
-      ];
-      createFakePlugin(
-        'a_plugin',
-        packagesDir,
-        extraFiles: files,
-      );
+    test('skips Java if --no-java flag is provided', () async {
+      const files = <String>['android/src/main/java/io/flutter/plugins/a_plugin/a.java'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
-      await runCapturingPrint(runner, <String>['format', '--no-swift']);
-
+      await runCapturingPrint(runner, <String>['format', '--no-java']);
       expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
     });
 
-    test('fails with a clear message if swift-format is not in the path',
-        () async {
-      const List<String> files = <String>[
-        'macos/foo.swift',
+    test('formats c-ish files', () async {
+      const files = <String>[
+        'ios/Classes/Foo.h',
+        'ios/Classes/Foo.m',
+        'linux/foo_plugin.cc',
+        'macos/Classes/Foo.h',
+        'macos/Classes/Foo.mm',
+        'windows/foo_plugin.cpp',
       ];
-      createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
-      processRunner.mockProcessesForExecutable['swift-format'] =
-          <FakeProcessInfo>[
-        FakeProcessInfo(MockProcess(exitCode: 1), <String>['--version']),
+      await runCapturingPrint(runner, <String>['format']);
+
+      expect(
+        processRunner.recordedCalls,
+        orderedEquals(<ProcessCall>[
+          const ProcessCall('clang-format', <String>['--version'], null),
+          ProcessCall('clang-format', <String>[
+            '-i',
+            '--style=file',
+            ...getPackagesDirRelativePaths(plugin, files),
+          ], packagesDir.path),
+        ]),
+      );
+    });
+
+    test('fails with a clear message if clang-format is not in the path', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      processRunner.mockProcessesForExecutable['clang-format'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(exitCode: 1)),
       ];
       Error? commandError;
       final List<String> output = await runCapturingPrint(
-          runner, <String>['format', '--swift'], errorHandler: (Error e) {
-        commandError = e;
-      });
+        runner,
+        <String>['format'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
 
       expect(commandError, isA<ToolExit>());
       expect(
-          output,
-          containsAllInOrder(<Matcher>[
-            contains(
-                'Unable to run "swift-format". Make sure that it is in your path, or '
-                'provide a full path with --swift-format-path.'),
-          ]));
-    });
-
-    test('fails if swift-format lint fails', () async {
-      const List<String> files = <String>[
-        'macos/foo.swift',
-      ];
-      createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-      processRunner.mockProcessesForExecutable['swift-format'] =
-          <FakeProcessInfo>[
-        FakeProcessInfo(MockProcess(),
-            <String>['--version']), // check for working swift-format
-        FakeProcessInfo(MockProcess(), <String>['-i']),
-        FakeProcessInfo(MockProcess(exitCode: 1), <String>[
-          'lint',
-          '--parallel',
-          '--strict',
+        output,
+        containsAllInOrder(<Matcher>[
+          contains(
+            'Unable to run "clang-format". Make sure that it is in your '
+            'path, or provide a full path with --clang-format-path.',
+          ),
         ]),
-      ];
-      Error? commandError;
-      final List<String> output = await runCapturingPrint(runner, <String>[
-        'format',
-        '--swift',
-        '--swift-format-path=swift-format'
-      ], errorHandler: (Error e) {
-        commandError = e;
-      });
-
-      expect(commandError, isA<ToolExit>());
-      expect(
-          output,
-          containsAllInOrder(<Matcher>[
-            contains('Failed to lint Swift files: exit code 1.'),
-          ]));
+      );
     });
 
-    test('fails if swift-format fails', () async {
-      const List<String> files = <String>[
-        'macos/foo.swift',
-      ];
-      createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+    test('falls back to working clang-format in the path', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
-      processRunner.mockProcessesForExecutable['swift-format'] =
-          <FakeProcessInfo>[
-        FakeProcessInfo(MockProcess(),
-            <String>['--version']), // check for working swift-format
-        FakeProcessInfo(MockProcess(exitCode: 1), <String>['-i']),
+      processRunner.mockProcessesForExecutable['clang-format'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(exitCode: 1)),
       ];
-      Error? commandError;
-      final List<String> output = await runCapturingPrint(runner, <String>[
-        'format',
-        '--swift',
-        '--swift-format-path=swift-format'
-      ], errorHandler: (Error e) {
-        commandError = e;
-      });
+      processRunner.mockProcessesForExecutable['which'] = <FakeProcessInfo>[
+        FakeProcessInfo(
+          MockProcess(stdout: '/usr/local/bin/clang-format\n/path/to/working-clang-format'),
+          <String>['-a', 'clang-format'],
+        ),
+      ];
+      processRunner.mockProcessesForExecutable['/usr/local/bin/clang-format'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(exitCode: 1)),
+      ];
+      await runCapturingPrint(runner, <String>['format']);
 
-      expect(commandError, isA<ToolExit>());
       expect(
-          output,
-          containsAllInOrder(<Matcher>[
-            contains('Failed to format Swift files: exit code 1.'),
-          ]));
-    });
-  });
-
-  test('skips known non-repo files', () async {
-    const List<String> skipFiles = <String>[
-      '/example/build/SomeFramework.framework/Headers/SomeFramework.h',
-      '/example/Pods/APod.framework/Headers/APod.h',
-      '.dart_tool/internals/foo.cc',
-      '.dart_tool/internals/Bar.java',
-      '.dart_tool/internals/baz.dart',
-    ];
-    const List<String> clangFiles = <String>['ios/Classes/Foo.h'];
-    const List<String> dartFiles = <String>['lib/a.dart'];
-    const List<String> javaFiles = <String>[
-      'android/src/main/java/io/flutter/plugins/a_plugin/a.java'
-    ];
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: <String>[
-        ...skipFiles,
-        // Include some files that should be formatted to validate that it's
-        // correctly filtering even when running the commands.
-        ...clangFiles,
-        ...dartFiles,
-        ...javaFiles,
-      ],
-    );
-
-    await runCapturingPrint(runner, <String>['format']);
-
-    expect(
         processRunner.recordedCalls,
         containsAll(<ProcessCall>[
-          ProcessCall(
-              'clang-format',
-              <String>[
-                '-i',
-                '--style=file',
-                ...getPackagesDirRelativePaths(plugin, clangFiles)
-              ],
-              packagesDir.path),
-          ProcessCall(
-              'dart',
-              <String>[
-                'format',
-                ...getPackagesDirRelativePaths(plugin, dartFiles)
-              ],
-              packagesDir.path),
-          ProcessCall(
-              'java',
-              <String>[
-                '-jar',
-                javaFormatPath,
-                '--replace',
-                ...getPackagesDirRelativePaths(plugin, javaFiles)
-              ],
-              packagesDir.path),
-        ]));
-  });
+          const ProcessCall('/path/to/working-clang-format', <String>['--version'], null),
+          ProcessCall('/path/to/working-clang-format', <String>[
+            '-i',
+            '--style=file',
+            ...getPackagesDirRelativePaths(plugin, files),
+          ], packagesDir.path),
+        ]),
+      );
+    });
 
-  test('skips GeneratedPluginRegistrant.swift', () async {
-    const String sourceFile = 'macos/Classes/Foo.swift';
-    final RepositoryPackage plugin = createFakePlugin(
-      'a_plugin',
-      packagesDir,
-      extraFiles: <String>[
-        sourceFile,
-        'example/macos/Flutter/GeneratedPluginRegistrant.swift',
-      ],
-    );
+    test('honors --clang-format-path flag', () async {
+      const files = <String>['windows/foo_plugin.cpp'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
-    await runCapturingPrint(runner, <String>[
-      'format',
-      '--swift',
-      '--swift-format-path=/path/to/swift-format'
-    ]);
+      await runCapturingPrint(runner, <String>[
+        'format',
+        '--clang-format-path=/path/to/clang-format',
+      ]);
 
-    expect(
+      expect(
         processRunner.recordedCalls,
         orderedEquals(<ProcessCall>[
-          const ProcessCall(
-            '/path/to/swift-format',
-            <String>['--version'],
-            null,
-          ),
-          ProcessCall(
-            '/path/to/swift-format',
-            <String>[
+          const ProcessCall('/path/to/clang-format', <String>['--version'], null),
+          ProcessCall('/path/to/clang-format', <String>[
+            '-i',
+            '--style=file',
+            ...getPackagesDirRelativePaths(plugin, files),
+          ], packagesDir.path),
+        ]),
+      );
+    });
+
+    test('fails if clang-format fails', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      processRunner.mockProcessesForExecutable['clang-format'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(), <String>['--version']), // check for working clang-format
+        FakeProcessInfo(MockProcess(exitCode: 1), <String>['-i']), // format
+      ];
+      Error? commandError;
+      final List<String> output = await runCapturingPrint(
+        runner,
+        <String>['format'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
+
+      expect(commandError, isA<ToolExit>());
+      expect(
+        output,
+        containsAllInOrder(<Matcher>[
+          contains('Failed to format C, C++, and Objective-C files: exit code 1.'),
+        ]),
+      );
+    });
+
+    test('skips clang-format if --no-clang-format flag is provided', () async {
+      const files = <String>['linux/foo_plugin.cc'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      await runCapturingPrint(runner, <String>['format', '--no-clang-format']);
+      expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
+    });
+
+    group('kotlin-format', () {
+      test('formats .kt files', () async {
+        const files = <String>[
+          'android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt',
+          'android/src/main/kotlin/io/flutter/plugins/a_plugin/b.kt',
+        ];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        await runCapturingPrint(runner, <String>['format']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            const ProcessCall('java', <String>['-version'], null),
+            ProcessCall('java', <String>[
+              '-jar',
+              kotlinFormatPath,
+              ...getPackagesDirRelativePaths(plugin, files),
+            ], packagesDir.path),
+          ]),
+        );
+      });
+
+      test('fails if Kotlin formatter fails', () async {
+        const files = <String>[
+          'android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt',
+          'android/src/main/kotlin/io/flutter/plugins/a_plugin/b.kt',
+        ];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        processRunner.mockProcessesForExecutable['java'] = <FakeProcessInfo>[
+          FakeProcessInfo(MockProcess(), <String>['-version']), // check for working java
+          FakeProcessInfo(MockProcess(exitCode: 1), <String>['-jar']), // format
+        ];
+        Error? commandError;
+        final List<String> output = await runCapturingPrint(
+          runner,
+          <String>['format'],
+          errorHandler: (Error e) {
+            commandError = e;
+          },
+        );
+
+        expect(commandError, isA<ToolExit>());
+        expect(
+          output,
+          containsAllInOrder(<Matcher>[contains('Failed to format Kotlin files: exit code 1.')]),
+        );
+      });
+
+      test('skips Kotlin if --no-kotlin flag is provided', () async {
+        const files = <String>['android/src/main/kotlin/io/flutter/plugins/a_plugin/a.kt'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        await runCapturingPrint(runner, <String>['format', '--no-kotlin']);
+        expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
+      });
+    });
+
+    group('swift-format', () {
+      test('formats Swift if --swift flag is provided', () async {
+        const files = <String>['macos/foo.swift'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        await runCapturingPrint(runner, <String>['format', '--swift']);
+
+        expect(
+          processRunner.recordedCalls,
+          orderedEquals(<ProcessCall>[
+            ProcessCall('xcrun', <String>[
+              'swift-format',
               '-i',
-              ...getPackagesDirRelativePaths(plugin, <String>[sourceFile])
-            ],
-            packagesDir.path,
-          ),
-          ProcessCall(
-            '/path/to/swift-format',
-            <String>[
+              ...getPackagesDirRelativePaths(plugin, files),
+            ], packagesDir.path),
+            ProcessCall('xcrun', <String>[
+              'swift-format',
               'lint',
               '--parallel',
               '--strict',
-              ...getPackagesDirRelativePaths(plugin, <String>[sourceFile]),
-            ],
-            packagesDir.path,
-          ),
-        ]));
-  });
+              ...getPackagesDirRelativePaths(plugin, files),
+            ], packagesDir.path),
+          ]),
+        );
+      });
 
-  test('fails if files are changed with --fail-on-change', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      test('skips Swift if --no-swift flag is provided', () async {
+        const files = <String>['macos/foo.swift'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
 
-    const String changedFilePath = 'packages/a_plugin/linux/foo_plugin.cc';
-    processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
-      FakeProcessInfo(
-          MockProcess(stdout: changedFilePath), <String>['ls-files']),
-    ];
+        await runCapturingPrint(runner, <String>['format', '--no-swift']);
 
-    Error? commandError;
-    final List<String> output =
-        await runCapturingPrint(runner, <String>['format', '--fail-on-change'],
-            errorHandler: (Error e) {
-      commandError = e;
+        expect(processRunner.recordedCalls, orderedEquals(<ProcessCall>[]));
+      });
+
+      test('fails if swift-format lint finds issues', () async {
+        const files = <String>['macos/foo.swift'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        processRunner.mockProcessesForExecutable['xcrun'] = <FakeProcessInfo>[
+          FakeProcessInfo(MockProcess(), <String>['swift-format', '-i']),
+          FakeProcessInfo(MockProcess(exitCode: 1), <String>[
+            'swift-format',
+            'lint',
+            '--parallel',
+            '--strict',
+          ]),
+        ];
+        Error? commandError;
+        final List<String> output = await runCapturingPrint(
+          runner,
+          <String>['format', '--swift'],
+          errorHandler: (Error e) {
+            commandError = e;
+          },
+        );
+
+        expect(commandError, isA<ToolExit>());
+        expect(
+          output,
+          containsAllInOrder(<Matcher>[
+            contains('Swift linter found issues. See above for linter output.'),
+          ]),
+        );
+      });
+
+      test('fails if swift-format lint fails', () async {
+        const files = <String>['macos/foo.swift'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        processRunner.mockProcessesForExecutable['xcrun'] = <FakeProcessInfo>[
+          FakeProcessInfo(MockProcess(), <String>['swift-format', '-i']),
+          FakeProcessInfo(MockProcess(exitCode: 99), <String>[
+            'swift-format',
+            'lint',
+            '--parallel',
+            '--strict',
+          ]),
+        ];
+        Error? commandError;
+        final List<String> output = await runCapturingPrint(
+          runner,
+          <String>['format', '--swift'],
+          errorHandler: (Error e) {
+            commandError = e;
+          },
+        );
+
+        expect(commandError, isA<ToolExit>());
+        expect(
+          output,
+          containsAllInOrder(<Matcher>[contains('Failed to lint Swift files: exit code 99.')]),
+        );
+      });
+
+      test('fails if swift-format fails', () async {
+        const files = <String>['macos/foo.swift'];
+        final RepositoryPackage plugin = createFakePlugin(
+          'a_plugin',
+          packagesDir,
+          extraFiles: files,
+        );
+        fakePubGet(plugin);
+
+        processRunner.mockProcessesForExecutable['xcrun'] = <FakeProcessInfo>[
+          FakeProcessInfo(MockProcess(exitCode: 1), <String>['swift-format', '-i']),
+        ];
+        Error? commandError;
+        final List<String> output = await runCapturingPrint(
+          runner,
+          <String>['format', '--swift'],
+          errorHandler: (Error e) {
+            commandError = e;
+          },
+        );
+
+        expect(commandError, isA<ToolExit>());
+        expect(
+          output,
+          containsAllInOrder(<Matcher>[contains('Failed to format Swift files: exit code 1.')]),
+        );
+      });
     });
 
-    expect(commandError, isA<ToolExit>());
-    expect(
+    test('skips known non-repo files', () async {
+      const skipFiles = <String>[
+        '/example/build/SomeFramework.framework/Headers/SomeFramework.h',
+        '/example/Pods/APod.framework/Headers/APod.h',
+        '.dart_tool/internals/foo.cc',
+        '.dart_tool/internals/Bar.java',
+        '.dart_tool/internals/baz.dart',
+      ];
+      const clangFiles = <String>['ios/Classes/Foo.h'];
+      const dartFiles = <String>['lib/a.dart'];
+      const javaFiles = <String>['android/src/main/java/io/flutter/plugins/a_plugin/a.java'];
+      final RepositoryPackage plugin = createFakePlugin(
+        'a_plugin',
+        packagesDir,
+        extraFiles: <String>[
+          ...skipFiles,
+          // Include some files that should be formatted to validate that it's
+          // correctly filtering even when running the commands.
+          ...clangFiles,
+          ...dartFiles,
+          ...javaFiles,
+        ],
+      );
+      fakePubGet(plugin);
+
+      await runCapturingPrint(runner, <String>['format']);
+
+      expect(
+        processRunner.recordedCalls,
+        containsAll(<ProcessCall>[
+          ProcessCall('clang-format', <String>[
+            '-i',
+            '--style=file',
+            ...getPackagesDirRelativePaths(plugin, clangFiles),
+          ], packagesDir.path),
+          ProcessCall('dart', const <String>['format', ...dartFiles], plugin.path),
+          ProcessCall('java', <String>[
+            '-jar',
+            javaFormatPath,
+            '--replace',
+            ...getPackagesDirRelativePaths(plugin, javaFiles),
+          ], packagesDir.path),
+        ]),
+      );
+    });
+
+    test('skips GeneratedPluginRegistrant.swift', () async {
+      const sourceFile = 'macos/Classes/Foo.swift';
+      final RepositoryPackage plugin = createFakePlugin(
+        'a_plugin',
+        packagesDir,
+        extraFiles: <String>[sourceFile, 'example/macos/Flutter/GeneratedPluginRegistrant.swift'],
+      );
+      fakePubGet(plugin);
+
+      await runCapturingPrint(runner, <String>['format', '--swift']);
+
+      expect(
+        processRunner.recordedCalls,
+        orderedEquals(<ProcessCall>[
+          ProcessCall('xcrun', <String>[
+            'swift-format',
+            '-i',
+            ...getPackagesDirRelativePaths(plugin, <String>[sourceFile]),
+          ], packagesDir.path),
+          ProcessCall('xcrun', <String>[
+            'swift-format',
+            'lint',
+            '--parallel',
+            '--strict',
+            ...getPackagesDirRelativePaths(plugin, <String>[sourceFile]),
+          ], packagesDir.path),
+        ]),
+      );
+    });
+
+    test('fails if files are changed with --fail-on-change', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      const changedFilePath = 'packages/a_plugin/linux/foo_plugin.cc';
+      processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(stdout: changedFilePath), <String>['ls-files']),
+      ];
+
+      Error? commandError;
+      final List<String> output = await runCapturingPrint(
+        runner,
+        <String>['format', '--fail-on-change'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
+
+      expect(commandError, isA<ToolExit>());
+      expect(
         output,
         containsAllInOrder(<Matcher>[
           contains('These files are not formatted correctly'),
           contains(changedFilePath),
           // Ensure the error message links to instructions.
-          contains(
-              'https://github.com/flutter/packages/blob/main/script/tool/README.md#format-code'),
+          contains('$toolDocsUrl#format-code'),
           contains('patch -p1 <<DONE'),
-        ]));
-  });
+        ]),
+      );
 
-  test('fails if git ls-files fails', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
-
-    processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['ls-files'])
-    ];
-    Error? commandError;
-    final List<String> output =
-        await runCapturingPrint(runner, <String>['format', '--fail-on-change'],
-            errorHandler: (Error e) {
-      commandError = e;
+      // Ensure that both packages and third_party/packages are checked.
+      final Directory thirdPartyDir = packagesDir.parent
+          .childDirectory('third_party')
+          .childDirectory('packages');
+      expect(
+        processRunner.recordedCalls,
+        containsAllInOrder(<ProcessCall>[
+          ProcessCall('git', <String>[
+            'ls-files',
+            '--modified',
+            packagesDir.path,
+            thirdPartyDir.path,
+          ], packagesDir.parent.path),
+        ]),
+      );
     });
 
-    expect(commandError, isA<ToolExit>());
-    expect(
-        output,
-        containsAllInOrder(<Matcher>[
-          contains('Unable to determine changed files.'),
-        ]));
-  });
+    test('fails if git ls-files fails', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
 
-  test('reports git diff failures', () async {
-    const List<String> files = <String>[
-      'linux/foo_plugin.cc',
-      'macos/Classes/Foo.h',
-    ];
-    createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(exitCode: 1), <String>['ls-files']),
+      ];
+      Error? commandError;
+      final List<String> output = await runCapturingPrint(
+        runner,
+        <String>['format', '--fail-on-change'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
 
-    const String changedFilePath = 'packages/a_plugin/linux/foo_plugin.cc';
-    processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
-      FakeProcessInfo(
-          MockProcess(stdout: changedFilePath), <String>['ls-files']),
-      FakeProcessInfo(MockProcess(exitCode: 1), <String>['diff']),
-    ];
-
-    Error? commandError;
-    final List<String> output =
-        await runCapturingPrint(runner, <String>['format', '--fail-on-change'],
-            errorHandler: (Error e) {
-      commandError = e;
+      expect(commandError, isA<ToolExit>());
+      expect(output, containsAllInOrder(<Matcher>[contains('Unable to determine changed files.')]));
     });
 
-    expect(commandError, isA<ToolExit>());
-    expect(
+    test('reports git diff failures', () async {
+      const files = <String>['linux/foo_plugin.cc', 'macos/Classes/Foo.h'];
+      final RepositoryPackage plugin = createFakePlugin('a_plugin', packagesDir, extraFiles: files);
+      fakePubGet(plugin);
+
+      const changedFilePath = 'packages/a_plugin/linux/foo_plugin.cc';
+      processRunner.mockProcessesForExecutable['git'] = <FakeProcessInfo>[
+        FakeProcessInfo(MockProcess(stdout: changedFilePath), <String>['ls-files']),
+        FakeProcessInfo(MockProcess(exitCode: 1), <String>['diff']),
+      ];
+
+      Error? commandError;
+      final List<String> output = await runCapturingPrint(
+        runner,
+        <String>['format', '--fail-on-change'],
+        errorHandler: (Error e) {
+          commandError = e;
+        },
+      );
+
+      expect(commandError, isA<ToolExit>());
+      expect(
         output,
         containsAllInOrder(<Matcher>[
           contains('These files are not formatted correctly'),
           contains(changedFilePath),
           contains('Unable to determine diff.'),
-        ]));
-  });
+        ]),
+      );
+    });
 
-  test('Batches moderately long file lists on Windows', () async {
-    mockPlatform.isWindows = true;
+    // Validates that the Windows limit--which is much lower than the limit on
+    // other platforms--isn't being used on all platforms, as that would make
+    // formatting slower on Linux and macOS.
+    test('Does not batch moderately long file lists on non-Windows', () async {
+      const pluginName = 'a_plugin';
+      // -1 since the command itself takes some length.
+      const int batchSize = (windowsCommandLineMax ~/ 100) - 1;
 
-    const String pluginName = 'a_plugin';
-    // -1 since the command itself takes some length.
-    const int batchSize = (windowsCommandLineMax ~/ 100) - 1;
+      // Make the file list one file longer than would fit in a Windows batch.
+      final List<String> batch = get99CharacterPathExtraFiles(batchSize + 1);
 
-    // Make the file list one file longer than would fit in the batch.
-    final List<String> batch1 =
-        get99CharacterPathExtraFiles(pluginName, batchSize + 1);
-    final String extraFile = batch1.removeLast();
+      final RepositoryPackage plugin = createFakePlugin(
+        pluginName,
+        packagesDir,
+        extraFiles: batch,
+        dartConstraint: _dartConstraint,
+      );
+      fakePubGet(plugin);
 
-    createFakePlugin(
-      pluginName,
-      packagesDir,
-      extraFiles: <String>[...batch1, extraFile],
-    );
+      await runCapturingPrint(runner, <String>['format']);
 
-    await runCapturingPrint(runner, <String>['format']);
+      expect(processRunner.recordedCalls.length, 1);
+    });
 
-    // Ensure that it was batched...
-    expect(processRunner.recordedCalls.length, 2);
-    // ... and that the spillover into the second batch was only one file.
-    expect(
+    test('Batches extremely long file lists on non-Windows', () async {
+      const pluginName = 'a_plugin';
+      // -1 since the command itself takes some length.
+      const int batchSize = (nonWindowsCommandLineMax ~/ 100) - 1;
+
+      // Make the file list one file longer than would fit in the batch.
+      final List<String> batch1 = get99CharacterPathExtraFiles(batchSize + 1);
+      final String extraFile = batch1.removeLast();
+
+      final RepositoryPackage package = createFakePlugin(
+        pluginName,
+        packagesDir,
+        extraFiles: <String>[...batch1, extraFile],
+        dartConstraint: _dartConstraint,
+      );
+      fakePubGet(package);
+
+      await runCapturingPrint(runner, <String>['format']);
+
+      // Ensure that it was batched...
+      expect(processRunner.recordedCalls.length, 2);
+      // ... and that the spillover into the second batch was only one file.
+      expect(
         processRunner.recordedCalls,
-        contains(
-          ProcessCall(
-              'dart',
-              <String>[
-                'format',
-                '$pluginName\\$extraFile',
-              ],
-              packagesDir.path),
-        ));
+        contains(ProcessCall('dart', <String>['format', extraFile], package.path)),
+      );
+    });
   });
 
-  // Validates that the Windows limit--which is much lower than the limit on
-  // other platforms--isn't being used on all platforms, as that would make
-  // formatting slower on Linux and macOS.
-  test('Does not batch moderately long file lists on non-Windows', () async {
-    const String pluginName = 'a_plugin';
-    // -1 since the command itself takes some length.
-    const int batchSize = (windowsCommandLineMax ~/ 100) - 1;
+  group('windows', () {
+    late NativePlatform mockPlatform;
+    late Directory packagesDir;
+    late RecordingProcessRunner processRunner;
+    late FormatCommand analyzeCommand;
+    late CommandRunner<void> runner;
+    late String javaFormatPath;
+    late String kotlinFormatPath;
 
-    // Make the file list one file longer than would fit in a Windows batch.
-    final List<String> batch =
-        get99CharacterPathExtraFiles(pluginName, batchSize + 1);
+    setUp(() {
+      mockPlatform = createMockPlatform(isWindows: true);
+      final GitDir gitDir;
+      (:packagesDir, :processRunner, gitProcessRunner: _, :gitDir) = configureBaseCommandMocks(
+        platform: mockPlatform,
+      );
+      analyzeCommand = FormatCommand(
+        packagesDir,
+        processRunner: processRunner,
+        platform: mockPlatform,
+        gitDir: gitDir,
+      );
 
-    createFakePlugin(
-      pluginName,
-      packagesDir,
-      extraFiles: batch,
-    );
+      // Create the Java and Kotlin formatter files that the command checks for,
+      // to avoid a download.
+      javaFormatPath = analyzeCommand.javaFormatterFile.path;
+      packagesDir.fileSystem.file(javaFormatPath).createSync(recursive: true);
+      kotlinFormatPath = analyzeCommand.kotlinFormatterFile.path;
+      packagesDir.fileSystem.file(kotlinFormatPath).createSync(recursive: true);
 
-    await runCapturingPrint(runner, <String>['format']);
+      runner = CommandRunner<void>('format_command', 'Test for format_command');
+      runner.addCommand(analyzeCommand);
+    });
 
-    expect(processRunner.recordedCalls.length, 1);
-  });
+    test('Batches moderately long file lists on Windows', () async {
+      const pluginName = 'a_plugin';
+      // -1 since the command itself takes some length.
+      const int batchSize = (windowsCommandLineMax ~/ 100) - 1;
 
-  test('Batches extremely long file lists on non-Windows', () async {
-    const String pluginName = 'a_plugin';
-    // -1 since the command itself takes some length.
-    const int batchSize = (nonWindowsCommandLineMax ~/ 100) - 1;
+      // Make the file list one file longer than would fit in the batch.
+      final List<String> batch1 = _get99CharacterPathExtraFiles(
+        batchSize + 1,
+        path: analyzeCommand.path,
+      );
+      final String extraFile = batch1.removeLast();
 
-    // Make the file list one file longer than would fit in the batch.
-    final List<String> batch1 =
-        get99CharacterPathExtraFiles(pluginName, batchSize + 1);
-    final String extraFile = batch1.removeLast();
+      final RepositoryPackage package = createFakePlugin(
+        pluginName,
+        packagesDir,
+        extraFiles: <String>[...batch1, extraFile],
+        dartConstraint: _dartConstraint,
+      );
+      fakePubGet(package);
 
-    createFakePlugin(
-      pluginName,
-      packagesDir,
-      extraFiles: <String>[...batch1, extraFile],
-    );
+      await runCapturingPrint(runner, <String>['format']);
 
-    await runCapturingPrint(runner, <String>['format']);
-
-    // Ensure that it was batched...
-    expect(processRunner.recordedCalls.length, 2);
-    // ... and that the spillover into the second batch was only one file.
-    expect(
+      // Ensure that it was batched...
+      expect(processRunner.recordedCalls.length, 2);
+      // ... and that the spillover into the second batch was only one file.
+      expect(
         processRunner.recordedCalls,
-        contains(
-          ProcessCall(
-              'dart',
-              <String>[
-                'format',
-                '$pluginName/$extraFile',
-              ],
-              packagesDir.path),
-        ));
+        contains(ProcessCall('dart', <String>['format', extraFile], package.path)),
+      );
+    });
   });
+}
+
+/// Returns a modified version of a list of [relativePaths] that are relative
+/// to [package] to instead be relative to [packagesDir].
+List<String> _getPackagesDirRelativePaths(
+  RepositoryPackage package,
+  List<String> relativePaths, {
+  required p.Context path,
+  required Directory packagesDir,
+}) {
+  final String relativeBase = path.relative(package.path, from: packagesDir.path);
+  return relativePaths.map((String relativePath) => path.join(relativeBase, relativePath)).toList();
+}
+
+/// Returns a list of [count] relative paths to pass to [createFakePlugin]
+/// or [createFakePackage] such that each path will be 99 characters long
+/// relative to the package directory.
+///
+/// This is for each of testing batching, since it means each file will
+/// consume 100 characters of the batch length.
+List<String> _get99CharacterPathExtraFiles(int count, {required p.Context path}) {
+  const int padding =
+      99 -
+      1 - // the path separator after the padding
+      10; // the file name
+  const filenameBase = 10000;
+
+  return <String>[
+    for (int i = filenameBase; i < filenameBase + count; ++i) path.join('a' * padding, '$i.dart'),
+  ];
 }

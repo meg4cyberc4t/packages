@@ -1,9 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
 
+import 'package:flutter/src/services/binary_messenger.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_actions_android/quick_actions_android.dart';
 import 'package:quick_actions_android/src/messages.g.dart';
@@ -13,18 +14,14 @@ const String LAUNCH_ACTION_STRING = 'aString';
 
 /// Conversion tool to change [ShortcutItemMessage] back to [ShortcutItem]
 ShortcutItem shortcutItemMessageToShortcutItem(ShortcutItemMessage item) {
-  return ShortcutItem(
-    type: item.type,
-    localizedTitle: item.localizedTitle,
-    icon: item.icon,
-  );
+  return ShortcutItem(type: item.type, localizedTitle: item.localizedTitle, icon: item.icon);
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final _FakeQuickActionsApi api = _FakeQuickActionsApi();
-  final QuickActionsAndroid quickActions = QuickActionsAndroid(api: api);
+  final api = _FakeQuickActionsApi();
+  final quickActions = QuickActionsAndroid(api: api);
 
   test('registerWith() registers correct instance', () {
     QuickActionsAndroid.registerWith();
@@ -39,7 +36,7 @@ void main() {
     });
 
     test('initialize', () async {
-      final Completer<bool> quickActionsHandler = Completer<bool>();
+      final quickActionsHandler = Completer<bool>();
       await quickActions.initialize((_) => quickActionsHandler.complete(true));
 
       expect(quickActionsHandler.future, completion(isTrue));
@@ -48,8 +45,7 @@ void main() {
 
   test('setShortCutItems', () async {
     await quickActions.initialize((String type) {});
-    const ShortcutItem item =
-        ShortcutItem(type: 'test', localizedTitle: 'title', icon: 'icon.svg');
+    const item = ShortcutItem(type: 'test', localizedTitle: 'title', icon: 'icon.svg');
     await quickActions.setShortcutItems(<ShortcutItem>[item]);
 
     expect(api.items.first.type, item.type);
@@ -59,8 +55,7 @@ void main() {
 
   test('clearShortCutItems', () {
     quickActions.initialize((String type) {});
-    const ShortcutItem item =
-        ShortcutItem(type: 'test', localizedTitle: 'title', icon: 'icon.svg');
+    const item = ShortcutItem(type: 'test', localizedTitle: 'title', icon: 'icon.svg');
     quickActions.setShortcutItems(<ShortcutItem>[item]);
     quickActions.clearShortcutItems();
 
@@ -68,12 +63,11 @@ void main() {
   });
 
   test('Shortcut item can be constructed', () {
-    const String type = 'type';
-    const String localizedTitle = 'title';
-    const String icon = 'foo';
+    const type = 'type';
+    const localizedTitle = 'title';
+    const icon = 'foo';
 
-    const ShortcutItem item =
-        ShortcutItem(type: type, localizedTitle: localizedTitle, icon: icon);
+    const item = ShortcutItem(type: type, localizedTitle: localizedTitle, icon: icon);
 
     expect(item.type, type);
     expect(item.localizedTitle, localizedTitle);
@@ -100,8 +94,16 @@ class _FakeQuickActionsApi implements AndroidQuickActionsApi {
   @override
   Future<void> setShortcutItems(List<ShortcutItemMessage?> itemsList) async {
     await clearShortcutItems();
-    for (final ShortcutItemMessage? element in itemsList) {
+    for (final element in itemsList) {
       items.add(shortcutItemMessageToShortcutItem(element!));
     }
   }
+
+  @override
+  // ignore: non_constant_identifier_names
+  BinaryMessenger? get pigeonVar_binaryMessenger => null;
+
+  @override
+  // ignore: non_constant_identifier_names
+  String get pigeonVar_messageChannelSuffix => '';
 }

@@ -1,3 +1,96 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.17.0
+
+* Adds support for tapping points of interest on the map.
+
+## 2.16.1
+
+* Fixes the `PinConfig` code sample in the `BitmapDescriptor` documentation.
+
+## 2.16.0
+
+* Adds support for `mapTypeControlEnabled`, `fullscreenControlEnabled`, and `streetViewControlEnabled` for web.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 2.15.0
+
+* Adds support for `colorScheme` for cloud-based maps styling brightness in web.
+
+## 2.14.2
+
+* Adds documentation about iOS rendering issue with `PinConfig`.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.14.1
+
+* Replaces internal use of deprecated methods.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 2.14.0
+
+* Adds support for disabling or moving the camera control button on web.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 2.13.0
+
+* Adds Advanced marker support.
+
+## 2.12.1
+
+* Fixes the `zIndex` issue in the `copyWith` method.
+
+## 2.12.0
+
+* Deprecates `zIndex` parameter in `Marker` in favor of `zIndexInt`.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 2.11.1
+
+* Updates READMEs and API docs.
+
+## 2.11.0
+
+* Adds support for animating the camera with a duration.
+
+## 2.10.0
+
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+* Adds support for ground overlay.
+
+## 2.9.5
+
+* Converts `BitmapDescriptor` to typesafe structures.
+
+## 2.9.4
+
+* Converts `PatternItem` to typesafe structure.
+* Converts `Cap` to typesafe structure.
+
+## 2.9.3
+
+* Corrects an incorrect comment in polyline.dart file.
+
+## 2.9.2
+
+* Corrects JSON tag for `CameraUpdateNewLatLngBounds`.
+
+## 2.9.1
+
+* Splits CameraUpdate into dervied classes for different update cases.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 2.9.0
+
+* Adds support for heatmap layers.
+
+## 2.8.0
+
+* Deprecates `BitmapDescriptor.fromAssetImage` in favor of `BitmapDescriptor.asset` and `AssetMapBitmap.create`.
+* Deprecates `BitmapDescriptor.fromBytes` in favor of `BitmapDescriptor.bytes` and `BytesMapBitmap`
+
 ## 2.7.1
 
 * Undeprecates `BitmapDescriptor.fromAssetImage`.

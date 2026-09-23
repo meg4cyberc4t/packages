@@ -1,24 +1,32 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:yaml/yaml.dart';
 
 import 'common/core.dart';
+import 'common/file_filters.dart';
 import 'common/output_utils.dart';
 import 'common/package_looping_command.dart';
 import 'common/plugin_utils.dart';
 import 'common/pub_utils.dart';
 import 'common/repository_package.dart';
 
+const int _exitUnknownTestPlatform = 3;
+const int _exitNoTestsRan = 79;
+
+enum _TestPlatform {
+  // Must run in the command-line VM.
+  vm,
+  // Must run in a browser.
+  browser,
+}
+
 /// A command to run Dart unit tests for packages.
 class DartTestCommand extends PackageLoopingCommand {
   /// Creates an instance of the test command.
-  DartTestCommand(
-    super.packagesDir, {
-    super.processRunner,
-    super.platform,
-  }) {
+  DartTestCommand(super.packagesDir, {super.processRunner, super.platform, super.gitDir}) {
     argParser.addOption(
       kEnableExperiment,
       defaultsTo: '',
@@ -29,12 +37,23 @@ class DartTestCommand extends PackageLoopingCommand {
     );
     argParser.addOption(
       _platformFlag,
-      help: 'Runs tests on the given platform instead of the default platform '
+      help:
+          'Runs tests on the given platform instead of the default platform '
           '("vm" in most cases, "chrome" for web plugin implementations).',
+    );
+    argParser.addFlag(kWebWasmFlag, help: 'Compile to WebAssembly rather than JavaScript');
+    argParser.addOption(
+      _packageTagsFlag,
+      help:
+          'Path to a YAML file that maps package names to tags to run for that '
+          'package.',
     );
   }
 
   static const String _platformFlag = 'platform';
+  static const String _packageTagsFlag = 'package-tags';
+
+  Map<String, String>? _packageTags;
 
   @override
   final String name = 'dart-test';
@@ -46,12 +65,24 @@ class DartTestCommand extends PackageLoopingCommand {
   List<String> get aliases => <String>['test', 'test-dart'];
 
   @override
-  final String description = 'Runs the Dart tests for all packages.\n\n'
+  final String description =
+      'Runs the Dart tests for all packages.\n\n'
       'This command requires "flutter" to be in your path.';
 
   @override
-  PackageLoopingType get packageLoopingType =>
-      PackageLoopingType.includeAllSubpackages;
+  PackageLoopingType get packageLoopingType => PackageLoopingType.includeAllSubpackages;
+
+  @override
+  bool shouldIgnoreFile(String path) {
+    return isRepoLevelNonCodeImpactingFile(path) ||
+        isNativeCodeFile(path) ||
+        isPackageSupportFile(path);
+  }
+
+  @override
+  Future<void> initializeRun() async {
+    _initializePackageTags();
+  }
 
   @override
   Future<PackageResult> runForPackage(RepositoryPackage package) async {
@@ -65,18 +96,15 @@ class DartTestCommand extends PackageLoopingCommand {
     // federated plugin implementations) on web, since there's no reason to
     // expect them to work.
     final bool webPlatform = platform != null && platform != 'vm';
-    final bool explicitVMPlatform = platform == 'vm';
-    final bool isWebOnlyPluginImplementation = pluginSupportsPlatform(
-            platformWeb, package,
-            requiredMode: PlatformSupport.inline) &&
+    final explicitVMPlatform = platform == 'vm';
+    final bool isWebOnlyPluginImplementation =
+        pluginSupportsPlatform(platformWeb, package, requiredMode: PlatformSupport.inline) &&
         package.directory.basename.endsWith('_web');
     if (webPlatform) {
-      if (isFlutterPlugin(package) &&
-          !pluginSupportsPlatform(platformWeb, package)) {
-        return PackageResult.skip(
-            "Non-web plugin tests don't need web testing.");
+      if (isFlutterPlugin(package) && !pluginSupportsPlatform(platformWeb, package)) {
+        return PackageResult.skip("Non-web plugin tests don't need web testing.");
       }
-      if (_requiresVM(package)) {
+      if (_testOnTarget(package) == _TestPlatform.vm) {
         // This explict skip is necessary because trying to run tests in a mode
         // that the package has opted out of returns a non-zero exit code.
         return PackageResult.skip('Package has opted out of non-vm testing.');
@@ -85,7 +113,8 @@ class DartTestCommand extends PackageLoopingCommand {
       if (isWebOnlyPluginImplementation) {
         return PackageResult.skip("Web plugin tests don't need vm testing.");
       }
-      if (_requiresNonVM(package)) {
+      final _TestPlatform? target = _testOnTarget(package);
+      if (target != null && _testOnTarget(package) != _TestPlatform.vm) {
         // This explict skip is necessary because trying to run tests in a mode
         // that the package has opted out of returns a non-zero exit code.
         return PackageResult.skip('Package has opted out of vm testing.');
@@ -98,92 +127,170 @@ class DartTestCommand extends PackageLoopingCommand {
       platform = 'chrome';
     }
 
-    // All the web tests assume the html renderer currently.
-    final String? webRenderer = (platform == 'chrome') ? 'html' : null;
-    bool passed;
+    // Whether to run web tests compiled to wasm.
+    final bool wasm = platform != 'vm' && getBoolArg(kWebWasmFlag);
+
+    final String? tag = _getTagForPackage(package);
+    final int exitCode;
     if (package.requiresFlutter()) {
-      passed = await _runFlutterTests(package, platform: platform, webRenderer: webRenderer);
+      exitCode = await _runFlutterTests(package, platform: platform, wasm: wasm, tag: tag);
     } else {
-      passed = await _runDartTests(package, platform: platform);
+      exitCode = await _runDartTests(package, platform: platform, wasm: wasm, tag: tag);
     }
-    return passed ? PackageResult.success() : PackageResult.fail();
+    if (tag != null && exitCode == _exitNoTestsRan) {
+      return PackageResult.skip('No tests match the requested tag selector.');
+    }
+    return exitCode == 0 ? PackageResult.success() : PackageResult.fail();
   }
 
-  /// Runs the Dart tests for a Flutter package, returning true on success.
-  Future<bool> _runFlutterTests(RepositoryPackage package,
-      {String? platform, String? webRenderer}) async {
+  /// Runs the Dart tests for a Flutter package, returning the process exit code.
+  Future<int> _runFlutterTests(
+    RepositoryPackage package, {
+    String? platform,
+    bool wasm = false,
+    String? tag,
+  }) async {
     final String experiment = getStringArg(kEnableExperiment);
 
-    final int exitCode = await processRunner.runAndStream(
-      flutterCommand,
-      <String>[
-        'test',
-        '--color',
-        if (experiment.isNotEmpty) '--enable-experiment=$experiment',
-        // Flutter defaults to VM mode (under a different name) and explicitly
-        // setting it is deprecated, so pass nothing in that case.
-        if (platform != null && platform != 'vm') '--platform=$platform',
-        if (webRenderer != null) '--web-renderer=$webRenderer',
-      ],
-      workingDir: package.directory,
-    );
-    return exitCode == 0;
+    return processRunner.runAndStream(flutterCommand, <String>[
+      'test',
+      '--color',
+      if (experiment.isNotEmpty) '--enable-experiment=$experiment',
+      // Flutter defaults to VM mode (under a different name) and explicitly
+      // setting it is deprecated, so pass nothing in that case.
+      if (platform != null && platform != 'vm') '--platform=$platform',
+      if (wasm) '--wasm',
+      if (tag != null) '--tags=$tag',
+    ], workingDir: package.directory);
   }
 
-  /// Runs the Dart tests for a non-Flutter package, returning true on success.
-  Future<bool> _runDartTests(RepositoryPackage package,
-      {String? platform}) async {
+  /// Runs the Dart tests for a non-Flutter package, returning the process exit code.
+  Future<int> _runDartTests(
+    RepositoryPackage package, {
+    String? platform,
+    bool wasm = false,
+    String? tag,
+  }) async {
     // Unlike `flutter test`, `dart run test` does not automatically get
     // packages
     if (!await runPubGet(package, processRunner, super.platform)) {
       printError('Unable to fetch dependencies.');
-      return false;
+      return 1;
     }
 
     final String experiment = getStringArg(kEnableExperiment);
 
-    final int exitCode = await processRunner.runAndStream(
-      'dart',
-      <String>[
-        'run',
-        if (experiment.isNotEmpty) '--enable-experiment=$experiment',
-        'test',
-        if (platform != null) '--platform=$platform',
-      ],
-      workingDir: package.directory,
-    );
-
-    return exitCode == 0;
+    return processRunner.runAndStream('dart', <String>[
+      'run',
+      if (experiment.isNotEmpty) '--enable-experiment=$experiment',
+      'test',
+      if (platform != null) '--platform=$platform',
+      if (wasm) '--compiler=dart2wasm',
+      if (tag != null) '--tags=$tag',
+    ], workingDir: package.directory);
   }
 
-  bool _requiresVM(RepositoryPackage package) {
-    final File testConfig = package.directory.childFile('dart_test.yaml');
-    if (!testConfig.existsSync()) {
-      return false;
+  /// Parses the `--package-tags` argument and populates the `_packageTags`
+  /// map with the resulting package names to tags.
+  void _initializePackageTags() {
+    final packageTags = <String, String>{};
+    final String? arg = getNullableStringArg(_packageTagsFlag);
+
+    if (arg == null || arg.isEmpty) {
+      _packageTags = packageTags;
+      return;
     }
-    // test_on lines can be very complex, but in pratice the packages in this
-    // repo currently only need the ability to require vm or not, so that
-    // simple directive is all that is currently supported.
-    final RegExp vmRequrimentRegex = RegExp(r'^test_on:\s*vm$');
-    return testConfig
-        .readAsLinesSync()
-        .any((String line) => vmRequrimentRegex.hasMatch(line));
+
+    final File file = packagesDir.fileSystem.file(arg);
+    if (!file.existsSync()) {
+      printError('The package tags file "$arg" does not exist.');
+      throw ToolExit(exitInvalidArguments);
+    }
+
+    final Object? yaml = loadYaml(file.readAsStringSync());
+    // Treat an empty or comment-only file as an empty map (no package tags).
+    if (yaml == null) {
+      _packageTags = packageTags;
+      return;
+    }
+    if (yaml is YamlMap) {
+      for (final MapEntry<dynamic, dynamic> entry in yaml.entries) {
+        final pkg = entry.key.toString();
+        final dynamic val = entry.value;
+        if (val != null) {
+          packageTags[pkg] = val.toString();
+        }
+      }
+    } else {
+      printError('The package tags file "$arg" is not a valid YAML map.');
+      throw ToolExit(exitInvalidArguments);
+    }
+    _packageTags = packageTags;
+    return;
   }
 
-  bool _requiresNonVM(RepositoryPackage package) {
+  /// Returns the tag to apply for [package] based on `--package-tags`, or null
+  /// if none.
+  ///
+  /// This checks the package's [RepositoryPackage.displayName], and falls back
+  /// to checking the [RepositoryPackage.displayName] of any enclosing packages
+  /// up the directory tree. This allows tagging an entire plugin (including its
+  /// nested examples) by simply tagging the enclosing package.
+  String? _getTagForPackage(RepositoryPackage package) {
+    final Map<String, String>? packageTags = _packageTags;
+    if (packageTags != null && packageTags.isNotEmpty) {
+      final candidates = <String>{package.displayName};
+      RepositoryPackage? enclosing = package.getEnclosingPackage();
+      while (enclosing != null) {
+        candidates.add(enclosing.displayName);
+        enclosing = enclosing.getEnclosingPackage();
+      }
+
+      for (final candidate in candidates) {
+        if (packageTags.containsKey(candidate)) {
+          return packageTags[candidate];
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns the required test environment, or null if none is specified.
+  ///
+  /// Throws if the target is not recognized.
+  _TestPlatform? _testOnTarget(RepositoryPackage package) {
     final File testConfig = package.directory.childFile('dart_test.yaml');
     if (!testConfig.existsSync()) {
-      return false;
+      return null;
     }
-    // test_on lines can be very complex, but in pratice the packages in this
-    // repo currently only need the ability to require vm or not, so a simple
-    // one-target directive is all that's supported currently. Making it
-    // deliberately strict avoids the possibility of accidentally skipping vm
-    // coverage due to a complex expression that's not handled correctly.
-    final RegExp testOnRegex = RegExp(r'^test_on:\s*([a-z])*\s*$');
-    return testConfig.readAsLinesSync().any((String line) {
-      final RegExpMatch? match = testOnRegex.firstMatch(line);
-      return match != null && match.group(1) != 'vm';
-    });
+    final Object? root = loadYaml(testConfig.readAsStringSync());
+    if (root is! YamlMap) {
+      return null;
+    }
+    final Object? targetFilter = root['test_on'];
+    if (targetFilter == null || targetFilter is! String) {
+      return null;
+    }
+    // test_on lines can be very complex, but in pratice the packages in
+    // this repo currently only need the ability to require vm or not, so a
+    // simple one-target directive is all that's supported currently.
+    // Making it deliberately strict avoids the possibility of accidentally
+    // skipping vm coverage due to a complex expression that's not handled
+    // correctly.
+    switch (targetFilter) {
+      case 'vm':
+        return _TestPlatform.vm;
+      case 'browser':
+        return _TestPlatform.browser;
+      default:
+        printError(
+          'Unknown "test_on" value: "$targetFilter"\n'
+          "If this value needs to be supported for this package's tests, "
+          'please update the repository tooling to support more test_on '
+          'modes.',
+        );
+        throw ToolExit(_exitUnknownTestPlatform);
+    }
   }
 }

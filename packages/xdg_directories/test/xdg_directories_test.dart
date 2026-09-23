@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'package:xdg_directories/xdg_directories.dart' as xdg;
 
 void main() {
-  final Map<String, String> fakeEnv = <String, String>{};
+  final fakeEnv = <String, String>{};
   late Directory tmpDir;
 
   String testRootPath() {
@@ -26,24 +26,23 @@ void main() {
   String testPath(String subdir) => path.join(testRootPath(), subdir);
 
   setUp(() {
-    xdg.xdgProcessRunner =
-        FakeProcessRunner(<String, String>{}, canRunExecutable: false);
+    xdg.xdgProcessRunner = FakeProcessRunner(<String, String>{}, canRunExecutable: false);
     tmpDir = Directory.systemTemp.createTempSync('xdg_test');
     fakeEnv.clear();
     fakeEnv['HOME'] = testRootPath();
     fakeEnv['XDG_CACHE_HOME'] = testPath('.test_cache');
     fakeEnv['XDG_CONFIG_DIRS'] = testPath('etc/test_xdg');
     fakeEnv['XDG_CONFIG_HOME'] = testPath('.test_config');
-    fakeEnv['XDG_DATA_DIRS'] =
-        '${testPath('usr/local/test_share')}:${testPath('usr/test_share')}';
+    fakeEnv['XDG_DATA_DIRS'] = '${testPath('usr/local/test_share')}:${testPath('usr/test_share')}';
     fakeEnv['XDG_DATA_HOME'] = testPath('.local/test_share');
     fakeEnv['XDG_RUNTIME_DIR'] = testPath('.local/test_runtime');
+    fakeEnv['XDG_STATE_HOME'] = testPath('.local/test_state');
     Directory(fakeEnv['XDG_CONFIG_HOME']!).createSync(recursive: true);
     Directory(fakeEnv['XDG_CACHE_HOME']!).createSync(recursive: true);
     Directory(fakeEnv['XDG_DATA_HOME']!).createSync(recursive: true);
     Directory(fakeEnv['XDG_RUNTIME_DIR']!).createSync(recursive: true);
-    File(path.join(fakeEnv['XDG_CONFIG_HOME']!, 'user-dirs.dirs'))
-        .writeAsStringSync(r'''
+    Directory(fakeEnv['XDG_STATE_HOME']!).createSync(recursive: true);
+    File(path.join(fakeEnv['XDG_CONFIG_HOME']!, 'user-dirs.dirs')).writeAsStringSync(r'''
 XDG_DESKTOP_DIR="$HOME/Desktop"
 XDG_DOCUMENTS_DIR="$HOME/Documents"
 XDG_DOWNLOAD_DIR="$HOME/Downloads"
@@ -62,8 +61,9 @@ XDG_VIDEOS_DIR="$HOME/Videos"
     xdg.xdgEnvironmentOverride = null;
   });
   void expectDirList(List<Directory> values, List<String> expected) {
-    final List<String> valueStr =
-        values.map<String>((Directory directory) => directory.path).toList();
+    final List<String> valueStr = values
+        .map<String>((Directory directory) => directory.path)
+        .toList();
     expect(valueStr, orderedEquals(expected));
   }
 
@@ -73,6 +73,7 @@ XDG_VIDEOS_DIR="$HOME/Videos"
     expect(xdg.cacheHome.path, equals(testPath('.cache')));
     expect(xdg.configHome.path, equals(testPath('.config')));
     expect(xdg.dataHome.path, equals(testPath('.local/share')));
+    expect(xdg.stateHome.path, equals(testPath('.local/state')));
     expect(xdg.runtimeDir, isNull);
 
     expectDirList(xdg.configDirs, <String>['/etc/xdg']);
@@ -85,6 +86,7 @@ XDG_VIDEOS_DIR="$HOME/Videos"
     expect(xdg.dataHome.path, equals(testPath('.local/test_share')));
     expect(xdg.runtimeDir, isNotNull);
     expect(xdg.runtimeDir!.path, equals(testPath('.local/test_runtime')));
+    expect(xdg.stateHome.path, equals(testPath('.local/test_state')));
 
     expectDirList(xdg.configDirs, <String>[testPath('etc/test_xdg')]);
     expectDirList(xdg.dataDirs, <String>[
@@ -94,7 +96,7 @@ XDG_VIDEOS_DIR="$HOME/Videos"
   });
 
   test('Can get userDirs', () {
-    final Map<String, String> expected = <String, String>{
+    final expected = <String, String>{
       'DESKTOP': testPath('Desktop'),
       'DOCUMENTS': testPath('Documents'),
       'DOWNLOAD': testPath('Downloads'),
@@ -107,19 +109,22 @@ XDG_VIDEOS_DIR="$HOME/Videos"
     xdg.xdgProcessRunner = FakeProcessRunner(expected);
     final Set<String> userDirs = xdg.getUserDirectoryNames();
     expect(userDirs, equals(expected.keys.toSet()));
-    for (final String key in userDirs) {
-      expect(xdg.getUserDirectory(key)!.path, equals(expected[key]),
-          reason: 'Path $key value not correct');
+    for (final key in userDirs) {
+      expect(
+        xdg.getUserDirectory(key)!.path,
+        equals(expected[key]),
+        reason: 'Path $key value not correct',
+      );
     }
   });
 
   test('Returns null when xdg-user-dir executable is not present', () {
-    xdg.xdgProcessRunner = FakeProcessRunner(
-      <String, String>{},
-      canRunExecutable: false,
+    xdg.xdgProcessRunner = FakeProcessRunner(<String, String>{}, canRunExecutable: false);
+    expect(
+      xdg.getUserDirectory('DESKTOP'),
+      isNull,
+      reason: 'Found xdg user directory without access to xdg-user-dir',
     );
-    expect(xdg.getUserDirectory('DESKTOP'), isNull,
-        reason: 'Found xdg user directory without access to xdg-user-dir');
   });
 
   test('Throws StateError when HOME not set', () {

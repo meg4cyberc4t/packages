@@ -1,45 +1,37 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:animations/src/fade_through_transition.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets(
-      'FadeThroughPageTransitionsBuilder builds a FadeThroughTransition',
-      (WidgetTester tester) async {
-    final AnimationController animation = AnimationController(
-      vsync: const TestVSync(),
-    );
-    final AnimationController secondaryAnimation = AnimationController(
-      vsync: const TestVSync(),
-    );
+  testWidgets('FadeThroughPageTransitionsBuilder builds a FadeThroughTransition', (
+    WidgetTester tester,
+  ) async {
+    final animation = AnimationController(vsync: const TestVSync());
+    final secondaryAnimation = AnimationController(vsync: const TestVSync());
 
     await tester.pumpWidget(
-        const FadeThroughPageTransitionsBuilder().buildTransitions<void>(
-      null,
-      null,
-      animation,
-      secondaryAnimation,
-      const Placeholder(),
-    ));
+      const FadeThroughPageTransitionsBuilder().buildTransitions<void>(
+        null,
+        null,
+        animation,
+        secondaryAnimation,
+        const Placeholder(),
+      ),
+    );
 
     expect(find.byType(FadeThroughTransition), findsOneWidget);
   });
 
-  testWidgets('FadeThroughTransition runs forward',
-      (WidgetTester tester) async {
-    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
-    const String bottomRoute = '/';
-    const String topRoute = '/a';
+  testWidgets('FadeThroughTransition runs forward', (WidgetTester tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    const bottomRoute = '/';
+    const topRoute = '/a';
 
-    await tester.pumpWidget(
-      _TestWidget(
-        navigatorKey: navigator,
-      ),
-    );
+    await tester.pumpWidget(_TestWidget(navigatorKey: navigator));
     expect(find.text(bottomRoute), findsOneWidget);
     expect(_getScale(bottomRoute, tester), 1.0);
     expect(_getOpacity(bottomRoute, tester), 1.0);
@@ -114,17 +106,12 @@ void main() {
     expect(find.text(topRoute), findsOneWidget);
   });
 
-  testWidgets('FadeThroughTransition runs backwards',
-      (WidgetTester tester) async {
-    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
-    const String bottomRoute = '/';
-    const String topRoute = '/a';
+  testWidgets('FadeThroughTransition runs backwards', (WidgetTester tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    const bottomRoute = '/';
+    const topRoute = '/a';
 
-    await tester.pumpWidget(
-      _TestWidget(
-        navigatorKey: navigator,
-      ),
-    );
+    await tester.pumpWidget(_TestWidget(navigatorKey: navigator));
     navigator.currentState!.pushNamed('/a');
     await tester.pumpAndSettle();
 
@@ -167,14 +154,8 @@ void main() {
     expect(_getOpacity(topRoute, tester), 0.0);
     // Top route is still invisible.
     expect(find.text(bottomRoute), findsOneWidget);
-    expect(
-      _getScale(bottomRoute, tester),
-      moreOrLessEquals(0.92, epsilon: 0.005),
-    );
-    expect(
-      _getOpacity(bottomRoute, tester),
-      moreOrLessEquals(0.0, epsilon: 0.005),
-    );
+    expect(_getScale(bottomRoute, tester), moreOrLessEquals(0.92, epsilon: 0.005));
+    expect(_getOpacity(bottomRoute, tester), moreOrLessEquals(0.0, epsilon: 0.005));
 
     // Let's jump to the middle of the fade-in.
     await tester.pump(const Duration(milliseconds: 105));
@@ -207,17 +188,12 @@ void main() {
     expect(find.text(bottomRoute), findsOneWidget);
   });
 
-  testWidgets('FadeThroughTransition does not jump when interrupted',
-      (WidgetTester tester) async {
-    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
-    const String bottomRoute = '/';
-    const String topRoute = '/a';
+  testWidgets('FadeThroughTransition does not jump when interrupted', (WidgetTester tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    const bottomRoute = '/';
+    const topRoute = '/a';
 
-    await tester.pumpWidget(
-      _TestWidget(
-        navigatorKey: navigator,
-      ),
-    );
+    await tester.pumpWidget(_TestWidget(navigatorKey: navigator));
     expect(find.text(bottomRoute), findsOneWidget);
     expect(find.text(topRoute), findsNothing);
 
@@ -275,116 +251,83 @@ void main() {
     expect(find.text(bottomRoute), findsOneWidget);
   });
 
-  testWidgets('State is not lost when transitioning',
-      (WidgetTester tester) async {
-    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
-    const String bottomRoute = '/';
-    const String topRoute = '/a';
+  testWidgets('State is not lost when transitioning', (WidgetTester tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    const bottomRoute = '/';
+    const topRoute = '/a';
 
     await tester.pumpWidget(
       _TestWidget(
         navigatorKey: navigator,
         contentBuilder: (RouteSettings settings) {
-          return _StatefulTestWidget(
-            key: ValueKey<String?>(settings.name),
-            name: settings.name,
-          );
+          return _StatefulTestWidget(key: ValueKey<String?>(settings.name), name: settings.name);
         },
       ),
     );
 
-    final _StatefulTestWidgetState bottomState =
-        tester.state(find.byKey(const ValueKey<String?>(bottomRoute)));
+    final _StatefulTestWidgetState bottomState = tester.state(
+      find.byKey(const ValueKey<String?>(bottomRoute)),
+    );
     expect(bottomState.widget.name, bottomRoute);
 
     navigator.currentState!.pushNamed(topRoute);
     await tester.pump();
     await tester.pump();
 
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(bottomRoute))),
-      bottomState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(bottomRoute))), bottomState);
     final _StatefulTestWidgetState topState = tester.state(
       find.byKey(const ValueKey<String?>(topRoute)),
     );
     expect(topState.widget.name, topRoute);
 
     await tester.pump(const Duration(milliseconds: 150));
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(bottomRoute))),
-      bottomState,
-    );
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(topRoute))),
-      topState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(bottomRoute))), bottomState);
+    expect(tester.state(find.byKey(const ValueKey<String?>(topRoute))), topState);
 
     await tester.pumpAndSettle();
     expect(
-      tester.state(find.byKey(
-        const ValueKey<String?>(bottomRoute),
-        skipOffstage: false,
-      )),
+      tester.state(find.byKey(const ValueKey<String?>(bottomRoute), skipOffstage: false)),
       bottomState,
     );
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(topRoute))),
-      topState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(topRoute))), topState);
 
     navigator.currentState!.pop();
     await tester.pump();
 
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(bottomRoute))),
-      bottomState,
-    );
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(topRoute))),
-      topState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(bottomRoute))), bottomState);
+    expect(tester.state(find.byKey(const ValueKey<String?>(topRoute))), topState);
 
     await tester.pump(const Duration(milliseconds: 150));
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(bottomRoute))),
-      bottomState,
-    );
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(topRoute))),
-      topState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(bottomRoute))), bottomState);
+    expect(tester.state(find.byKey(const ValueKey<String?>(topRoute))), topState);
 
     await tester.pumpAndSettle();
-    expect(
-      tester.state(find.byKey(const ValueKey<String?>(bottomRoute))),
-      bottomState,
-    );
+    expect(tester.state(find.byKey(const ValueKey<String?>(bottomRoute))), bottomState);
     expect(find.byKey(const ValueKey<String?>(topRoute)), findsNothing);
   });
 
   testWidgets('should keep state', (WidgetTester tester) async {
-    final AnimationController animation = AnimationController(
+    final animation = AnimationController(
       vsync: const TestVSync(),
       duration: const Duration(milliseconds: 300),
     );
-    final AnimationController secondaryAnimation = AnimationController(
+    final secondaryAnimation = AnimationController(
       vsync: const TestVSync(),
       duration: const Duration(milliseconds: 300),
     );
-    await tester.pumpWidget(Directionality(
-      textDirection: TextDirection.ltr,
-      child: Center(
-        child: FadeThroughTransition(
-          animation: animation,
-          secondaryAnimation: secondaryAnimation,
-          child: const _StatefulTestWidget(name: 'Foo'),
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: FadeThroughTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            child: const _StatefulTestWidget(name: 'Foo'),
+          ),
         ),
       ),
-    ));
-    final State<StatefulWidget> state = tester.state(
-      find.byType(_StatefulTestWidget),
     );
+    final State<StatefulWidget> state = tester.state(find.byType(_StatefulTestWidget));
     expect(state, isNotNull);
 
     animation.forward();
@@ -435,7 +378,7 @@ double _getOpacity(String key, WidgetTester tester) {
     matching: find.byType(FadeTransition),
   );
   return tester.widgetList(finder).fold<double>(1.0, (double a, Widget widget) {
-    final FadeTransition transition = widget as FadeTransition;
+    final transition = widget as FadeTransition;
     return a * transition.opacity.value;
   });
 }
@@ -446,7 +389,7 @@ double _getScale(String key, WidgetTester tester) {
     matching: find.byType(ScaleTransition),
   );
   return tester.widgetList(finder).fold<double>(1.0, (double a, Widget widget) {
-    final ScaleTransition transition = widget as ScaleTransition;
+    final transition = widget as ScaleTransition;
     return a * transition.scale.value;
   });
 }
@@ -475,10 +418,7 @@ class _TestWidget extends StatelessWidget {
           builder: (BuildContext context) {
             return contentBuilder != null
                 ? contentBuilder!(settings)
-                : Center(
-                    key: ValueKey<String?>(settings.name),
-                    child: Text(settings.name!),
-                  );
+                : Center(key: ValueKey<String?>(settings.name), child: Text(settings.name!));
           },
         );
       },

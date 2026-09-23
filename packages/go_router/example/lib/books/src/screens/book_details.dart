@@ -1,9 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/link.dart';
 
 import '../data.dart';
@@ -12,10 +12,7 @@ import 'author_details.dart';
 /// A screen to display book details.
 class BookDetailsScreen extends StatelessWidget {
   /// Creates a [BookDetailsScreen].
-  const BookDetailsScreen({
-    super.key,
-    this.book,
-  });
+  const BookDetailsScreen({super.key, this.book});
 
   /// The book to be displayed.
   final Book? book;
@@ -23,33 +20,20 @@ class BookDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (book == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('No book found.'),
-        ),
-      );
+      return const Scaffold(body: Center(child: Text('No book found.')));
     }
     return Scaffold(
-      appBar: AppBar(
-        title: Text(book!.title),
-      ),
+      appBar: AppBar(title: Text(book!.title)),
       body: Center(
         child: Column(
           children: <Widget>[
-            Text(
-              book!.title,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              book!.author.name,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(book!.title, style: Theme.of(context).textTheme.headlineMedium),
+            Text(book!.author.name, style: Theme.of(context).textTheme.titleMedium),
             TextButton(
               onPressed: () {
                 Navigator.of(context).push<void>(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) =>
-                        AuthorDetailsScreen(author: book!.author),
+                    builder: (BuildContext context) => AuthorDetailsScreen(author: book!.author),
                   ),
                 );
               },
@@ -58,10 +42,7 @@ class BookDetailsScreen extends StatelessWidget {
             Link(
               uri: Uri.parse('/author/${book!.author.id}'),
               builder: (BuildContext context, FollowLink? followLink) =>
-                  TextButton(
-                onPressed: followLink,
-                child: const Text('View author (Link)'),
-              ),
+                  TextButton(onPressed: followLink, child: const Text('View author (Link)')),
             ),
             TextButton(
               onPressed: () {

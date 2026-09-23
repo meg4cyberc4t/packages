@@ -1,6 +1,11 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 1.4.1
+
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+* Clarifies `completePurchase` usage and the consequences of unfinished transactions in the README and docstrings.
 
 ## 1.4.0
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,34 +6,37 @@ import 'package:in_app_purchase_storekit/src/messages.g.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 
 const SKPaymentWrapper dummyPayment = SKPaymentWrapper(
-    productIdentifier: 'prod-id',
-    applicationUsername: 'app-user-name',
-    requestData: 'fake-data-utf8',
-    quantity: 2,
-    simulatesAskToBuyInSandbox: true);
+  productIdentifier: 'prod-id',
+  applicationUsername: 'app-user-name',
+  requestData: 'fake-data-utf8',
+  quantity: 2,
+  simulatesAskToBuyInSandbox: true,
+);
 
 SKPaymentMessage dummyPaymentMessage = SKPaymentMessage(
-    productIdentifier: 'prod-id',
-    applicationUsername: 'app-user-name',
-    requestData: 'fake-data-utf8',
-    quantity: 2,
-    simulatesAskToBuyInSandbox: true);
+  productIdentifier: 'prod-id',
+  applicationUsername: 'app-user-name',
+  requestData: 'fake-data-utf8',
+  quantity: 2,
+  simulatesAskToBuyInSandbox: true,
+);
 
 final SKPaymentWrapper dummyPaymentWithDiscount = SKPaymentWrapper(
-    productIdentifier: 'prod-id',
-    applicationUsername: 'app-user-name',
-    requestData: 'fake-data-utf8',
-    quantity: 2,
-    simulatesAskToBuyInSandbox: true,
-    paymentDiscount: dummyPaymentDiscountWrapper);
+  productIdentifier: 'prod-id',
+  applicationUsername: 'app-user-name',
+  requestData: 'fake-data-utf8',
+  quantity: 2,
+  simulatesAskToBuyInSandbox: true,
+  paymentDiscount: dummyPaymentDiscountWrapper,
+);
 
 const SKError dummyError = SKError(
-    code: 111,
-    domain: 'dummy-domain',
-    userInfo: <String, dynamic>{'key': 'value'});
+  code: 111,
+  domain: 'dummy-domain',
+  userInfo: <String, dynamic>{'key': 'value'},
+);
 
-final SKPaymentTransactionWrapper dummyOriginalTransaction =
-    SKPaymentTransactionWrapper(
+final SKPaymentTransactionWrapper dummyOriginalTransaction = SKPaymentTransactionWrapper(
   transactionState: SKPaymentTransactionStateWrapper.purchased,
   payment: dummyPayment,
   transactionTimeStamp: 1231231231.00,
@@ -41,8 +44,7 @@ final SKPaymentTransactionWrapper dummyOriginalTransaction =
   error: dummyError,
 );
 
-final SKPaymentTransactionWrapper dummyTransaction =
-    SKPaymentTransactionWrapper(
+final SKPaymentTransactionWrapper dummyTransaction = SKPaymentTransactionWrapper(
   transactionState: SKPaymentTransactionStateWrapper.purchased,
   payment: dummyPayment,
   originalTransaction: dummyOriginalTransaction,
@@ -51,10 +53,10 @@ final SKPaymentTransactionWrapper dummyTransaction =
   error: dummyError,
 );
 
-final SKPaymentTransactionMessage dummyTransactionMessage =
-    SKPaymentTransactionMessage(
-        payment: dummyPaymentMessage,
-        transactionState: SKPaymentTransactionStateMessage.purchased);
+final SKPaymentTransactionMessage dummyTransactionMessage = SKPaymentTransactionMessage(
+  payment: dummyPaymentMessage,
+  transactionState: SKPaymentTransactionStateMessage.purchased,
+);
 
 final SKPriceLocaleWrapper dollarLocale = SKPriceLocaleWrapper(
   currencySymbol: r'$',
@@ -74,17 +76,16 @@ final SKPriceLocaleWrapper noSymbolLocale = SKPriceLocaleWrapper(
   countryCode: 'UK',
 );
 
-final SKProductSubscriptionPeriodWrapper dummySubscription =
-    SKProductSubscriptionPeriodWrapper(
+final SKProductSubscriptionPeriodWrapper dummySubscription = SKProductSubscriptionPeriodWrapper(
   numberOfUnits: 1,
   unit: SKSubscriptionPeriodUnit.month,
 );
 
 final SKProductSubscriptionPeriodMessage dummySubscriptionMessage =
     SKProductSubscriptionPeriodMessage(
-  numberOfUnits: 1,
-  unit: SKSubscriptionPeriodUnitMessage.month,
-);
+      numberOfUnits: 1,
+      unit: SKSubscriptionPeriodUnitMessage.month,
+    );
 
 final SKProductDiscountWrapper dummyDiscount = SKProductDiscountWrapper(
   price: '1.0',
@@ -106,8 +107,7 @@ final SKProductDiscountMessage dummyDiscountMessage = SKProductDiscountMessage(
   type: SKProductDiscountTypeMessage.subscription,
 );
 
-final SKProductDiscountWrapper dummyDiscountMissingIdentifierAndType =
-    SKProductDiscountWrapper(
+final SKProductDiscountWrapper dummyDiscountMissingIdentifierAndType = SKProductDiscountWrapper(
   price: '1.0',
   priceLocale: dollarLocale,
   numberOfPeriods: 1,
@@ -141,14 +141,12 @@ final SKProductMessage dummyProductMessage = SKProductMessage(
   discounts: <SKProductDiscountMessage>[dummyDiscountMessage],
 );
 
-final SkProductResponseWrapper dummyProductResponseWrapper =
-    SkProductResponseWrapper(
+final SkProductResponseWrapper dummyProductResponseWrapper = SkProductResponseWrapper(
   products: <SKProductWrapper>[dummyProductWrapper],
   invalidProductIdentifiers: const <String>['123'],
 );
 
-final SKProductsResponseMessage dummyProductResponseMessage =
-    SKProductsResponseMessage(
+final SKProductsResponseMessage dummyProductResponseMessage = SKProductsResponseMessage(
   products: <SKProductMessage>[dummyProductMessage],
   invalidProductIdentifiers: const <String>['123'],
 );
@@ -161,8 +159,7 @@ Map<String, dynamic> buildLocaleMap(SKPriceLocaleWrapper local) {
   };
 }
 
-Map<String, dynamic>? buildSubscriptionPeriodMap(
-    SKProductSubscriptionPeriodWrapper? sub) {
+Map<String, dynamic>? buildSubscriptionPeriodMap(SKProductSubscriptionPeriodWrapper? sub) {
   if (sub == null) {
     return null;
   }
@@ -177,25 +174,20 @@ Map<String, dynamic> buildDiscountMap(SKProductDiscountWrapper discount) {
     'price': discount.price,
     'priceLocale': buildLocaleMap(discount.priceLocale),
     'numberOfPeriods': discount.numberOfPeriods,
-    'paymentMode':
-        SKProductDiscountPaymentMode.values.indexOf(discount.paymentMode),
-    'subscriptionPeriod':
-        buildSubscriptionPeriodMap(discount.subscriptionPeriod),
+    'paymentMode': SKProductDiscountPaymentMode.values.indexOf(discount.paymentMode),
+    'subscriptionPeriod': buildSubscriptionPeriodMap(discount.subscriptionPeriod),
     'identifier': discount.identifier,
-    'type': SKProductDiscountType.values.indexOf(discount.type)
+    'type': SKProductDiscountType.values.indexOf(discount.type),
   };
 }
 
-Map<String, dynamic> buildDiscountMapMissingIdentifierAndType(
-    SKProductDiscountWrapper discount) {
+Map<String, dynamic> buildDiscountMapMissingIdentifierAndType(SKProductDiscountWrapper discount) {
   return <String, dynamic>{
     'price': discount.price,
     'priceLocale': buildLocaleMap(discount.priceLocale),
     'numberOfPeriods': discount.numberOfPeriods,
-    'paymentMode':
-        SKProductDiscountPaymentMode.values.indexOf(discount.paymentMode),
-    'subscriptionPeriod':
-        buildSubscriptionPeriodMap(discount.subscriptionPeriod)
+    'paymentMode': SKProductDiscountPaymentMode.values.indexOf(discount.paymentMode),
+    'subscriptionPeriod': buildSubscriptionPeriodMap(discount.subscriptionPeriod),
   };
 }
 
@@ -207,37 +199,31 @@ Map<String, dynamic> buildProductMap(SKProductWrapper product) {
     'priceLocale': buildLocaleMap(product.priceLocale),
     'subscriptionGroupIdentifier': product.subscriptionGroupIdentifier,
     'price': product.price,
-    'subscriptionPeriod':
-        buildSubscriptionPeriodMap(product.subscriptionPeriod),
+    'subscriptionPeriod': buildSubscriptionPeriodMap(product.subscriptionPeriod),
     'introductoryPrice': buildDiscountMap(product.introductoryPrice!),
     'discounts': <dynamic>[buildDiscountMap(product.introductoryPrice!)],
   };
 }
 
-Map<String, dynamic> buildProductResponseMap(
-    SkProductResponseWrapper response) {
+Map<String, dynamic> buildProductResponseMap(SkProductResponseWrapper response) {
   final List<dynamic> productsMap = response.products
       .map((SKProductWrapper product) => buildProductMap(product))
       .toList();
   return <String, dynamic>{
     'products': productsMap,
-    'invalidProductIdentifiers': response.invalidProductIdentifiers
+    'invalidProductIdentifiers': response.invalidProductIdentifiers,
   };
 }
 
 Map<String, dynamic> buildErrorMap(SKError error) {
-  return <String, dynamic>{
-    'code': error.code,
-    'domain': error.domain,
-    'userInfo': error.userInfo,
-  };
+  return <String, dynamic>{'code': error.code, 'domain': error.domain, 'userInfo': error.userInfo};
 }
 
-Map<String, dynamic> buildTransactionMap(
-    SKPaymentTransactionWrapper transaction) {
-  final Map<String, dynamic> map = <String, dynamic>{
-    'transactionState': SKPaymentTransactionStateWrapper.values
-        .indexOf(SKPaymentTransactionStateWrapper.purchased),
+Map<String, dynamic> buildTransactionMap(SKPaymentTransactionWrapper transaction) {
+  final map = <String, dynamic>{
+    'transactionState': SKPaymentTransactionStateWrapper.values.indexOf(
+      SKPaymentTransactionStateWrapper.purchased,
+    ),
     'payment': transaction.payment.toMap(),
     'originalTransaction': transaction.originalTransaction == null
         ? null
@@ -249,11 +235,11 @@ Map<String, dynamic> buildTransactionMap(
   return map;
 }
 
-Map<String, dynamic> buildTransactionMessage(
-    SKPaymentTransactionWrapper transaction) {
-  final Map<String, dynamic> map = <String, dynamic>{
-    'transactionState': SKPaymentTransactionStateWrapper.values
-        .indexOf(SKPaymentTransactionStateWrapper.purchased),
+Map<String, dynamic> buildTransactionMessage(SKPaymentTransactionWrapper transaction) {
+  final map = <String, dynamic>{
+    'transactionState': SKPaymentTransactionStateWrapper.values.indexOf(
+      SKPaymentTransactionStateWrapper.purchased,
+    ),
     'payment': transaction.payment.toMap(),
     'originalTransaction': transaction.originalTransaction == null
         ? null
@@ -267,9 +253,9 @@ Map<String, dynamic> buildTransactionMessage(
 
 final SKPaymentDiscountWrapper dummyPaymentDiscountWrapper =
     SKPaymentDiscountWrapper.fromJson(const <String, dynamic>{
-  'identifier': 'dummy-discount-identifier',
-  'keyIdentifier': 'KEYIDTEST1',
-  'nonce': '00000000-0000-0000-0000-000000000000',
-  'signature': 'dummy-signature-string',
-  'timestamp': 1231231231,
-});
+      'identifier': 'dummy-discount-identifier',
+      'keyIdentifier': 'KEYIDTEST1',
+      'nonce': '00000000-0000-0000-0000-000000000000',
+      'signature': 'dummy-signature-string',
+      'timestamp': 1231231231,
+    });

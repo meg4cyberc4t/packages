@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@ class GradleProject {
   /// [processRunner].
   GradleProject(
     this.flutterProject, {
+    required this.platform,
     this.processRunner = const ProcessRunner(),
-    this.platform = const LocalPlatform(),
   });
 
   /// The directory of a Flutter project to run Gradle commands in.
@@ -28,15 +28,15 @@ class GradleProject {
   final ProcessRunner processRunner;
 
   /// The platform that commands are being run on.
-  final Platform platform;
+  final NativePlatform platform;
 
   /// The project's 'android' directory.
-  Directory get androidDirectory =>
-      flutterProject.platformDirectory(FlutterPlatform.android);
+  Directory get androidDirectory => flutterProject.platformDirectory(FlutterPlatform.android);
 
   /// The path to the Gradle wrapper file for the project.
   File get gradleWrapper => androidDirectory.childFile(
-      platform.isWindows ? _gradleWrapperWindows : _gradleWrapperNonWindows);
+    platform.isWindows ? _gradleWrapperWindows : _gradleWrapperNonWindows,
+  );
 
   /// Whether or not the project is ready to have Gradle commands run on it
   /// (i.e., whether the `flutter` tool has generated the necessary files).
@@ -48,10 +48,10 @@ class GradleProject {
     List<String> additionalTasks = const <String>[],
     List<String> arguments = const <String>[],
   }) {
-    return processRunner.runAndStream(
-      gradleWrapper.path,
-      <String>[task, ...additionalTasks, ...arguments],
-      workingDir: androidDirectory,
-    );
+    return processRunner.runAndStream(gradleWrapper.path, <String>[
+      task,
+      ...additionalTasks,
+      ...arguments,
+    ], workingDir: androidDirectory);
   }
 }

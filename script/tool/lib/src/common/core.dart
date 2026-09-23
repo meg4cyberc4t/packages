@@ -1,8 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:platform/platform.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 /// The signature for a print handler for commands that allow overriding the
@@ -32,6 +33,16 @@ const String platformWindows = 'windows';
 
 /// Key for enable experiment.
 const String kEnableExperiment = 'enable-experiment';
+
+/// A String to add to comments on temporarily-added changes that should not
+/// land (e.g., dependency overrides in federated plugin combination PRs).
+const String kDoNotLandWarning = 'DO NOT MERGE';
+
+/// Key for enabling web WASM compilation
+const String kWebWasmFlag = 'wasm';
+
+/// The URL to provide in printed messages to point users to tool documentation.
+const String toolDocsUrl = 'https://github.com/flutter/packages/blob/main/script/tool/README.md';
 
 /// Target platforms supported by Flutter.
 // ignore: public_member_api_docs
@@ -75,12 +86,30 @@ final Map<Version, Version> _dartSdkForFlutterSdk = <Version, Version>{
   Version(3, 19, 0): Version(3, 3, 0),
   Version(3, 19, 6): Version(3, 3, 4),
   Version(3, 22, 0): Version(3, 4, 0),
+  Version(3, 22, 3): Version(3, 4, 4),
+  Version(3, 24, 0): Version(3, 5, 0),
+  Version(3, 24, 5): Version(3, 5, 4),
+  Version(3, 27, 0): Version(3, 6, 0),
+  Version(3, 27, 4): Version(3, 6, 2),
+  Version(3, 29, 0): Version(3, 7, 0),
+  Version(3, 29, 3): Version(3, 7, 2),
+  Version(3, 32, 0): Version(3, 8, 0),
+  Version(3, 32, 8): Version(3, 8, 1),
+  Version(3, 35, 0): Version(3, 9, 0),
+  Version(3, 35, 7): Version(3, 9, 2),
+  Version(3, 38, 0): Version(3, 10, 0),
+  Version(3, 38, 4): Version(3, 10, 3),
+  Version(3, 38, 10): Version(3, 10, 9),
+  Version(3, 41, 0): Version(3, 11, 0),
+  Version(3, 41, 9): Version(3, 11, 5),
+  Version(3, 44, 0): Version(3, 12, 0),
+  Version(3, 44, 9): Version(3, 12, 2),
+  Version(3, 47, 0): Version(3, 13, 0),
 };
 
 /// Returns the version of the Dart SDK that shipped with the given Flutter
 /// SDK.
-Version? getDartSdkForFlutterSdk(Version flutterVersion) =>
-    _dartSdkForFlutterSdk[flutterVersion];
+Version? getDartSdkForFlutterSdk(Version flutterVersion) => _dartSdkForFlutterSdk[flutterVersion];
 
 /// Returns whether the given directory is a Dart package.
 bool isPackage(FileSystemEntity entity) {
@@ -88,7 +117,7 @@ bool isPackage(FileSystemEntity entity) {
     return false;
   }
   // According to
-  // https://dart.dev/guides/libraries/create-library-packages#what-makes-a-library-package
+  // https://dart.dev/guides/libraries/create-packages#what-makes-a-library-package
   // a package must also have a `lib/` directory, but in practice that's not
   // always true. Some special cases (espresso, flutter_template_images, etc.)
   // don't have any source, so this deliberately doesn't check that there's a
@@ -101,7 +130,7 @@ bool isPackage(FileSystemEntity entity) {
 /// While there is no specific definition of the meaning of different non-zero
 /// exit codes for this tool, commands should follow the general convention:
 ///   1: The command ran correctly, but found errors.
-///   2: The command failed to run because the arguments were invalid.
+///   2: The command failed to run because the arguments or config were invalid.
 ///  >2: The command failed to run correctly for some other reason. Ideally,
 ///      each such failure should have a unique exit code within the context of
 ///      that command.
@@ -111,10 +140,33 @@ class ToolExit extends Error {
 
   /// The code that the process should exit with.
   final int exitCode;
+
+  @override
+  String toString() => 'ToolExit(exitCode: $exitCode)';
 }
 
 /// A exit code for [ToolExit] for a successful run that found errors.
 const int exitCommandFoundErrors = 1;
 
-/// A exit code for [ToolExit] for a failure to run due to invalid arguments.
+/// A exit code for [ToolExit] for a failure to run due to invalid arguments
+/// or config.
 const int exitInvalidArguments = 2;
+
+/// The directory for any cached files downloaded or created by the tool.
+Directory toolCacheDirectory(Directory repoRoot) {
+  final Directory cacheDir = repoRoot.childDirectory('.repo_tool_cache');
+  if (!cacheDir.existsSync()) {
+    cacheDir.createSync(recursive: true);
+  }
+  return cacheDir;
+}
+
+/// The directory to which to write logs and other artifacts, if set in CI.
+Directory? ciLogsDirectory(NativePlatform platform, FileSystem fileSystem) {
+  final String? logsDirectoryPath = platform.environment['FLUTTER_LOGS_DIR'];
+  Directory? logsDirectory;
+  if (logsDirectoryPath != null) {
+    logsDirectory = fileSystem.directory(logsDirectoryPath);
+  }
+  return logsDirectory;
+}

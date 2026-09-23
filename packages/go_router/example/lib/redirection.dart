@@ -1,10 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:material_ui/material_ui.dart';
 
 // This scenario demonstrates how to use redirect to handle a sign-in flow.
 //
@@ -34,6 +33,22 @@ class LoginInfo extends ChangeNotifier {
   }
 }
 
+/// Provides login information to its descendants.
+class LoginInfoProvider extends InheritedNotifier<LoginInfo> {
+  /// Creates a [LoginInfoProvider].
+  const LoginInfoProvider({super.key, required super.notifier, required super.child});
+
+  /// Returns the [LoginInfo] from the closest [LoginInfoProvider] ancestor.
+  static LoginInfo of(BuildContext context, {bool listen = true}) {
+    final LoginInfoProvider? result = listen
+        ? context.dependOnInheritedWidgetOfExactType<LoginInfoProvider>()
+        : context.getElementForInheritedWidgetOfExactType<LoginInfoProvider>()?.widget
+              as LoginInfoProvider?;
+    assert(result != null, 'No LoginInfoProvider found in context');
+    return result!.notifier!;
+  }
+}
+
 void main() => runApp(App());
 
 /// The main app.
@@ -48,26 +63,24 @@ class App extends StatelessWidget {
 
   // add the login info into the tree as app state that can change over time
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
-        value: _loginInfo,
-        child: MaterialApp.router(
-          routerConfig: _router,
-          title: title,
-          debugShowCheckedModeBanner: false,
-        ),
-      );
+  Widget build(BuildContext context) => LoginInfoProvider(
+    notifier: _loginInfo,
+    child: MaterialApp.router(
+      routerConfig: _router,
+      title: title,
+      debugShowCheckedModeBanner: false,
+    ),
+  );
 
   late final GoRouter _router = GoRouter(
     routes: <GoRoute>[
       GoRoute(
         path: '/',
-        builder: (BuildContext context, GoRouterState state) =>
-            const HomeScreen(),
+        builder: (BuildContext context, GoRouterState state) => const HomeScreen(),
       ),
       GoRoute(
         path: '/login',
-        builder: (BuildContext context, GoRouterState state) =>
-            const LoginScreen(),
+        builder: (BuildContext context, GoRouterState state) => const LoginScreen(),
       ),
     ],
 
@@ -75,7 +88,7 @@ class App extends StatelessWidget {
     redirect: (BuildContext context, GoRouterState state) {
       // if the user is not logged in, they need to login
       final bool loggedIn = _loginInfo.loggedIn;
-      final bool loggingIn = state.matchedLocation == '/login';
+      final loggingIn = state.matchedLocation == '/login';
       if (!loggedIn) {
         return '/login';
       }
@@ -102,20 +115,20 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text(App.title)),
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              // log a user in, letting all the listeners know
-              context.read<LoginInfo>().login('test-user');
+    appBar: AppBar(title: const Text(App.title)),
+    body: Center(
+      child: ElevatedButton(
+        onPressed: () {
+          // log a user in, letting all the listeners know
+          LoginInfoProvider.of(context, listen: false).login('test-user');
 
-              // router will automatically redirect from /login to / using
-              // refreshListenable
-            },
-            child: const Text('Login'),
-          ),
-        ),
-      );
+          // router will automatically redirect from /login to / using
+          // refreshListenable
+        },
+        child: const Text('Login'),
+      ),
+    ),
+  );
 }
 
 /// The home screen.
@@ -125,7 +138,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LoginInfo info = context.read<LoginInfo>();
+    final LoginInfo info = LoginInfoProvider.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -135,12 +148,10 @@ class HomeScreen extends StatelessWidget {
             onPressed: info.logout,
             tooltip: 'Logout: ${info.userName}',
             icon: const Icon(Icons.logout),
-          )
+          ),
         ],
       ),
-      body: const Center(
-        child: Text('HomeScreen'),
-      ),
+      body: const Center(child: Text('HomeScreen')),
     );
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package io.flutter.plugins.webviewflutter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +34,7 @@ public class WebViewFlutterAndroidExternalApiTest {
 
   @Mock FlutterPlugin.FlutterPluginBinding mockPluginBinding;
 
+  @SuppressWarnings("deprecation")
   @Test
   public void getWebView() {
     final WebViewFlutterPlugin webViewFlutterPlugin = new WebViewFlutterPlugin();
@@ -43,7 +45,8 @@ public class WebViewFlutterAndroidExternalApiTest {
 
     webViewFlutterPlugin.onAttachedToEngine(mockPluginBinding);
 
-    final InstanceManager instanceManager = webViewFlutterPlugin.getInstanceManager();
+    final AndroidWebkitLibraryPigeonInstanceManager instanceManager =
+        webViewFlutterPlugin.getInstanceManager();
     assertNotNull(instanceManager);
 
     final WebView mockWebView = mock(WebView.class);
@@ -58,5 +61,35 @@ public class WebViewFlutterAndroidExternalApiTest {
     assertEquals(WebViewFlutterAndroidExternalApi.getWebView(mockFlutterEngine, 0), mockWebView);
 
     webViewFlutterPlugin.onDetachedFromEngine(mockPluginBinding);
+  }
+
+  @Test
+  public void getWebViewFromBinding() {
+    final WebViewFlutterPlugin webViewFlutterPlugin = new WebViewFlutterPlugin();
+
+    when(mockPluginBinding.getApplicationContext()).thenReturn(mockContext);
+    when(mockPluginBinding.getPlatformViewRegistry()).thenReturn(mockViewRegistry);
+    when(mockPluginBinding.getBinaryMessenger()).thenReturn(mockBinaryMessenger);
+
+    webViewFlutterPlugin.onAttachedToEngine(mockPluginBinding);
+
+    final AndroidWebkitLibraryPigeonInstanceManager instanceManager =
+        webViewFlutterPlugin.getInstanceManager();
+    assertNotNull(instanceManager);
+
+    final WebView mockWebView = mock(WebView.class);
+    instanceManager.addDartCreatedInstance(mockWebView, 0);
+
+    when(mockPluginBinding.getPlugin(WebViewFlutterPlugin.class)).thenReturn(webViewFlutterPlugin);
+
+    assertEquals(WebViewFlutterAndroidExternalApi.getWebView(mockPluginBinding, 0), mockWebView);
+
+    webViewFlutterPlugin.onDetachedFromEngine(mockPluginBinding);
+  }
+
+  @Test
+  public void getWebViewFromBindingReturnsNullForUnknownPlugin() {
+    when(mockPluginBinding.getPlugin(WebViewFlutterPlugin.class)).thenReturn(null);
+    assertNull(WebViewFlutterAndroidExternalApi.getWebView(mockPluginBinding, 0));
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,7 @@ class ConsumableStore {
 
   /// Returns the list of consumables from the store.
   static Future<List<String>> load() async {
-    return (await SharedPreferences.getInstance()).getStringList(_kPrefKey) ??
-        <String>[];
+    return (await SharedPreferences.getInstance()).getStringList(_kPrefKey) ?? <String>[];
   }
 
   static Future<void> _doSave(String id) async {

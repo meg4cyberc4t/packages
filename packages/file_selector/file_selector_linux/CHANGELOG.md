@@ -1,6 +1,33 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 0.9.4+1
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.9.4
+
+* Adds `getDirectoryPathWithOptions` and `getDirectoryPathsWithOptions` implementations.
+
+## 0.9.3+3
+
+* Updates to Pigeon 26.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 0.9.3+2
+
+* Updates Pigeon to resolve a compilation failure with some versions of glib.
+
+## 0.9.3+1
+
+* Fixes a regression in 0.9.3 with handling of canceled dialogs.
+
+## 0.9.3
+
+* Updates method channel implementation to use Pigeon.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
 
 ## 0.9.2+1
 

@@ -1,6 +1,389 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 29.0.2
+
+* [swift] Fixes a crash when a Flutter API returns null for a non-null return
+  value and the null arrives as `NSNull`.
+
+## 29.0.1
+
+* [swift] Annotates async `FlutterApi` methods with `@MainActor`.
+
+## 29.0.0
+
+* [swift] [kotlin] Adds experimental support for FFI and JNI.
+* Exposes missing PigeonOptions and language-specific configurations as command-line arguments.
+
+## 28.1.0
+
+* [swift] Adds support for multiple output locations in `swiftOut` and `--swift_out`.
+
+## 28.0.0
+
+* **Breaking Change** Updates Kotlin and Swift generators to generate `suspend` functions and `async` signatures for `@FlutterApi` methods by default, and for `@HostApi` methods annotated with `@async`.
+  * Use `@asyncCallback` if callback-style signatures are required.
+
+## 27.3.2
+
+* [dart] Fixes lint warning from unused codec variable in Dart proxy classes.
+
+## 27.3.1
+
+* Updates `analyzer` dependency to support versions 13 and 14.
+* Updates minimum Dart SDK constraint to 3.11.0.
+
+
+## 27.3.0
+
+* Adds support for sharing constants across platforms.
+
+## 27.2.0
+
+* Adds support for empty data classes.
+
+## 27.1.2
+
+* Reports a clear error when an input file uses an enhanced enum (one with a
+  constructor, fields, methods, or arguments on its values), instead of
+  silently generating incorrect output.
+
+## 27.1.1
+
+* [dart] Adds usage documentation to generated event channel methods, and
+  emits the user's documentation comments on them.
+
+## 27.1.0
+
+* [swift] Adds `CaseIterable` conformance to generated enums.
+
+## 27.0.0
+
+* **Breaking Change** Overrides `toString` (or equivalent) methods on generated data classes
+  * This can conflict with custom `description` implementations in Swift.
+* [swift] Updates `isNullish` to handle double nested `Any?` values.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 26.3.4
+
+* [kotlin] Updates generated error class to inherit from `RuntimeException`
+  instead of `Throwable`, for better Java interoperability.
+
+## 26.3.3
+
+* Updates `analyzer` dependency to support versions 10 through 12.
+
+## 26.3.2
+
+* Updates `analyzer` dependency to support version 10.
+
+## 26.3.1
+
+* Fixes dartdoc comments that accidentally used HTML.
+
+## 26.3.0
+
+* Optimizes and improves data class equality and hashing.
+* Changes hashing and equality methods to behave consistently across platforms.
+* Adds equality methods to previously unsupported languages.
+
+## 26.2.3
+
+* Produces a helpful error message when a method return type is missing or an
+  unsupported type, such as a function type or record type.
+
+## 26.2.2
+
+* [dart] Ignores all lint rules in generated code.
+* [dart] In generated code, imports the meta package for annotations, instead of
+  the Flutter foundation library.
+* [dart] In generated code, no longer imports Uint8List.
+* Bumps minimum version of the args package to 2.5.0.
+
+## 26.2.1
+
+* [dart] Improves nullability-handling in generated code.
+
+## 26.2.0
+
+* [kotlin] Adds option to add javax.annotation.Generated annotation.
+
+## 26.1.10
+
+* Dramatically reduces the number of File write operations sent to the operating
+  system during code-generation. This improves performance of IDEs and the Dart
+  analysis server.
+
+## 26.1.9
+
+* [dart] Reduces much duplication in reply-handling code.
+
+## 26.1.8
+
+* Makes some internal class constructors constant.
+
+## 26.1.7
+
+* [objc] Updates to use module imports.
+
+## 26.1.6
+
+* Bumps kotlin_version to 2.3.0.
+
+## 26.1.5
+
+* [kotlin] Fixes a "bridge method" warning when implementing an event stream handler.
+
+## 26.1.4
+
+* [swift][kotlin] Fixes crash that occurs when an object that is removed from the instance manager
+  calls to Dart.
+
+## 26.1.3
+
+* [dart] Fixes error from constructor parameter sharing name with attached field for a ProxyApi.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 26.1.2
+
+* [kotlin] Fixes compilation error with unbounded type parameter for InstanceManager.
+
+## 26.1.1
+
+* Updates supported `analyzer` versions to 8.x or 9.x.
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 26.1.0
+
+* Deprecates `dartHostTestHandler` and `dartTestOut`.
+  * If you have a use case where this cannot easily be replaced with a mock or
+    fake of the generated Dart API, please provide details in
+    https://github.com/flutter/flutter/issues/178322.
+
+## 26.0.5
+
+* [kotlin] Serialize custom enums as `Long` instead of `Int` to avoid `ClassCastException` on decoding.
+
+## 26.0.4
+
+* Adds compatibility with `analyzer` 8.x.
+
+## 26.0.3
+
+* [kotlin] Removes all `containsKey` and replaces with `contains`.
+
+## 26.0.2
+
+* [kotlin] Fixes support for classes that override equals and hashCode for ProxyApis.
+* [kotlin] Adds error message log when a new Dart proxy instance fails to be created.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 26.0.1
+
+* Improves documentation of `ProxyApi` annotation and internal Dart ProxyAPI helper functions.
+* Moves helper functions for generating Dart portion of ProxyAPIs.
+
+## 26.0.0
+
+* **Breaking Change** [dart] Changes name of constructors used to create subclasses of ProxyApis to
+  `pigeon_**original_name**`.
+* [dart] Adds ProxyApi overrides classes to be used in Flutter unit tests.
+
+## 25.5.0
+
+* [dart] Changes the default InstanceManager and its initialization to no longer make a message call
+  when used in a Flutter unit test.
+
+## 25.4.0
+
+* [gobject] Adds type id constants in header files so that they can be used by the user.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 25.3.2
+
+* [dart] Fixes null pointer crashes/exceptions caused by premature finalization of Dart instances
+  for ProxyApis.
+
+## 25.3.1
+
+* [kotlin] Fixes Kotlin InstanceManager not properly removing callbacks from handler.
+* [kotlin] Fixes `SyntheticAccessor` lint caused by private utility methods.
+
+## 25.3.0
+
+* [swift] Adds equality methods to generated data classes.
+* [dart, kotlin] Shortens equality methods.
+
+## 25.2.0
+
+* [kotlin] Adds equality methods to generated data classes.
+
+## 25.1.0
+
+* [dart] Adds equality methods to generated data classes.
+
+## 25.0.0
+
+* **Breaking Change** Removes `oneLanguage` field from `PigeonOptions`.
+* Separates internal options classes from user facing options.
+* Adds `mergeDefinitionFileOptions` parameter to `runWithOptions` method.
+* Relocates `injectOverflowTypes` to non-public facing method.
+
+## 24.2.2
+
+* Updates compileSdk 34 to flutter.compileSdkVersion.
+
+## 24.2.1
+
+* [dart] Fixes potential race condition caused by a ProxyApi constructor message call being made in an async method.
+
+## 24.2.0
+
+* Adjusts task queues to use a shared task queue for all methods in a single
+  API instance, to give the same ordering guarantees as non-task-queue usage.
+* [swift] Adds task queue support to the Swift generator.
+
+## 24.1.1
+
+* [swift, kotlin] Adds an error message when a ProxyAPI callback method that returns a non-null
+  value is nullable.
+* [swift, kotlin] Adds an error message in the `ProxyApiBaseCodec` when an instance could not be
+  retrieved when reading a value.
+* [swift, kotlin] Fixes ProxyAPI platform APIs not calling completion when creating a new instance.
+
+## 24.1.0
+
+* [kotlin, swift] Adds annotation options to omit shared classes used in Event Channels.
+
+## 24.0.0
+
+* **Breaking Change** Relocates some files in `lib` that were not intended for direct client use to `lib/src`.
+
+## 23.0.0
+
+* **Breaking Change** [swift] Fixes a compile error about PigeonError's sendability conformance in Swift 6.
+  * PigeonError's init now requires the "details" argument to be Sendable.
+
+## 22.7.4
+
+* [dart] Fixes bug with multi-instance event channel support.
+
+## 22.7.3
+
+* Adds compatibility with `analyzer` 7.x.*.
+
+## 22.7.2
+
+* Updates README to discuss best practices for using Pigeon-generated code.
+
+## 22.7.1
+
+* [swift] Adds support for platform checks of imports of ProxyApis.
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+
+## 22.7.0
+
+* [swift, kotlin] Adds event channel support.
+* [swift, kotlin] Adds `sealed` class inheritance support.
+* [swift] Updates codec class names to be upper camel case.
+
+## 22.6.4
+
+* [swift] Fixes the channel names of the named constructors of ProxyApis.
+
+## 22.6.3
+
+* Replaces deprecated collection method usage.
+
+## 22.6.2
+
+* Removes the `@protected` annotation from the InstanceManager field of the
+  `PigeonInternalProxyApiBaseClass`.
+
+## 22.6.1
+
+* [gobject] Moves class declarations to the header to work around a bug in some
+  versions of glib.
+
+## 22.6.0
+
+* [swift] Adds `includeErrorClass` to `SwiftOptions`.
+
+## 22.5.0
+
+* [swift] Adds implementation for `@ProxyApi`.
+
+## 22.4.2
+
+* Updates `README.md` to replace the deprecated `flutter pub run pigeon` command with `dart run pigeon`.
+
+## 22.4.1
+
+* [dart] Fixes bug where special handling of ints is ignored if no custom types are used.
+
+## 22.4.0
+
+* Adds support for non-nullable types in collections.
+
+## 22.3.0
+
+* Adds support for enums and classes in collections.
+
+## 22.2.0
+
+* [kotlin] Adds implementation for `@ProxyApi`.
+
+## 22.1.0
+
+* Allows generation of classes that aren't referenced in an API.
+
+## 22.0.0
+
+* [dart] Changes codec to send int64 instead of int32.
+* **Breaking Change** [swift] Changes generic `map` to nullable keys of `AnyHashable` to conform to other platforms.
+* Adds tests to validate collections of ints.
+
+## 21.2.0
+
+* Removes restriction on number of custom types.
+* [java] Fixes bug with multiple enums.
+* [java] Removes `Object` from generics.
+* [objc] Fixes bug with multiple enums per data class.
+* Updates `varPrefix` and `classMemberNamePrefix`.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 21.1.0
+
+* Adds GObject (Linux) support.
+
+## 21.0.0
+
+* **Breaking Change** [cpp] Fixes style of enum names. References to enum values
+  will need to be updated to `EnumType.kValue` style, instead of the previous
+  `EnumType.value`.
+
+## 20.0.2
+
+* [java] Adds `equals` and `hashCode` support for data classes.
+* [swift] Fully-qualifies types in Equatable extension test.
+
+## 20.0.1
+
+* [cpp] Fixes handling of null class arguments.
+
+## 20.0.0
+
+* Moves all codec logic to single custom codec per file.
+* **Breaking Change** Limits the number of total custom types to 126.
+  * If more than 126 custom types are needed, consider breaking up your definition files.
+* Fixes bug that prevented collection subtypes from being added properly.
+* [swift] Adds `@unchecked Sendable` to codec method.
+* [objc] [cpp] Fixes bug that prevented setting custom header import path.
+
 ## 19.0.2
 
-* [kotlin] Adds the `@JvmOverloads` to the `HostApi` setUp method. This prevents the calling Java code from having to provide an empty `String` as Kotlin provides it by default  
+* [kotlin] Adds the `@JvmOverloads` to the `HostApi` setUp method. This prevents the calling Java code from having to provide an empty `String` as Kotlin provides it by default
 
 ## 19.0.1
 
@@ -146,8 +529,6 @@
     `myGeneratedClass.aBoolProperty = @NO` can silently set `aBoolProperty` to
     `YES`. Any data class or Flutter API interactions involving `bool`s should
     be carefully audited by hand when updating.
-
-
 
 ## 12.0.1
 
@@ -601,7 +982,7 @@
 
 ## 3.0.3
 
-* Adds ability for generators to do AST validation.  This can help generators
+* Adds ability for generators to do AST validation. This can help generators
   without complete implementations to report gaps in coverage.
 
 ## 3.0.2
@@ -764,11 +1145,11 @@
   `dart:mirrors` doesn't support null-safe code so there were a class of
   features we couldn't implement without this migration.
 * **BREAKING CHANGE** - the `configurePigeon` function has been migrated to a
-  `@ConfigurePigeon` annotation.  See `./pigeons/message.dart` for an example.
+  `@ConfigurePigeon` annotation. See `./pigeons/message.dart` for an example.
   The annotation can be attached to anything in the file to take effect.
 * **BREAKING CHANGE** - Now Pigeon files must be in one file per invocation of
-  Pigeon.  For example, the classes your APIs use must be in the same file as
-  your APIs.  If your Pigeon file imports another source file, it won't actually
+  Pigeon. For example, the classes your APIs use must be in the same file as
+  your APIs. If your Pigeon file imports another source file, it won't actually
   import it.
 
 ## 0.2.4
@@ -790,10 +1171,10 @@
 
 ## 0.2.0
 
-* **BREAKING CHANGE** - Pigeon files must be null-safe now.  That means the
+* **BREAKING CHANGE** - Pigeon files must be null-safe now. That means the
   fields inside of the classes must be declared nullable (
   [non-null fields](https://github.com/flutter/flutter/issues/59118) aren't yet
-  supported).  Migration example:
+  supported). Migration example:
 
 ```dart
 // Version 0.1.x
@@ -809,7 +1190,7 @@ class Foo {
 }
 ```
 
-* **BREAKING CHANGE** - The default output from Pigeon is now null-safe.  If you
+* **BREAKING CHANGE** - The default output from Pigeon is now null-safe. If you
   want non-null-safe code you must provide the `--no-dart_null_safety` flag.
 * The Pigeon source code is now null-safe.
 * Fixed niladic non-value returning async functions in the Java generator.
@@ -895,7 +1276,7 @@ class Foo {
 
 ## 0.1.8
 
-* Started spawning pigeon_lib in an isolate instead of a subprocess.  The
+* Started spawning pigeon_lib in an isolate instead of a subprocess. The
   subprocess could have lead to errors if the dart version on $PATH didn't match
   the one that comes with flutter.
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,11 @@ void main() {
   });
 
   test('Cannot be implemented with `implements`', () {
-    final MockWebViewControllerDelegate controller =
-        MockWebViewControllerDelegate();
-    final PlatformWebViewWidgetCreationParams params =
-        PlatformWebViewWidgetCreationParams(controller: controller);
-    when(WebViewPlatform.instance!.createPlatformWebViewWidget(params))
-        .thenReturn(ImplementsWebViewWidgetDelegate());
+    final controller = MockWebViewControllerDelegate();
+    final params = PlatformWebViewWidgetCreationParams(controller: controller);
+    when(
+      WebViewPlatform.instance!.createPlatformWebViewWidget(params),
+    ).thenReturn(ImplementsWebViewWidgetDelegate());
 
     expect(() {
       PlatformWebViewWidget(params);
@@ -36,23 +35,21 @@ void main() {
   });
 
   test('Can be extended', () {
-    final MockWebViewControllerDelegate controller =
-        MockWebViewControllerDelegate();
-    final PlatformWebViewWidgetCreationParams params =
-        PlatformWebViewWidgetCreationParams(controller: controller);
-    when(WebViewPlatform.instance!.createPlatformWebViewWidget(params))
-        .thenReturn(ExtendsWebViewWidgetDelegate(params));
+    final controller = MockWebViewControllerDelegate();
+    final params = PlatformWebViewWidgetCreationParams(controller: controller);
+    when(
+      WebViewPlatform.instance!.createPlatformWebViewWidget(params),
+    ).thenReturn(ExtendsWebViewWidgetDelegate(params));
 
     expect(PlatformWebViewWidget(params), isNotNull);
   });
 
   test('Can be mocked with `implements`', () {
-    final MockWebViewControllerDelegate controller =
-        MockWebViewControllerDelegate();
-    final PlatformWebViewWidgetCreationParams params =
-        PlatformWebViewWidgetCreationParams(controller: controller);
-    when(WebViewPlatform.instance!.createPlatformWebViewWidget(params))
-        .thenReturn(MockWebViewWidgetDelegate());
+    final controller = MockWebViewControllerDelegate();
+    final params = PlatformWebViewWidgetCreationParams(controller: controller);
+    when(
+      WebViewPlatform.instance!.createPlatformWebViewWidget(params),
+    ).thenReturn(MockWebViewWidgetDelegate());
 
     expect(PlatformWebViewWidget(params), isNotNull);
   });
@@ -72,16 +69,14 @@ class MockWebViewWidgetDelegate extends Mock
     with
         // ignore: prefer_mixin
         MockPlatformInterfaceMixin
-    implements
-        PlatformWebViewWidget {}
+    implements PlatformWebViewWidget {}
 
 class ExtendsWebViewWidgetDelegate extends PlatformWebViewWidget {
   ExtendsWebViewWidgetDelegate(super.params) : super.implementation();
 
   @override
   Widget build(BuildContext context) {
-    throw UnimplementedError(
-        'build is not implemented for ExtendedWebViewWidgetDelegate.');
+    throw UnimplementedError('build is not implemented for ExtendedWebViewWidgetDelegate.');
   }
 }
 
@@ -89,5 +84,4 @@ class MockWebViewControllerDelegate extends Mock
     with
         // ignore: prefer_mixin
         MockPlatformInterfaceMixin
-    implements
-        PlatformWebViewController {}
+    implements PlatformWebViewController {}

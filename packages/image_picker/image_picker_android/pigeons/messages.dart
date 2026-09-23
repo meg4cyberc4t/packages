@@ -1,18 +1,17 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:pigeon/pigeon.dart';
 
-@ConfigurePigeon(PigeonOptions(
-  dartOut: 'lib/src/messages.g.dart',
-  dartTestOut: 'test/test_api.g.dart',
-  javaOut: 'android/src/main/java/io/flutter/plugins/imagepicker/Messages.java',
-  javaOptions: JavaOptions(
-    package: 'io.flutter.plugins.imagepicker',
+@ConfigurePigeon(
+  PigeonOptions(
+    dartOut: 'lib/src/messages.g.dart',
+    kotlinOut: 'android/src/main/kotlin/io/flutter/plugins/imagepicker/Messages.kt',
+    kotlinOptions: KotlinOptions(package: 'io.flutter.plugins.imagepicker'),
+    copyrightHeader: 'pigeons/copyright.txt',
   ),
-  copyrightHeader: 'pigeons/copyright.txt',
-))
+)
 class GeneralOptions {
   GeneralOptions(this.allowMultiple, this.usePhotoPicker, this.limit);
   bool allowMultiple;
@@ -37,9 +36,7 @@ class ImageSelectionOptions {
 }
 
 class MediaSelectionOptions {
-  MediaSelectionOptions({
-    required this.imageSelectionOptions,
-  });
+  MediaSelectionOptions({required this.imageSelectionOptions});
 
   ImageSelectionOptions imageSelectionOptions;
 }
@@ -79,8 +76,7 @@ enum CacheRetrievalType { image, video }
 
 /// The result of retrieving cached results from a previous run.
 class CacheRetrievalResult {
-  CacheRetrievalResult(
-      {required this.type, this.error, this.paths = const <String>[]});
+  CacheRetrievalResult({required this.type, this.error, this.paths = const <String>[]});
 
   /// The type of the retrieved data.
   final CacheRetrievalType type;
@@ -89,44 +85,32 @@ class CacheRetrievalResult {
   final CacheRetrievalError? error;
 
   /// The results from the last selection, if any.
-  ///
-  /// Elements must not be null, by convention. See
-  /// https://github.com/flutter/flutter/issues/97848
-  final List<String?> paths;
+  final List<String> paths;
 }
 
-@HostApi(dartHostTestHandler: 'TestHostImagePickerApi')
+@HostApi()
 abstract class ImagePickerApi {
   /// Selects images and returns their paths.
-  ///
-  /// Elements must not be null, by convention. See
-  /// https://github.com/flutter/flutter/issues/97848
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
-  List<String?> pickImages(
+  List<String> pickImages(
     SourceSpecification source,
     ImageSelectionOptions options,
     GeneralOptions generalOptions,
   );
 
   /// Selects video and returns their paths.
-  ///
-  /// Elements must not be null, by convention. See
-  /// https://github.com/flutter/flutter/issues/97848
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
-  List<String?> pickVideos(
+  List<String> pickVideos(
     SourceSpecification source,
     VideoSelectionOptions options,
     GeneralOptions generalOptions,
   );
 
   /// Selects images and videos and returns their paths.
-  ///
-  /// Elements must not be null, by convention. See
-  /// https://github.com/flutter/flutter/issues/97848
   @async
-  List<String?> pickMedia(
+  List<String> pickMedia(
     MediaSelectionOptions mediaSelectionOptions,
     GeneralOptions generalOptions,
   );

@@ -1,6 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,42 +23,39 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
     final PlatformMapStateRecorder map = platform.lastCreatedMap;
 
-    expect(map.widgetConfiguration.initialCameraPosition,
-        const CameraPosition(target: LatLng(10.0, 15.0)));
+    expect(
+      map.widgetConfiguration.initialCameraPosition,
+      const CameraPosition(target: LatLng(10.0, 15.0)),
+    );
   });
 
-  testWidgets('Initial camera position change is a no-op',
-      (WidgetTester tester) async {
+  testWidgets('Initial camera position change is a no-op', (WidgetTester tester) async {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 16.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 16.0))),
       ),
     );
 
     final PlatformMapStateRecorder map = platform.lastCreatedMap;
 
-    expect(map.widgetConfiguration.initialCameraPosition,
-        const CameraPosition(target: LatLng(10.0, 15.0)));
+    expect(
+      map.widgetConfiguration.initialCameraPosition,
+      const CameraPosition(target: LatLng(10.0, 15.0)),
+    );
   });
 
   testWidgets('Can update compassEnabled', (WidgetTester tester) async {
@@ -77,9 +76,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -104,13 +101,86 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
     expect(map.mapConfiguration.mapToolbarEnabled, true);
+  });
+
+  testWidgets('Can update mapTypeControlEnabled', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          mapTypeControlEnabled: true,
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.mapConfiguration.mapTypeControlEnabled, true);
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    expect(map.mapConfiguration.mapTypeControlEnabled, false);
+  });
+
+  testWidgets('Can update fullscreenControlEnabled', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          fullscreenControlEnabled: true,
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.mapConfiguration.fullscreenControlEnabled, true);
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    expect(map.mapConfiguration.fullscreenControlEnabled, false);
+  });
+
+  testWidgets('Can update streetViewControlEnabled', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          streetViewControlEnabled: true,
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.mapConfiguration.streetViewControlEnabled, true);
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    expect(map.mapConfiguration.streetViewControlEnabled, false);
   });
 
   testWidgets('Can update cameraTargetBounds', (WidgetTester tester) async {
@@ -118,13 +188,9 @@ void main() {
       Directionality(
         textDirection: TextDirection.ltr,
         child: GoogleMap(
-          initialCameraPosition:
-              const CameraPosition(target: LatLng(10.0, 15.0)),
+          initialCameraPosition: const CameraPosition(target: LatLng(10.0, 15.0)),
           cameraTargetBounds: CameraTargetBounds(
-            LatLngBounds(
-              southwest: const LatLng(10.0, 20.0),
-              northeast: const LatLng(30.0, 40.0),
-            ),
+            LatLngBounds(southwest: const LatLng(10.0, 20.0), northeast: const LatLng(30.0, 40.0)),
           ),
         ),
       ),
@@ -133,38 +199,30 @@ void main() {
     final PlatformMapStateRecorder map = platform.lastCreatedMap;
 
     expect(
-        map.mapConfiguration.cameraTargetBounds,
-        CameraTargetBounds(
-          LatLngBounds(
-            southwest: const LatLng(10.0, 20.0),
-            northeast: const LatLng(30.0, 40.0),
-          ),
-        ));
+      map.mapConfiguration.cameraTargetBounds,
+      CameraTargetBounds(
+        LatLngBounds(southwest: const LatLng(10.0, 20.0), northeast: const LatLng(30.0, 40.0)),
+      ),
+    );
 
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
         child: GoogleMap(
-          initialCameraPosition:
-              const CameraPosition(target: LatLng(10.0, 15.0)),
+          initialCameraPosition: const CameraPosition(target: LatLng(10.0, 15.0)),
           cameraTargetBounds: CameraTargetBounds(
-            LatLngBounds(
-              southwest: const LatLng(16.0, 20.0),
-              northeast: const LatLng(30.0, 40.0),
-            ),
+            LatLngBounds(southwest: const LatLng(16.0, 20.0), northeast: const LatLng(30.0, 40.0)),
           ),
         ),
       ),
     );
 
     expect(
-        map.mapConfiguration.cameraTargetBounds,
-        CameraTargetBounds(
-          LatLngBounds(
-            southwest: const LatLng(16.0, 20.0),
-            northeast: const LatLng(30.0, 40.0),
-          ),
-        ));
+      map.mapConfiguration.cameraTargetBounds,
+      CameraTargetBounds(
+        LatLngBounds(southwest: const LatLng(16.0, 20.0), northeast: const LatLng(30.0, 40.0)),
+      ),
+    );
   });
 
   testWidgets('Can update mapType', (WidgetTester tester) async {
@@ -208,20 +266,16 @@ void main() {
 
     final PlatformMapStateRecorder map = platform.lastCreatedMap;
 
-    expect(map.mapConfiguration.minMaxZoomPreference,
-        const MinMaxZoomPreference(1.0, 3.0));
+    expect(map.mapConfiguration.minMaxZoomPreference, const MinMaxZoomPreference(1.0, 3.0));
 
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
-    expect(map.mapConfiguration.minMaxZoomPreference,
-        MinMaxZoomPreference.unbounded);
+    expect(map.mapConfiguration.minMaxZoomPreference, MinMaxZoomPreference.unbounded);
   });
 
   testWidgets('Can update rotateGesturesEnabled', (WidgetTester tester) async {
@@ -242,9 +296,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -269,9 +321,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -296,9 +346,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -309,9 +357,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -323,8 +369,7 @@ void main() {
       Directionality(
         textDirection: TextDirection.ltr,
         child: GoogleMap(
-          initialCameraPosition:
-              const CameraPosition(target: LatLng(10.0, 15.0)),
+          initialCameraPosition: const CameraPosition(target: LatLng(10.0, 15.0)),
           onCameraMove: (CameraPosition position) {},
         ),
       ),
@@ -351,9 +396,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -378,9 +421,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -391,9 +432,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -414,14 +453,11 @@ void main() {
     expect(map.mapConfiguration.myLocationEnabled, true);
   });
 
-  testWidgets('Can update myLocationButtonEnabled',
-      (WidgetTester tester) async {
+  testWidgets('Can update myLocationButtonEnabled', (WidgetTester tester) async {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -446,9 +482,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -461,9 +495,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -481,8 +513,7 @@ void main() {
       ),
     );
 
-    expect(map.mapConfiguration.padding,
-        const EdgeInsets.fromLTRB(10, 20, 30, 40));
+    expect(map.mapConfiguration.padding, const EdgeInsets.fromLTRB(10, 20, 30, 40));
 
     await tester.pumpWidget(
       const Directionality(
@@ -494,17 +525,14 @@ void main() {
       ),
     );
 
-    expect(map.mapConfiguration.padding,
-        const EdgeInsets.fromLTRB(50, 60, 70, 80));
+    expect(map.mapConfiguration.padding, const EdgeInsets.fromLTRB(50, 60, 70, 80));
   });
 
   testWidgets('Can update traffic', (WidgetTester tester) async {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -543,9 +571,7 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
@@ -553,7 +579,7 @@ void main() {
   });
 
   testWidgets('Can update style', (WidgetTester tester) async {
-    const String initialStyle = '[]';
+    const initialStyle = '[]';
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
@@ -571,12 +597,258 @@ void main() {
     await tester.pumpWidget(
       const Directionality(
         textDirection: TextDirection.ltr,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
-        ),
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
       ),
     );
 
     expect(map.mapConfiguration.style, '');
+  });
+
+  testWidgets('Update state from widget only when mounted', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    final State<StatefulWidget> googleMapState = tester.state(find.byType(GoogleMap));
+
+    await tester.pumpWidget(Container());
+
+    // This is done to force the update path while the widget is not mounted.
+    // ignore:invalid_use_of_protected_member
+    googleMapState.didUpdateWidget(
+      GoogleMap(
+        initialCameraPosition: const CameraPosition(target: LatLng(10.0, 15.0)),
+        circles: <Circle>{const Circle(circleId: CircleId('circle'))},
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.circleUpdates.length, 1);
+  });
+
+  testWidgets('Update state after map is initialized only when mounted', (
+    WidgetTester tester,
+  ) async {
+    platform.initCompleter = Completer<void>();
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    await tester.pumpWidget(Container());
+
+    platform.initCompleter!.complete();
+
+    await tester.pumpAndSettle();
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.tileOverlaySets.length, 1);
+  });
+
+  testWidgets('Default markerType is "marker"', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+    expect(map.mapConfiguration.markerType, MarkerType.marker);
+  });
+
+  testWidgets('Can update markerType', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          // ignore: avoid_redundant_argument_values
+          markerType: GoogleMapMarkerType.marker,
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+    expect(map.mapConfiguration.markerType, MarkerType.marker);
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          markerType: GoogleMapMarkerType.advancedMarker,
+        ),
+      ),
+    );
+    expect(map.mapConfiguration.markerType, MarkerType.advancedMarker);
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+    expect(map.mapConfiguration.markerType, MarkerType.marker);
+  });
+
+  testWidgets('Is default color scheme null', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.mapConfiguration.colorScheme, null);
+  });
+
+  testWidgets('Can set color scheme to non-default', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          colorScheme: MapColorScheme.light,
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+
+    expect(map.mapConfiguration.colorScheme, MapColorScheme.light);
+  });
+
+  testWidgets('Can update mapId', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          mapId: 'myMapId',
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+    expect(map.mapConfiguration.mapId, 'myMapId');
+    expect(map.mapConfiguration.cloudMapId, 'myMapId');
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          mapId: 'myNewMapId',
+        ),
+      ),
+    );
+    expect(map.mapConfiguration.mapId, 'myNewMapId');
+    expect(map.mapConfiguration.cloudMapId, 'myNewMapId');
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+    expect(map.mapConfiguration.mapId, '');
+    expect(map.mapConfiguration.cloudMapId, '');
+  });
+
+  testWidgets('Can update cloudMapId', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          cloudMapId: 'myCloudMapId',
+        ),
+      ),
+    );
+
+    final PlatformMapStateRecorder map = platform.lastCreatedMap;
+    expect(map.mapConfiguration.cloudMapId, 'myCloudMapId');
+    expect(map.mapConfiguration.mapId, 'myCloudMapId');
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+          cloudMapId: 'myNewCloudMapId',
+        ),
+      ),
+    );
+    expect(map.mapConfiguration.cloudMapId, 'myNewCloudMapId');
+    expect(map.mapConfiguration.mapId, 'myNewCloudMapId');
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0))),
+      ),
+    );
+    expect(map.mapConfiguration.cloudMapId, '');
+    expect(map.mapConfiguration.mapId, '');
+  });
+
+  testWidgets('Providing both mapId and cloudMapId throws an exception', (
+    WidgetTester tester,
+  ) async {
+    expect(() {
+      GoogleMap(
+        initialCameraPosition: const CameraPosition(target: LatLng(10.0, 15.0)),
+        mapId: 'mapId',
+        cloudMapId: 'cloudMapId',
+      );
+    }, throwsAssertionError);
+  });
+
+  testWidgets("Providing mapId doesn't thrown an exception", (WidgetTester tester) async {
+    expect(() {
+      const GoogleMap(
+        initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+        mapId: 'mapId',
+      );
+    }, returnsNormally);
+  });
+
+  testWidgets("Providing cloudMapid doesn't thrown an exception", (WidgetTester tester) async {
+    expect(() {
+      const GoogleMap(
+        initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+        cloudMapId: 'cloudMapId',
+      );
+    }, returnsNormally);
+  });
+
+  testWidgets('Getting deprecated cloudMapId returns the mapId', (WidgetTester tester) async {
+    const mapId = 'mapId';
+    const map = GoogleMap(
+      initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)),
+      mapId: mapId,
+    );
+    expect(map.cloudMapId, mapId);
+  });
+
+  testWidgets("Not setting cloudMapid and mapId doesn't thrown an exception", (
+    WidgetTester tester,
+  ) async {
+    expect(() {
+      const GoogleMap(initialCameraPosition: CameraPosition(target: LatLng(10.0, 15.0)));
+    }, returnsNormally);
   });
 }

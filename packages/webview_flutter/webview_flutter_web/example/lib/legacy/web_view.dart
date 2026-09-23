@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,11 +28,7 @@ class WebView extends StatefulWidget {
   ///
   /// The web view can be controlled using a `WebViewController` that is passed to the
   /// `onWebViewCreated` callback once the web view is created.
-  const WebView({
-    super.key,
-    this.onWebViewCreated,
-    this.initialUrl,
-  });
+  const WebView({super.key, this.onWebViewCreated, this.initialUrl});
 
   /// The WebView platform that's used by this WebView.
   ///
@@ -52,8 +48,7 @@ class WebView extends StatefulWidget {
 }
 
 class _WebViewState extends State<WebView> {
-  final Completer<WebViewController> _controller =
-      Completer<WebViewController>();
+  final Completer<WebViewController> _controller = Completer<WebViewController>();
   late final _PlatformCallbacksHandler _platformCallbacksHandler;
 
   @override
@@ -74,12 +69,8 @@ class _WebViewState extends State<WebView> {
   Widget build(BuildContext context) {
     return WebView.platform.build(
       context: context,
-      onWebViewPlatformCreated:
-          (WebViewPlatformController? webViewPlatformController) {
-        final WebViewController controller = WebViewController(
-          widget,
-          webViewPlatformController!,
-        );
+      onWebViewPlatformCreated: (WebViewPlatformController? webViewPlatformController) {
+        final controller = WebViewController(widget, webViewPlatformController!);
         _controller.complete(controller);
 
         if (widget.onWebViewCreated != null) {
@@ -91,8 +82,7 @@ class _WebViewState extends State<WebView> {
         initialUrl: widget.initialUrl,
         webSettings: _webSettingsFromWidget(widget),
       ),
-      javascriptChannelRegistry:
-          JavascriptChannelRegistry(<JavascriptChannel>{}),
+      javascriptChannelRegistry: JavascriptChannelRegistry(<JavascriptChannel>{}),
     );
   }
 }
@@ -101,8 +91,7 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
   _PlatformCallbacksHandler();
 
   @override
-  FutureOr<bool> onNavigationRequest(
-      {required String url, required bool isForMainFrame}) {
+  FutureOr<bool> onNavigationRequest({required String url, required bool isForMainFrame}) {
     throw UnimplementedError();
   }
 
@@ -126,10 +115,7 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
 class WebViewController {
   /// Creates a [WebViewController] which can be used to control the provided
   /// [WebView] widget.
-  WebViewController(
-    this._widget,
-    this._webViewPlatformController,
-  ) {
+  WebViewController(this._widget, this._webViewPlatformController) {
     _settings = _webSettingsFromWidget(_widget);
   }
 
@@ -147,10 +133,7 @@ class WebViewController {
   /// `url` must not be null.
   ///
   /// Throws an ArgumentError if `url` is not a valid URL string.
-  Future<void> loadUrl(
-    String url, {
-    Map<String, String>? headers,
-  }) async {
+  Future<void> loadUrl(String url, {Map<String, String>? headers}) async {
     _validateUrlString(url);
     return _webViewPlatformController.loadUrl(url, headers);
   }
@@ -228,8 +211,7 @@ class WebViewController {
   }
 
   Future<void> _updateSettings(WebSettings newSettings) {
-    final WebSettings update =
-        _clearUnchangedWebSettings(_settings, newSettings);
+    final WebSettings update = _clearUnchangedWebSettings(_settings, newSettings);
     _settings = newSettings;
     return _webViewPlatformController.updateSettings(update);
   }
@@ -238,8 +220,11 @@ class WebViewController {
   // ignore: public_member_api_docs
   Future<String> evaluateJavascript(String javascriptString) {
     if (_settings.javascriptMode == JavascriptMode.disabled) {
-      return Future<String>.error(FlutterError(
-          'JavaScript mode must be enabled/unrestricted when calling evaluateJavascript.'));
+      return Future<String>.error(
+        FlutterError(
+          'JavaScript mode must be enabled/unrestricted when calling evaluateJavascript.',
+        ),
+      );
     }
     return _webViewPlatformController.evaluateJavascript(javascriptString);
   }
@@ -253,8 +238,9 @@ class WebViewController {
   //  embedded in the main frame HTML has been loaded.
   Future<void> runJavascript(String javaScriptString) {
     if (_settings.javascriptMode == JavascriptMode.disabled) {
-      return Future<void>.error(FlutterError(
-          'Javascript mode must be enabled/unrestricted when calling runJavascript.'));
+      return Future<void>.error(
+        FlutterError('Javascript mode must be enabled/unrestricted when calling runJavascript.'),
+      );
     }
     return _webViewPlatformController.runJavascript(javaScriptString);
   }
@@ -269,11 +255,13 @@ class WebViewController {
   /// embedded in the main frame HTML has been loaded.
   Future<String> runJavascriptReturningResult(String javaScriptString) {
     if (_settings.javascriptMode == JavascriptMode.disabled) {
-      return Future<String>.error(FlutterError(
-          'Javascript mode must be enabled/unrestricted when calling runJavascriptReturningResult.'));
+      return Future<String>.error(
+        FlutterError(
+          'Javascript mode must be enabled/unrestricted when calling runJavascriptReturningResult.',
+        ),
+      );
     }
-    return _webViewPlatformController
-        .runJavascriptReturningResult(javaScriptString);
+    return _webViewPlatformController.runJavascriptReturningResult(javaScriptString);
   }
 
   /// Returns the title of the currently loaded page.
@@ -310,8 +298,7 @@ class WebViewController {
   }
 
   // This method assumes that no fields in `currentValue` are null.
-  WebSettings _clearUnchangedWebSettings(
-      WebSettings currentValue, WebSettings newValue) {
+  WebSettings _clearUnchangedWebSettings(WebSettings currentValue, WebSettings newValue) {
     assert(currentValue.javascriptMode != null);
     assert(currentValue.hasNavigationDelegate != null);
     assert(currentValue.hasProgressTracking != null);
@@ -325,7 +312,7 @@ class WebViewController {
     bool? hasNavigationDelegate;
     bool? hasProgressTracking;
     bool? debuggingEnabled;
-    WebSetting<String?> userAgent = const WebSetting<String?>.absent();
+    var userAgent = const WebSetting<String?>.absent();
     bool? zoomEnabled;
     if (currentValue.javascriptMode != newValue.javascriptMode) {
       javascriptMode = newValue.javascriptMode;

@@ -1,6 +1,37 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 3.3.1
+
+* Updates README examples and doc excerpts to match the current package API and extraction workflow.
+
+## 3.3.0
+
+* Updates `in_app_purchase_android` dependency to `^0.5.0`.
+
+## 3.2.4
+
+* Bump org.json:json from 20251224 to 20260522 in example.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+* Clarifies `completePurchase` usage and the consequences of unfinished transactions in the README and docstrings.
+
+## 3.2.3
+* Updates minimum `in_app_purchase_storekit` version to 0.4.0.
+
+## 3.2.2
+
+* Updates README with Storekit 2 examples.
+* Updates README to indicate that Andoid SDK <21 is no longer supported.
+
+## 3.2.1
+
+* Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+* Updates `in_app_purchase_android` to 0.4.0.
 
 ## 3.2.0
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Path Provider',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: const MyHomePage(title: 'Path Provider'),
     );
   }
@@ -51,9 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _buildDirectory(
-      BuildContext context, AsyncSnapshot<String?> snapshot) {
-    Text text = const Text('');
+  Widget _buildDirectory(BuildContext context, AsyncSnapshot<String?> snapshot) {
+    var text = const Text('');
     if (snapshot.connectionState == ConnectionState.done) {
       if (snapshot.hasError) {
         text = Text('Error: ${snapshot.error}');
@@ -66,9 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Padding(padding: const EdgeInsets.all(16.0), child: text);
   }
 
-  Widget _buildDirectories(
-      BuildContext context, AsyncSnapshot<List<String>?> snapshot) {
-    Text text = const Text('');
+  Widget _buildDirectories(BuildContext context, AsyncSnapshot<List<String>?> snapshot) {
+    var text = const Text('');
     if (snapshot.connectionState == ConnectionState.done) {
       if (snapshot.hasError) {
         text = Text('Error: ${snapshot.error}');
@@ -108,8 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _requestExternalStorageDirectories(StorageDirectory type) {
     setState(() {
-      _externalStorageDirectories =
-          provider.getExternalStoragePaths(type: type);
+      _externalStorageDirectories = provider.getExternalStoragePaths(type: type);
     });
   }
 
@@ -128,9 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       body: Center(
         child: ListView(
           children: <Widget>[
@@ -141,8 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get Temporary Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _tempDirectory, builder: _buildDirectory),
+            FutureBuilder<String?>(future: _tempDirectory, builder: _buildDirectory),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -150,8 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get Application Documents Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _appDocumentsDirectory, builder: _buildDirectory),
+            FutureBuilder<String?>(future: _appDocumentsDirectory, builder: _buildDirectory),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -159,8 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get Application Support Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _appSupportDirectory, builder: _buildDirectory),
+            FutureBuilder<String?>(future: _appSupportDirectory, builder: _buildDirectory),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -168,8 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get Application Cache Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _appCacheDirectory, builder: _buildDirectory),
+            FutureBuilder<String?>(future: _appCacheDirectory, builder: _buildDirectory),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -177,35 +166,39 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get External Storage Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _externalDocumentsDirectory, builder: _buildDirectory),
-            Column(children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  child: const Text('Get External Storage Directories'),
-                  onPressed: () {
-                    _requestExternalStorageDirectories(
-                      StorageDirectory.music,
-                    );
-                  },
+            FutureBuilder<String?>(future: _externalDocumentsDirectory, builder: _buildDirectory),
+            Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    child: const Text('Get External Storage Directories'),
+                    onPressed: () {
+                      _requestExternalStorageDirectories(StorageDirectory.music);
+                    },
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
             FutureBuilder<List<String>?>(
-                future: _externalStorageDirectories,
-                builder: _buildDirectories),
-            Column(children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: _requestExternalCacheDirectories,
-                  child: const Text('Get External Cache Directories'),
+              future: _externalStorageDirectories,
+              builder: _buildDirectories,
+            ),
+            Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _requestExternalCacheDirectories,
+                    child: const Text('Get External Cache Directories'),
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
             FutureBuilder<List<String>?>(
-                future: _externalCacheDirectories, builder: _buildDirectories),
+              future: _externalCacheDirectories,
+              builder: _buildDirectories,
+            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -213,8 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('Get Downloads Directory'),
               ),
             ),
-            FutureBuilder<String?>(
-                future: _externalDownloadsDirectory, builder: _buildDirectory),
+            FutureBuilder<String?>(future: _externalDownloadsDirectory, builder: _buildDirectory),
           ],
         ),
       ),

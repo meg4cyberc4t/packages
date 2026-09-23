@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,19 +12,13 @@ void main() {
 
   group('WebWebViewWidget', () {
     testWidgets('build returns a HtmlElementView', (WidgetTester tester) async {
-      final WebWebViewController controller =
-          WebWebViewController(WebWebViewControllerCreationParams());
+      final controller = WebWebViewController(WebWebViewControllerCreationParams());
 
-      final WebWebViewWidget widget = WebWebViewWidget(
-        PlatformWebViewWidgetCreationParams(
-          key: const Key('keyValue'),
-          controller: controller,
-        ),
+      final widget = WebWebViewWidget(
+        PlatformWebViewWidgetCreationParams(key: const Key('keyValue'), controller: controller),
       );
 
-      await tester.pumpWidget(
-        Builder(builder: (BuildContext context) => widget.build(context)),
-      );
+      await tester.pumpWidget(Builder(builder: (BuildContext context) => widget.build(context)));
 
       expect(find.byType(HtmlElementView), findsOneWidget);
       expect(find.byKey(const Key('keyValue')), findsOneWidget);

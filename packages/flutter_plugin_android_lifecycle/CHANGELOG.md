@@ -1,3 +1,71 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.0.35
+
+* Bumps the androidx group across 10 directories with 1 update.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 2.0.34
+
+* Updates build files from Groovy to Kotlin.
+* Updates README to reflect currently supported OS version.
+
+## 2.0.33
+
+* Bumps com.android.tools.build:gradle from 8.12.1 to 8.13.1.
+
+## 2.0.32
+
+* Updates Java compatibility version to 17 and minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 2.0.31
+
+* Resolves Gradle 9 deprecations.
+
+## 2.0.30
+
+* Bumps com.android.tools.build:gradle to 8.12.1.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 2.0.29
+
+* Updates kotlin version to 2.2.0 to enable gradle 8.11 support.
+
+## 2.0.28
+
+* Removes obsolete code related to supporting SDK <21.
+
+## 2.0.27
+
+* Bumps flutter supported version to 3.27 and use flutter.compileSdkVersion.
+
+## 2.0.26
+
+* Removes flutter.compileSdkVersion for 35 to support flutter versions prior to 3.27.
+
+## 2.0.25
+
+* Updates compileSdk 35 to flutter.compileSdkVersion.
+
+## 2.0.24
+
+* Updates annotation to 1.9.1.
+
+## 2.0.23
+
+* Updates Java compatibility version to 11.
+* Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+
+## 2.0.22
+
+* Bumps `com.android.tools.build:gradle` from 7.2.1 to 8.5.1.
+
+## 2.0.21
+
+* Updates lint checks to ignore NewerVersionAvailable.
+
 ## 2.0.20
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.

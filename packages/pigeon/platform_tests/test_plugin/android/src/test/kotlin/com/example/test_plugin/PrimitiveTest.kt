@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,20 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import junit.framework.TestCase
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PrimitiveTest : TestCase() {
+class PrimitiveTest {
+
   @Test
   fun testIntPrimitiveHost() {
     val binaryMessenger = mockk<BinaryMessenger>(relaxed = true)
     val api = mockk<PrimitiveHostApi>(relaxed = true)
 
-    val input = 1
+    val input = 1L
 
     val channelName = "dev.flutter.pigeon.pigeon_integration_tests.PrimitiveHostApi.anInt"
     val handlerSlot = slot<BinaryMessenger.BinaryMessageHandler>()
@@ -35,27 +39,21 @@ class PrimitiveTest : TestCase() {
       it?.rewind()
       @Suppress("UNCHECKED_CAST") val wrapped = codec.decodeMessage(it) as List<Any>?
       assertNotNull(wrapped)
-      wrapped?.let { assertEquals(input.toLong(), wrapped[0]) }
+      wrapped?.let { assertEquals(input, wrapped[0]) }
     }
 
     verify { binaryMessenger.setMessageHandler(channelName, handlerSlot.captured) }
-    verify { api.anInt(input.toLong()) }
+    verify { api.anInt(input) }
   }
 
   @Test
-  fun testIntPrimitiveFlutter() {
+  fun testIntPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = 1L
-
-    var didCall = false
-    api.anInt(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.anInt(input)
+    assertEquals(input, res)
   }
 
   @Test
@@ -88,19 +86,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testBoolPrimitiveFlutter() {
+  fun testBoolPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = true
-
-    var didCall = false
-    api.aBool(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aBool(input)
+    assertEquals(input, res)
   }
 
   @Test
@@ -162,19 +154,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testDoublePrimitiveFlutter() {
+  fun testDoublePrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = 1.0
-
-    var didCall = false
-    api.aDouble(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aDouble(input)
+    assertEquals(input, res, 0.0)
   }
 
   @Test
@@ -207,19 +193,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testMapPrimitiveFlutter() {
+  fun testMapPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = mapOf<Any, Any?>("a" to 1, "b" to 2)
-
-    var didCall = false
-    api.aMap(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aMap(input)
+    assertEquals(input, res)
   }
 
   @Test
@@ -252,19 +232,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testListPrimitiveFlutter() {
+  fun testListPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = listOf(1, 2, 3)
-
-    var didCall = false
-    api.aList(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aList(input)
+    assertEquals(input, res)
   }
 
   @Test
@@ -297,19 +271,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testInt32ListPrimitiveFlutter() {
+  fun testInt32ListPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = intArrayOf(1, 2, 3)
-
-    var didCall = false
-    api.anInt32List(input) {
-      didCall = true
-      assertTrue(input.contentEquals(it.getOrNull()))
-    }
-
-    assertTrue(didCall)
+    val res = api.anInt32List(input)
+    assertTrue(input.contentEquals(res))
   }
 
   @Test
@@ -342,19 +310,13 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testBoolListPrimitiveFlutter() {
+  fun testBoolListPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = listOf(true, false, true)
-
-    var didCall = false
-    api.aBoolList(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aBoolList(input)
+    assertEquals(input, res)
   }
 
   @Test
@@ -387,18 +349,12 @@ class PrimitiveTest : TestCase() {
   }
 
   @Test
-  fun testStringIntMapPrimitiveFlutter() {
+  fun testStringIntMapPrimitiveFlutter() = runTest {
     val binaryMessenger = EchoBinaryMessenger(MultipleArityFlutterApi.codec)
     val api = PrimitiveFlutterApi(binaryMessenger)
 
     val input = mapOf<String?, Long?>("a" to 1, "b" to 2)
-
-    var didCall = false
-    api.aStringIntMap(input) {
-      didCall = true
-      assertEquals(input, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.aStringIntMap(input)
+    assertEquals(input, res)
   }
 }

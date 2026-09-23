@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,7 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   /// Retrieve a map controller by its mapId.
   GoogleMapController _map(int mapId) {
     final GoogleMapController? controller = _mapById[mapId];
-    assert(controller != null,
-        'Maps cannot be retrieved before calling buildView!');
+    assert(controller != null, 'Maps cannot be retrieved before calling buildView!');
     return controller!;
   }
 
@@ -47,47 +46,38 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   /// This attempts to merge the new `optionsUpdate` passed in, with the previous
   /// options passed to the map (in other updates, or when creating it).
   @override
-  Future<void> updateMapConfiguration(
-    MapConfiguration update, {
-    required int mapId,
-  }) async {
+  Future<void> updateMapConfiguration(MapConfiguration update, {required int mapId}) async {
     _map(mapId).updateMapConfiguration(update);
   }
 
   /// Applies the passed in `markerUpdates` to the `mapId`.
   @override
-  Future<void> updateMarkers(
-    MarkerUpdates markerUpdates, {
-    required int mapId,
-  }) async {
+  Future<void> updateMarkers(MarkerUpdates markerUpdates, {required int mapId}) async {
     await _map(mapId).updateMarkers(markerUpdates);
   }
 
   /// Applies the passed in `polygonUpdates` to the `mapId`.
   @override
-  Future<void> updatePolygons(
-    PolygonUpdates polygonUpdates, {
-    required int mapId,
-  }) async {
+  Future<void> updatePolygons(PolygonUpdates polygonUpdates, {required int mapId}) async {
     _map(mapId).updatePolygons(polygonUpdates);
   }
 
   /// Applies the passed in `polylineUpdates` to the `mapId`.
   @override
-  Future<void> updatePolylines(
-    PolylineUpdates polylineUpdates, {
-    required int mapId,
-  }) async {
+  Future<void> updatePolylines(PolylineUpdates polylineUpdates, {required int mapId}) async {
     _map(mapId).updatePolylines(polylineUpdates);
   }
 
   /// Applies the passed in `circleUpdates` to the `mapId`.
   @override
-  Future<void> updateCircles(
-    CircleUpdates circleUpdates, {
-    required int mapId,
-  }) async {
+  Future<void> updateCircles(CircleUpdates circleUpdates, {required int mapId}) async {
     _map(mapId).updateCircles(circleUpdates);
+  }
+
+  /// Applies the passed in `heatmapUpdates` to the `mapId`.
+  @override
+  Future<void> updateHeatmaps(HeatmapUpdates heatmapUpdates, {required int mapId}) async {
+    _map(mapId).updateHeatmaps(heatmapUpdates);
   }
 
   @override
@@ -107,28 +97,27 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   }
 
   @override
-  Future<void> clearTileCache(
-    TileOverlayId tileOverlayId, {
+  Future<void> updateGroundOverlays(
+    GroundOverlayUpdates groundOverlayUpdates, {
     required int mapId,
   }) async {
+    _map(mapId).updateGroundOverlays(groundOverlayUpdates);
+  }
+
+  @override
+  Future<void> clearTileCache(TileOverlayId tileOverlayId, {required int mapId}) async {
     _map(mapId).clearTileCache(tileOverlayId);
   }
 
   /// Applies the given `cameraUpdate` to the current viewport (with animation).
   @override
-  Future<void> animateCamera(
-    CameraUpdate cameraUpdate, {
-    required int mapId,
-  }) async {
+  Future<void> animateCamera(CameraUpdate cameraUpdate, {required int mapId}) async {
     return moveCamera(cameraUpdate, mapId: mapId);
   }
 
   /// Applies the given `cameraUpdate` to the current viewport.
   @override
-  Future<void> moveCamera(
-    CameraUpdate cameraUpdate, {
-    required int mapId,
-  }) async {
+  Future<void> moveCamera(CameraUpdate cameraUpdate, {required int mapId}) async {
     return _map(mapId).moveCamera(cameraUpdate);
   }
 
@@ -139,36 +128,25 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   /// Subsequent calls to this method override previous calls, you need to
   /// pass full styles.
   @override
-  Future<void> setMapStyle(
-    String? mapStyle, {
-    required int mapId,
-  }) async {
+  Future<void> setMapStyle(String? mapStyle, {required int mapId}) async {
     _map(mapId).updateStyles(_mapStyles(mapStyle));
   }
 
   /// Returns the bounds of the current viewport.
   @override
-  Future<LatLngBounds> getVisibleRegion({
-    required int mapId,
-  }) {
+  Future<LatLngBounds> getVisibleRegion({required int mapId}) {
     return _map(mapId).getVisibleRegion();
   }
 
   /// Returns the screen coordinate (in pixels) of a given `latLng`.
   @override
-  Future<ScreenCoordinate> getScreenCoordinate(
-    LatLng latLng, {
-    required int mapId,
-  }) {
+  Future<ScreenCoordinate> getScreenCoordinate(LatLng latLng, {required int mapId}) {
     return _map(mapId).getScreenCoordinate(latLng);
   }
 
   /// Returns the [LatLng] of a [ScreenCoordinate] of the viewport.
   @override
-  Future<LatLng> getLatLng(
-    ScreenCoordinate screenCoordinate, {
-    required int mapId,
-  }) {
+  Future<LatLng> getLatLng(ScreenCoordinate screenCoordinate, {required int mapId}) {
     return _map(mapId).getLatLng(screenCoordinate);
   }
 
@@ -178,10 +156,7 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   ///   * [hideMarkerInfoWindow] to hide the info window.
   ///   * [isMarkerInfoWindowShown] to check if the info window is visible/hidden.
   @override
-  Future<void> showMarkerInfoWindow(
-    MarkerId markerId, {
-    required int mapId,
-  }) async {
+  Future<void> showMarkerInfoWindow(MarkerId markerId, {required int mapId}) async {
     _map(mapId).showInfoWindow(markerId);
   }
 
@@ -191,10 +166,7 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   ///   * [showMarkerInfoWindow] to show the info window.
   ///   * [isMarkerInfoWindowShown] to check if the info window is shown.
   @override
-  Future<void> hideMarkerInfoWindow(
-    MarkerId markerId, {
-    required int mapId,
-  }) async {
+  Future<void> hideMarkerInfoWindow(MarkerId markerId, {required int mapId}) async {
     _map(mapId).hideInfoWindow(markerId);
   }
 
@@ -204,18 +176,13 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   ///   * [showMarkerInfoWindow] to show the info window.
   ///   * [hideMarkerInfoWindow] to hide the info window.
   @override
-  Future<bool> isMarkerInfoWindowShown(
-    MarkerId markerId, {
-    required int mapId,
-  }) async {
+  Future<bool> isMarkerInfoWindowShown(MarkerId markerId, {required int mapId}) async {
     return _map(mapId).isInfoWindowShown(markerId);
   }
 
   /// Returns the zoom level of the `mapId`.
   @override
-  Future<double> getZoomLevel({
-    required int mapId,
-  }) {
+  Future<double> getZoomLevel({required int mapId}) {
     return _map(mapId).getZoomLevel();
   }
 
@@ -293,8 +260,19 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   }
 
   @override
+  Stream<GroundOverlayTapEvent> onGroundOverlayTap({required int mapId}) {
+    return _events(mapId).whereType<GroundOverlayTapEvent>();
+  }
+
+  @override
   Future<String?> getStyleError({required int mapId}) async {
     return _map(mapId).lastStyleError;
+  }
+
+  @override
+  Future<bool> isAdvancedMarkersAvailable({required int mapId}) async {
+    final GoogleMapController map = _map(mapId);
+    return map.isAdvancedMarkersAvailable();
   }
 
   /// Disposes of the current map. It can't be used afterwards!
@@ -317,10 +295,9 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
       return _mapById[creationId]!.widget!;
     }
 
-    final StreamController<MapEvent<Object?>> controller =
-        StreamController<MapEvent<Object?>>.broadcast();
+    final controller = StreamController<MapEvent<Object?>>.broadcast();
 
-    final GoogleMapController mapController = GoogleMapController(
+    final mapController = GoogleMapController(
       mapId: creationId,
       streamController: controller,
       widgetConfiguration: widgetConfiguration,
@@ -330,18 +307,16 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
 
     _mapById[creationId] = mapController;
 
-    mapController.events
-        .whereType<WebMapReadyEvent>()
-        .first
-        .then((WebMapReadyEvent event) {
-      assert(creationId == event.mapId,
-          'Received WebMapReadyEvent for the wrong map');
+    mapController.events.whereType<WebMapReadyEvent>().first.then((WebMapReadyEvent event) {
+      assert(creationId == event.mapId, 'Received WebMapReadyEvent for the wrong map');
       // Notify the plugin now that there's a fully initialized controller.
       onPlatformViewCreated.call(event.mapId);
     });
 
-    assert(mapController.widget != null,
-        'The widget of a GoogleMapController cannot be null before calling dispose on it.');
+    assert(
+      mapController.widget != null,
+      'The widget of a GoogleMapController cannot be null before calling dispose on it.',
+    );
 
     return mapController.widget!;
   }
@@ -353,6 +328,7 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
     GoogleMapsInspectorPlatform.instance = GoogleMapsInspectorWeb(
       (int mapId) => _map(mapId).configuration,
       (int mapId) => _map(mapId).clusterManagersController,
+      (int mapId) => _map(mapId).groundOverlayController,
     );
   }
 }

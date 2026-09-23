@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,6 @@ class PickedFile extends PickedFileBase {
 
   @override
   Stream<Uint8List> openRead([int? start, int? end]) {
-    return _file
-        .openRead(start ?? 0, end)
-        .map((List<int> chunk) => Uint8List.fromList(chunk));
+    return _file.openRead(start ?? 0, end).map((List<int> chunk) => Uint8List.fromList(chunk));
   }
 }

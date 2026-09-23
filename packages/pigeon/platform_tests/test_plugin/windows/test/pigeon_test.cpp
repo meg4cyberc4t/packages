@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <flutter/method_call.h>
@@ -137,7 +137,7 @@ TEST(PigeonTests, CallSearch) {
   Writer writer;
   flutter::EncodableList args;
   args.push_back(flutter::CustomEncodableValue(request));
-  MessageApiCodecSerializer::GetInstance().WriteValue(args, &writer);
+  PigeonInternalCodecSerializer::GetInstance().WriteValue(args, &writer);
   handler(writer.data_.data(), writer.data_.size(), reply);
   EXPECT_TRUE(did_call_reply);
 }

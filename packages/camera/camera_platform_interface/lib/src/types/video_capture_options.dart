@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,20 +12,23 @@ class VideoCaptureOptions {
   /// Constructs a new instance.
   const VideoCaptureOptions(
     this.cameraId, {
-    this.maxDuration,
+    @Deprecated('This parameter is unused, and will be ignored on all platforms') this.maxDuration,
     this.streamCallback,
     this.streamOptions,
+    this.enablePersistentRecording = true,
+    this.videoOutputPath,
   }) : assert(
-          streamOptions == null || streamCallback != null,
-          'Must specify streamCallback if providing streamOptions.',
-        );
+         streamOptions == null || streamCallback != null,
+         'Must specify streamCallback if providing streamOptions.',
+       );
 
   /// The ID of the camera to use for capturing.
   final int cameraId;
 
   /// The maximum time to perform capturing for.
-  ///
-  /// By default there is no maximum on the capture time.
+  @Deprecated('This parameter is unused, and will be ignored on all platforms')
+  // Platform implementations should not implement this, as it will never be
+  // passed from the app-facing layer.
   final Duration? maxDuration;
 
   /// An optional callback to enable streaming.
@@ -39,6 +42,22 @@ class VideoCaptureOptions {
   /// Should only be set if a streamCallback is also present.
   final CameraImageStreamOptions? streamOptions;
 
+  /// Configures the recording to be a persistent recording.
+  ///
+  /// A persistent recording can only be stopped by explicitly calling [CameraPlatform.stopVideoRecording]
+  /// and will ignore events that would normally cause recording to stop, such as lifecycle events.
+  ///
+  /// On Android, you must set this parameter to `true`
+  /// to avoid cancelling any active recording when calling [CameraPlatform.setDescriptionWhileRecording].
+  ///
+  /// Defaults to `true`.
+  final bool enablePersistentRecording;
+
+  /// The path where the video should be saved.
+  ///
+  /// If null, the platform will generate a temporary path.
+  final String? videoOutputPath;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -47,9 +66,17 @@ class VideoCaptureOptions {
           cameraId == other.cameraId &&
           maxDuration == other.maxDuration &&
           streamCallback == other.streamCallback &&
-          streamOptions == other.streamOptions;
+          streamOptions == other.streamOptions &&
+          enablePersistentRecording == other.enablePersistentRecording &&
+          videoOutputPath == other.videoOutputPath;
 
   @override
-  int get hashCode =>
-      Object.hash(cameraId, maxDuration, streamCallback, streamOptions);
+  int get hashCode => Object.hash(
+    cameraId,
+    maxDuration,
+    streamCallback,
+    streamOptions,
+    enablePersistentRecording,
+    videoOutputPath,
+  );
 }

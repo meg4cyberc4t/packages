@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,39 +6,43 @@ package io.flutter.plugins.googlemaps;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
-import android.os.Build;
 import androidx.activity.ComponentActivity;
 import androidx.test.core.app.ApplicationProvider;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapCapabilities;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = Build.VERSION_CODES.P)
 public class GoogleMapControllerTest {
 
   private Context context;
@@ -47,13 +51,16 @@ public class GoogleMapControllerTest {
   AutoCloseable mockCloseable;
   @Mock BinaryMessenger mockMessenger;
   @Mock GoogleMap mockGoogleMap;
-  @Mock MethodChannel mockMethodChannel;
+  @Mock MapsCallbackApi flutterApi;
   @Mock ClusterManagersController mockClusterManagersController;
   @Mock MarkersController mockMarkersController;
   @Mock PolygonsController mockPolygonsController;
   @Mock PolylinesController mockPolylinesController;
   @Mock CirclesController mockCirclesController;
+  @Mock HeatmapsController mockHeatmapsController;
   @Mock TileOverlaysController mockTileOverlaysController;
+  @Mock GroundOverlaysController mockGroundOverlaysController;
+  @Mock MapCapabilities mapCapabilities;
 
   @Before
   public void before() {
@@ -66,7 +73,8 @@ public class GoogleMapControllerTest {
   // See getGoogleMapControllerWithMockedDependencies for version with dependency injections.
   public GoogleMapController getGoogleMapController() {
     GoogleMapController googleMapController =
-        new GoogleMapController(0, context, mockMessenger, activity::getLifecycle, null);
+        new GoogleMapController(
+            0, context, mockMessenger, activity::getLifecycle, null, PlatformMarkerType.MARKER);
     googleMapController.init();
     return googleMapController;
   }
@@ -77,7 +85,8 @@ public class GoogleMapControllerTest {
         new GoogleMapController(
             0,
             context,
-            mockMethodChannel,
+            mockMessenger,
+            flutterApi,
             activity::getLifecycle,
             null,
             mockClusterManagersController,
@@ -85,7 +94,9 @@ public class GoogleMapControllerTest {
             mockPolygonsController,
             mockPolylinesController,
             mockCirclesController,
-            mockTileOverlaysController);
+            mockHeatmapsController,
+            mockTileOverlaysController,
+            mockGroundOverlaysController);
     googleMapController.init();
     return googleMapController;
   }
@@ -103,19 +114,19 @@ public class GoogleMapControllerTest {
   }
 
   @Test
-  public void DisposeReleaseTheMap() throws InterruptedException {
+  public void DisposeReleaseTheMap() {
     GoogleMapController googleMapController = getGoogleMapController();
     googleMapController.onMapReady(mockGoogleMap);
-    assertTrue(googleMapController != null);
+    assertNotNull(googleMapController);
     googleMapController.dispose();
     assertNull(googleMapController.getView());
   }
 
   @Test
-  public void OnDestroyReleaseTheMap() throws InterruptedException {
+  public void OnDestroyReleaseTheMap() {
     GoogleMapController googleMapController = getGoogleMapController();
     googleMapController.onMapReady(mockGoogleMap);
-    assertTrue(googleMapController != null);
+    assertNotNull(googleMapController);
     googleMapController.onDestroy(activity);
     assertNull(googleMapController.getView());
   }
@@ -175,6 +186,21 @@ public class GoogleMapControllerTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  public void OnMapReadySetsClusterItemInfoWindowClickListener() {
+    GoogleMapController googleMapController = getGoogleMapController();
+    GoogleMapController spyGoogleMapController = spy(googleMapController);
+    spyGoogleMapController.onMapReady(mockGoogleMap);
+
+    verify(spyGoogleMapController, times(1))
+        .setClusterItemInfoWindowClickListener(
+            any(ClusterManager.OnClusterItemInfoWindowClickListener.class));
+
+    spyGoogleMapController.dispose();
+    verify(spyGoogleMapController, times(1)).setClusterItemInfoWindowClickListener(null);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   public void OnMapReadySetsClusterItemRenderedListener() {
     GoogleMapController googleMapController = getGoogleMapController();
     GoogleMapController spyGoogleMapController = spy(googleMapController);
@@ -194,21 +220,21 @@ public class GoogleMapControllerTest {
   @Test
   public void SetInitialClusterManagers() {
     GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
-    Map<String, Object> initialClusterManager = new HashMap<>();
-    initialClusterManager.put("clusterManagerId", "cm_1");
-    List<Object> initialClusterManagers = new ArrayList<>();
+    PlatformClusterManager initialClusterManager = new PlatformClusterManager("cm_1");
+    List<PlatformClusterManager> initialClusterManagers = new ArrayList<>();
     initialClusterManagers.add(initialClusterManager);
     googleMapController.setInitialClusterManagers(initialClusterManagers);
     googleMapController.onMapReady(mockGoogleMap);
 
-    // Verify if the ClusterManagersController.addClusterManagers method is called with initial cluster managers.
+    // Verify if the ClusterManagersController.addClusterManagers method is called with initial
+    // cluster managers.
     verify(mockClusterManagersController, times(1)).addClusterManagers(any());
   }
 
   @Test
   public void OnClusterItemRenderedCallsMarkersController() {
     GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
-    MarkerBuilder markerBuilder = new MarkerBuilder("m_1", "cm_1");
+    MarkerBuilder markerBuilder = new MarkerBuilder("m_1", "cm_1", PlatformMarkerType.MARKER);
     final Marker marker = mock(Marker.class);
     googleMapController.onClusterItemRendered(markerBuilder, marker);
     verify(mockMarkersController, times(1)).onClusterItemRendered(markerBuilder, marker);
@@ -217,9 +243,120 @@ public class GoogleMapControllerTest {
   @Test
   public void OnClusterItemClickCallsMarkersController() {
     GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
-    MarkerBuilder markerBuilder = new MarkerBuilder("m_1", "cm_1");
+    MarkerBuilder markerBuilder = new MarkerBuilder("m_1", "cm_1", PlatformMarkerType.MARKER);
 
     googleMapController.onClusterItemClick(markerBuilder);
     verify(mockMarkersController, times(1)).onMarkerTap(markerBuilder.markerId());
+  }
+
+  @Test
+  public void OnClusterItemInfoWindowClickCallsMarkersController() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+    MarkerBuilder markerBuilder = new MarkerBuilder("m_1", "cm_1", PlatformMarkerType.MARKER);
+
+    googleMapController.onClusterItemInfoWindowClick(markerBuilder);
+    verify(mockMarkersController, times(1)).onClusterItemInfoWindowTap(markerBuilder.markerId());
+  }
+
+  @Test
+  public void SetInitialHeatmaps() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+
+    List<PlatformHeatmap> initialHeatmaps = List.of(createHeatmap("hm_1"));
+    googleMapController.setInitialHeatmaps(initialHeatmaps);
+    googleMapController.onMapReady(mockGoogleMap);
+
+    // Verify if the HeatmapsController.addHeatmaps method is called with initial heatmaps.
+    verify(mockHeatmapsController, times(1)).addHeatmaps(initialHeatmaps);
+  }
+
+  @Test
+  public void UpdateHeatmaps() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+
+    final List<PlatformHeatmap> toAdd = List.of(createHeatmap("hm_add"));
+    final List<PlatformHeatmap> toChange = List.of(createHeatmap("hm_change"));
+    final List<String> idsToRemove = List.of("hm_1");
+
+    googleMapController.updateHeatmaps(toAdd, toChange, idsToRemove);
+
+    verify(mockHeatmapsController, times(1)).addHeatmaps(toAdd);
+    verify(mockHeatmapsController, times(1)).changeHeatmaps(toChange);
+    verify(mockHeatmapsController, times(1)).removeHeatmaps(idsToRemove);
+  }
+
+  @Test
+  public void AnimateCamera() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+    googleMapController.onMapReady(mockGoogleMap);
+
+    PlatformCameraUpdateZoomBy newCameraPosition = new PlatformCameraUpdateZoomBy(1.0, null);
+    PlatformCameraUpdate cameraUpdate = new PlatformCameraUpdate(newCameraPosition);
+
+    try (MockedStatic<CameraUpdateFactory> mockedFactory = mockStatic(CameraUpdateFactory.class)) {
+      mockedFactory
+          .when(() -> CameraUpdateFactory.zoomBy(anyFloat()))
+          .thenReturn(mock(CameraUpdate.class));
+      googleMapController.animateCamera(cameraUpdate, null);
+    }
+
+    verify(mockGoogleMap, times(1)).animateCamera(any(CameraUpdate.class));
+  }
+
+  @Test
+  public void AnimateCameraWithDuration() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+    googleMapController.onMapReady(mockGoogleMap);
+
+    PlatformCameraUpdateZoomBy newCameraPosition = new PlatformCameraUpdateZoomBy(1.0, null);
+    PlatformCameraUpdate cameraUpdate = new PlatformCameraUpdate(newCameraPosition);
+
+    Long durationMilliseconds = 1000L;
+
+    try (MockedStatic<CameraUpdateFactory> mockedFactory = mockStatic(CameraUpdateFactory.class)) {
+      mockedFactory
+          .when(() -> CameraUpdateFactory.zoomBy(anyFloat()))
+          .thenReturn(mock(CameraUpdate.class));
+      googleMapController.animateCamera(cameraUpdate, durationMilliseconds);
+    }
+
+    verify(mockGoogleMap, times(1))
+        .animateCamera(any(CameraUpdate.class), eq(durationMilliseconds.intValue()), isNull());
+  }
+
+  @Test
+  public void getCameraPositionReturnsCorrectData() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+    googleMapController.onMapReady(mockGoogleMap);
+
+    CameraPosition cameraPosition = new CameraPosition(new LatLng(10.0, 20.0), 15.0f, 30.0f, 45.0f);
+    when(mockGoogleMap.getCameraPosition()).thenReturn(cameraPosition);
+
+    PlatformCameraPosition result = googleMapController.getCameraPosition();
+
+    Assert.assertEquals(cameraPosition.target.latitude, result.getTarget().getLatitude(), 1e-15);
+    Assert.assertEquals(cameraPosition.target.longitude, result.getTarget().getLongitude(), 1e-15);
+    Assert.assertEquals(cameraPosition.zoom, result.getZoom(), 1e-15);
+    Assert.assertEquals(cameraPosition.tilt, result.getTilt(), 1e-15);
+    Assert.assertEquals(cameraPosition.bearing, result.getBearing(), 1e-15);
+  }
+
+  @Test
+  public void isAdvancedMarkersAvailableReturnsCorrectData() {
+    GoogleMapController googleMapController = getGoogleMapControllerWithMockedDependencies();
+    googleMapController.onMapReady(mockGoogleMap);
+
+    when(mockGoogleMap.getMapCapabilities()).thenReturn(mapCapabilities);
+    when(mapCapabilities.isAdvancedMarkersAvailable()).thenReturn(true);
+    Assert.assertTrue(googleMapController.isAdvancedMarkersAvailable());
+
+    when(mapCapabilities.isAdvancedMarkersAvailable()).thenReturn(false);
+    Assert.assertFalse(googleMapController.isAdvancedMarkersAvailable());
+  }
+
+  private PlatformHeatmap createHeatmap(String id) {
+    final List<PlatformWeightedLatLng> heatmapData =
+        List.of(new PlatformWeightedLatLng(new PlatformLatLng(1.1, 2.2), 3.3));
+    return new PlatformHeatmap(id, heatmapData, null, /* opacity */ 1.0, /* radius */ 20, null);
   }
 }

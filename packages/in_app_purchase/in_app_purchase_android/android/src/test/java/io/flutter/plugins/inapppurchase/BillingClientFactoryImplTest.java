@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,6 @@ import androidx.test.core.app.ApplicationProvider;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.UserChoiceBillingListener;
 import com.android.billingclient.api.UserChoiceDetails;
-import io.flutter.plugins.inapppurchase.Messages.InAppPurchaseCallbackApi;
-import io.flutter.plugins.inapppurchase.Messages.PlatformBillingChoiceMode;
-import io.flutter.plugins.inapppurchase.Messages.PlatformUserChoiceDetails;
 import java.util.Collections;
 import org.junit.After;
 import org.junit.Before;
@@ -52,19 +49,19 @@ public class BillingClientFactoryImplTest {
 
   @Test
   public void playBillingOnly() {
-    // No logic to verify just ensure creation works.
+    // No logic to verify, just ensure creation works.
     BillingClient client =
         factory.createBillingClient(
-            context, mockCallbackApi, PlatformBillingChoiceMode.PLAY_BILLING_ONLY);
+            context, mockCallbackApi, PlatformBillingChoiceMode.PLAY_BILLING_ONLY, null);
     assertNotNull(client);
   }
 
   @Test
   public void alternativeBillingOnly() {
-    // No logic to verify just ensure creation works.
+    // No logic to verify, just ensure creation works.
     BillingClient client =
         factory.createBillingClient(
-            context, mockCallbackApi, PlatformBillingChoiceMode.ALTERNATIVE_BILLING_ONLY);
+            context, mockCallbackApi, PlatformBillingChoiceMode.ALTERNATIVE_BILLING_ONLY, null);
     assertNotNull(client);
   }
 
@@ -78,7 +75,7 @@ public class BillingClientFactoryImplTest {
 
     final BillingClient billingClient =
         factory.createBillingClient(
-            context, mockCallbackApi, PlatformBillingChoiceMode.USER_CHOICE_BILLING);
+            context, mockCallbackApi, PlatformBillingChoiceMode.USER_CHOICE_BILLING, null);
 
     UserChoiceDetails details = mock(UserChoiceDetails.class);
     final String externalTransactionToken = "someLongTokenId1234";
@@ -92,10 +89,20 @@ public class BillingClientFactoryImplTest {
         ArgumentCaptor.forClass(PlatformUserChoiceDetails.class);
     verify(mockCallbackApi, times(1))
         .userSelectedalternativeBilling(callbackCaptor.capture(), any());
-    assertEquals(callbackCaptor.getValue().getExternalTransactionToken(), externalTransactionToken);
+    assertEquals(externalTransactionToken, callbackCaptor.getValue().getExternalTransactionToken());
     assertEquals(
-        callbackCaptor.getValue().getOriginalExternalTransactionId(), originalTransactionId);
+        originalTransactionId, callbackCaptor.getValue().getOriginalExternalTransactionId());
     assertTrue(callbackCaptor.getValue().getProducts().isEmpty());
+  }
+
+  @Test
+  public void pendingPurchasesForPrepaidPlans() {
+    // No logic to verify, just ensure creation works.
+    PlatformPendingPurchasesParams params = new PlatformPendingPurchasesParams(true);
+    BillingClient client =
+        factory.createBillingClient(
+            context, mockCallbackApi, PlatformBillingChoiceMode.PLAY_BILLING_ONLY, params);
+    assertNotNull(client);
   }
 
   @After

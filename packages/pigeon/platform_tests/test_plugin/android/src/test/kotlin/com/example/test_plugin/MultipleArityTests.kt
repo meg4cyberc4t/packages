@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,13 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import java.nio.ByteBuffer
-import java.util.ArrayList
-import junit.framework.TestCase
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
-class MultipleArityTests : TestCase() {
+class MultipleArityTests {
+
   @Test
   fun testSimpleHost() {
     val binaryMessenger = mockk<BinaryMessenger>()
@@ -42,7 +44,7 @@ class MultipleArityTests : TestCase() {
   }
 
   @Test
-  fun testSimpleFlutter() {
+  fun testSimpleFlutter() = runTest {
     val binaryMessenger = mockk<BinaryMessenger>()
     val api = MultipleArityFlutterApi(binaryMessenger)
 
@@ -63,12 +65,7 @@ class MultipleArityTests : TestCase() {
           reply.reply(replyData)
         }
 
-    var didCall = false
-    api.subtract(inputX, inputY) {
-      didCall = true
-      assertEquals(inputX - inputY, it.getOrNull())
-    }
-
-    assertTrue(didCall)
+    val res = api.subtract(inputX, inputY)
+    assertEquals(inputX - inputY, res)
   }
 }

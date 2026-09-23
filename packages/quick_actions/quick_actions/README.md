@@ -1,4 +1,5 @@
 # quick_actions
+<?code-excerpt path-base="example/lib"?>
 
 This Flutter plugin allows you to manage and interact with the application's
 home screen quick actions.
@@ -9,9 +10,9 @@ on iOS and to the [App
 Shortcuts](https://developer.android.com/guide/topics/ui/shortcuts.html) APIs on
 Android.
 
-|             | Android   | iOS  |
-|-------------|-----------|------|
-| **Support** | SDK 16+\* | 9.0+ |
+|             | Android   | iOS   |
+|-------------|-----------|-------|
+| **Support** | SDK 24+\* | 13.0+ |
 
 ## Usage
 
@@ -19,11 +20,12 @@ Initialize the library early in your application's lifecycle by providing a
 callback, which will then be called whenever the user launches the app via a
 quick action.
 
+<?code-excerpt "readme_excerpts.dart (Initialize)"?>
 ```dart
-final QuickActions quickActions = const QuickActions();
-quickActions.initialize((shortcutType) {
+const quickActions = QuickActions();
+quickActions.initialize((String shortcutType) {
   if (shortcutType == 'action_main') {
-    print('The user tapped on the "Main view" action.');
+    debugPrint('The user tapped on the "Main view" action.');
   }
   // More handling code...
 });
@@ -31,10 +33,16 @@ quickActions.initialize((shortcutType) {
 
 Finally, manage the app's quick actions, for instance:
 
+<?code-excerpt "readme_excerpts.dart (SetShortcutItems)"?>
 ```dart
-quickActions.setShortcutItems(<ShortcutItem>[
+await quickActions.setShortcutItems(<ShortcutItem>[
   const ShortcutItem(type: 'action_main', localizedTitle: 'Main view', icon: 'icon_main'),
-  const ShortcutItem(type: 'action_help', localizedTitle: 'Help', icon: 'icon_help')
+  const ShortcutItem(
+    type: 'action_help',
+    localizedTitle: 'Help',
+    localizedSubtitle: 'Tap to get help',
+    icon: 'icon_help',
+  ),
 ]);
 ```
 
@@ -45,10 +53,13 @@ quick action.
 
 ### Android
 
-\* The plugin will compile and run on SDK 16+, but will be a no-op below SDK 25
+\* The plugin will compile and run on SDK 24, but will be a no-op below SDK 25
 (Android 7.1).
 
 If the drawables used as icons are not referenced other than in your Dart code,
 you may need to
 [explicitly mark them to be kept](https://developer.android.com/studio/build/shrink-code#keep-resources)
 to ensure that they will be available for use in release builds.
+
+For more information on using this package on Android, see the
+[`quick_actions_android` README](https://github.com/flutter/packages/blob/main/packages/quick_actions/quick_actions_android/README.md).

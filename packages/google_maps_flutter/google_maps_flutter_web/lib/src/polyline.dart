@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@ class PolylineController {
     required gmaps.Polyline polyline,
     bool consumeTapEvents = false,
     VoidCallback? onTap,
-  })  : _polyline = polyline,
-        _consumeTapEvents = consumeTapEvents {
+  }) : _polyline = polyline,
+       _consumeTapEvents = consumeTapEvents {
     if (onTap != null) {
       polyline.onClick.listen((gmaps.PolyMouseEvent event) {
         onTap.call();
@@ -35,8 +35,7 @@ class PolylineController {
   ///
   /// This cannot be called after [remove].
   void update(gmaps.PolylineOptions options) {
-    assert(
-        _polyline != null, 'Cannot `update` Polyline after calling `remove`.');
+    assert(_polyline != null, 'Cannot `update` Polyline after calling `remove`.');
     _polyline!.options = options;
   }
 

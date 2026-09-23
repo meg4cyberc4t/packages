@@ -1,6 +1,47 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 6.9.0
+
+* Adds `backBufferDurationMs` to `VideoPlayerOptions` to support configuring the back buffer duration.
+
+## 6.8.0
+
+* Adds `preventsDisplaySleepDuringVideoPlayback` to `VideoPlayerOptions` and
+  `setPreventsDisplaySleepDuringVideoPlayback` to `VideoPlayerPlatform`. The
+  default implementation is a no-op so platforms that do not support
+  controlling display sleep silently fall back to their default behavior.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 6.7.0
+
+* Adds `VideoTrack` class and `getVideoTracks()`, `selectVideoTrack()`, `isVideoTrackSupportAvailable()` methods for video track (quality) selection.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 6.6.0
+
+* Adds `VideoAudioTrack` class and `getAudioTracks()`, `selectAudioTrack()`, `isAudioTrackSupportAvailable()` methods for audio track management.
+
+## 6.5.0
+
+* Adds a `setAllowBackgroundPlayback` method to dynamically control background playback.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 6.4.0
+
+* Adds HTML5 video poster support as a VideoPlayerWebOptions.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 6.3.0
+
+* Adds support for platform views as an optional way of displaying a video.
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+
+## 6.2.3
+
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+* Clarified that `VideoEventType.initialized` cannot be sent more than once.
 
 ## 6.2.2
 

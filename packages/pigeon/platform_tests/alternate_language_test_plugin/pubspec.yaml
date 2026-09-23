@@ -4,8 +4,8 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ^3.2.0
-  flutter: ">=3.16.0"
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
 
 flutter:
   plugin:
@@ -15,8 +15,10 @@ flutter:
         pluginClass: AlternateLanguageTestPlugin
       ios:
         pluginClass: AlternateLanguageTestPlugin
+        sharedDarwinSource: true
       macos:
         pluginClass: AlternateLanguageTestPlugin
+        sharedDarwinSource: true
 
 dependencies:
   flutter:
@@ -25,3 +27,4 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+    

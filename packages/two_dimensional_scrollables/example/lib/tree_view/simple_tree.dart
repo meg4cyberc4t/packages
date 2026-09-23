@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,8 @@ class TreeExampleState extends State<TreeExample> {
     TreeViewNode<String>(
       "It's supercalifragilisticexpialidocious",
       children: <TreeViewNode<String>>[
-        TreeViewNode<String>(
-          'Even though the sound of it is something quite atrocious',
-        ),
-        TreeViewNode<String>(
-          "If you say it loud enough you'll always sound precocious",
-        ),
+        TreeViewNode<String>('Even though the sound of it is something quite atrocious'),
+        TreeViewNode<String>("If you say it loud enough you'll always sound precocious"),
       ],
     ),
     TreeViewNode<String>(
@@ -53,9 +49,7 @@ class TreeExampleState extends State<TreeExample> {
                 TreeViewNode<String>(
                   'Um-dittle-ittl-um-dittle-I',
                   children: <TreeViewNode<String>>[
-                    TreeViewNode<String>(
-                      'Um-dittle-ittl-um-dittle-I',
-                    ),
+                    TreeViewNode<String>('Um-dittle-ittl-um-dittle-I'),
                   ],
                 ),
               ],
@@ -66,12 +60,9 @@ class TreeExampleState extends State<TreeExample> {
     ),
   ];
 
-  Map<Type, GestureRecognizerFactory> _getTapRecognizer(
-    TreeViewNode<String> node,
-  ) {
+  Map<Type, GestureRecognizerFactory> _getTapRecognizer(TreeViewNode<String> node) {
     return <Type, GestureRecognizerFactory>{
-      TapGestureRecognizer:
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+      TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
         () => TapGestureRecognizer(),
         (TapGestureRecognizer t) => t.onTap = () {
           setState(() {
@@ -93,30 +84,24 @@ class TreeExampleState extends State<TreeExample> {
           thumbVisibility: true,
           child: TreeView<String>(
             controller: treeController,
-            verticalDetails: ScrollableDetails.vertical(
-              controller: _verticalController,
-            ),
-            horizontalDetails: ScrollableDetails.horizontal(
-              controller: horizontalController,
-            ),
+            verticalDetails: ScrollableDetails.vertical(controller: _verticalController),
+            horizontalDetails: ScrollableDetails.horizontal(controller: horizontalController),
             tree: _tree,
-            onNodeToggle: (TreeViewNode<Object?> node) {
+            onNodeToggle: (TreeViewNode<String> node) {
               setState(() {
-                _selectedNode = node as TreeViewNode<String>;
+                _selectedNode = node;
               });
             },
-            treeRowBuilder: (TreeViewNode<Object?> node) {
-              if (_selectedNode == (node as TreeViewNode<String>)) {
+            treeRowBuilder: (TreeViewNode<String> node) {
+              if (_selectedNode == node) {
                 return TreeView.defaultTreeRowBuilder(node).copyWith(
                   recognizerFactories: _getTapRecognizer(node),
-                  backgroundDecoration: TreeRowDecoration(
-                    color: Colors.purple[100],
-                  ),
+                  backgroundDecoration: TreeRowDecoration(color: Colors.purple[100]),
                 );
               }
-              return TreeView.defaultTreeRowBuilder(node).copyWith(
-                recognizerFactories: _getTapRecognizer(node),
-              );
+              return TreeView.defaultTreeRowBuilder(
+                node,
+              ).copyWith(recognizerFactories: _getTapRecognizer(node));
             },
             // Exaggerated indentation to exceed viewport bounds.
             indentation: TreeViewIndentationType.custom(50.0),
@@ -140,10 +125,7 @@ class TreeExampleState extends State<TreeExample> {
       body: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenSize.width * 0.25,
-            vertical: 25.0,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.25, vertical: 25.0),
           child: _getTree(),
         ),
       ),

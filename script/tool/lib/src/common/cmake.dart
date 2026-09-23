@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@ class CMakeProject {
     this.flutterProject, {
     required this.buildMode,
     this.processRunner = const ProcessRunner(),
-    this.platform = const LocalPlatform(),
-    this.arch,
+    required this.platform,
+    required this.arch,
   });
 
   /// The directory of a Flutter project to run Gradle commands in.
@@ -30,16 +30,14 @@ class CMakeProject {
   final ProcessRunner processRunner;
 
   /// The platform that commands are being run on.
-  final Platform platform;
+  final NativePlatform platform;
 
   /// The architecture subdirectory of the build.
-  // TODO(stuartmorgan): Make this non-nullable once Flutter 3.13 is no longer
-  // supported, since at that point there will always be a subdirectory.
-  final String? arch;
+  final String arch;
 
   /// The build mode (e.g., Debug, Release).
   ///
-  /// This is a constructor paramater because on Linux many properties depend
+  /// This is a constructor parameter because on Linux many properties depend
   /// on the build mode since it uses a single-configuration generator.
   final String buildMode;
 
@@ -50,11 +48,10 @@ class CMakeProject {
 
   /// The project's 'example' build directory for this instance's platform.
   Directory get buildDirectory {
-    Directory buildDir =
-        flutterProject.childDirectory('build').childDirectory(_platformDirName);
-    if (arch != null) {
-      buildDir = buildDir.childDirectory(arch!);
-    }
+    Directory buildDir = flutterProject
+        .childDirectory('build')
+        .childDirectory(_platformDirName)
+        .childDirectory(arch);
     if (platform.isLinux) {
       // Linux uses a single-config generator, so the base build directory
       // includes the configuration.
@@ -105,20 +102,14 @@ class CMakeProject {
   bool isConfigured() => _cacheFile.existsSync();
 
   /// Runs a `cmake` command with the given parameters.
-  Future<int> runBuild(
-    String target, {
-    List<String> arguments = const <String>[],
-  }) {
-    return processRunner.runAndStream(
-      getCmakeCommand(),
-      <String>[
-        '--build',
-        buildDirectory.path,
-        '--target',
-        target,
-        if (platform.isWindows) ...<String>['--config', buildMode],
-        ...arguments,
-      ],
-    );
+  Future<int> runBuild(String target, {List<String> arguments = const <String>[]}) {
+    return processRunner.runAndStream(getCmakeCommand(), <String>[
+      '--build',
+      buildDirectory.path,
+      '--target',
+      target,
+      if (platform.isWindows) ...<String>['--config', buildMode],
+      ...arguments,
+    ]);
   }
 }

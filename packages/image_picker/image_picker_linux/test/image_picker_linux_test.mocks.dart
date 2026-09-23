@@ -5,8 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:file_selector_platform_interface/file_selector_platform_interface.dart'
-    as _i2;
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,8 +24,7 @@ import 'package:mockito/mockito.dart' as _i1;
 /// A class which mocks [FileSelectorPlatform].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFileSelectorPlatform extends _i1.Mock
-    implements _i2.FileSelectorPlatform {
+class MockFileSelectorPlatform extends _i1.Mock implements _i2.FileSelectorPlatform {
   MockFileSelectorPlatform() {
     _i1.throwOnMissingStub(this);
   }
@@ -38,17 +36,14 @@ class MockFileSelectorPlatform extends _i1.Mock
     String? confirmButtonText,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #openFile,
-          [],
-          {
-            #acceptedTypeGroups: acceptedTypeGroups,
-            #initialDirectory: initialDirectory,
-            #confirmButtonText: confirmButtonText,
-          },
-        ),
-        returnValue: _i3.Future<_i2.XFile?>.value(),
-      ) as _i3.Future<_i2.XFile?>);
+            Invocation.method(#openFile, [], {
+              #acceptedTypeGroups: acceptedTypeGroups,
+              #initialDirectory: initialDirectory,
+              #confirmButtonText: confirmButtonText,
+            }),
+            returnValue: _i3.Future<_i2.XFile?>.value(),
+          )
+          as _i3.Future<_i2.XFile?>);
 
   @override
   _i3.Future<List<_i2.XFile>> openFiles({
@@ -57,17 +52,14 @@ class MockFileSelectorPlatform extends _i1.Mock
     String? confirmButtonText,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #openFiles,
-          [],
-          {
-            #acceptedTypeGroups: acceptedTypeGroups,
-            #initialDirectory: initialDirectory,
-            #confirmButtonText: confirmButtonText,
-          },
-        ),
-        returnValue: _i3.Future<List<_i2.XFile>>.value(<_i2.XFile>[]),
-      ) as _i3.Future<List<_i2.XFile>>);
+            Invocation.method(#openFiles, [], {
+              #acceptedTypeGroups: acceptedTypeGroups,
+              #initialDirectory: initialDirectory,
+              #confirmButtonText: confirmButtonText,
+            }),
+            returnValue: _i3.Future<List<_i2.XFile>>.value(<_i2.XFile>[]),
+          )
+          as _i3.Future<List<_i2.XFile>>);
 
   @override
   _i3.Future<String?> getSavePath({
@@ -77,18 +69,15 @@ class MockFileSelectorPlatform extends _i1.Mock
     String? confirmButtonText,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getSavePath,
-          [],
-          {
-            #acceptedTypeGroups: acceptedTypeGroups,
-            #initialDirectory: initialDirectory,
-            #suggestedName: suggestedName,
-            #confirmButtonText: confirmButtonText,
-          },
-        ),
-        returnValue: _i3.Future<String?>.value(),
-      ) as _i3.Future<String?>);
+            Invocation.method(#getSavePath, [], {
+              #acceptedTypeGroups: acceptedTypeGroups,
+              #initialDirectory: initialDirectory,
+              #suggestedName: suggestedName,
+              #confirmButtonText: confirmButtonText,
+            }),
+            returnValue: _i3.Future<String?>.value(),
+          )
+          as _i3.Future<String?>);
 
   @override
   _i3.Future<_i2.FileSaveLocation?> getSaveLocation({
@@ -96,33 +85,24 @@ class MockFileSelectorPlatform extends _i1.Mock
     _i2.SaveDialogOptions? options = const _i2.SaveDialogOptions(),
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getSaveLocation,
-          [],
-          {
-            #acceptedTypeGroups: acceptedTypeGroups,
-            #options: options,
-          },
-        ),
-        returnValue: _i3.Future<_i2.FileSaveLocation?>.value(),
-      ) as _i3.Future<_i2.FileSaveLocation?>);
+            Invocation.method(#getSaveLocation, [], {
+              #acceptedTypeGroups: acceptedTypeGroups,
+              #options: options,
+            }),
+            returnValue: _i3.Future<_i2.FileSaveLocation?>.value(),
+          )
+          as _i3.Future<_i2.FileSaveLocation?>);
 
   @override
-  _i3.Future<String?> getDirectoryPath({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) =>
+  _i3.Future<String?> getDirectoryPath({String? initialDirectory, String? confirmButtonText}) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getDirectoryPath,
-          [],
-          {
-            #initialDirectory: initialDirectory,
-            #confirmButtonText: confirmButtonText,
-          },
-        ),
-        returnValue: _i3.Future<String?>.value(),
-      ) as _i3.Future<String?>);
+            Invocation.method(#getDirectoryPath, [], {
+              #initialDirectory: initialDirectory,
+              #confirmButtonText: confirmButtonText,
+            }),
+            returnValue: _i3.Future<String?>.value(),
+          )
+          as _i3.Future<String?>);
 
   @override
   _i3.Future<List<String>> getDirectoryPaths({
@@ -130,14 +110,11 @@ class MockFileSelectorPlatform extends _i1.Mock
     String? confirmButtonText,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getDirectoryPaths,
-          [],
-          {
-            #initialDirectory: initialDirectory,
-            #confirmButtonText: confirmButtonText,
-          },
-        ),
-        returnValue: _i3.Future<List<String>>.value(<String>[]),
-      ) as _i3.Future<List<String>>);
+            Invocation.method(#getDirectoryPaths, [], {
+              #initialDirectory: initialDirectory,
+              #confirmButtonText: confirmButtonText,
+            }),
+            returnValue: _i3.Future<List<String>>.value(<String>[]),
+          )
+          as _i3.Future<List<String>>);
 }

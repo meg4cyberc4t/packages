@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ func equalsList(_ x: [Any?]?, _ y: [Any?]?) -> Bool {
   return (0..<x.count).allSatisfy { equals(x[$0], y[$0]) }
 }
 
-func equalsDictionary(_ x: [AnyHashable: Any?]?, _ y: [AnyHashable: Any?]?) -> Bool {
+func equalsDictionary(_ x: [AnyHashable?: Any?]?, _ y: [AnyHashable?: Any?]?) -> Bool {
   if x == nil, y == nil {
     return true
   }

@@ -1,10 +1,10 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'fade_scale_transition.dart';
 
@@ -12,12 +12,13 @@ import 'fade_scale_transition.dart';
 /// transition.
 ///
 /// Used by [PopupRoute].
-typedef _ModalTransitionBuilder = Widget Function(
-  BuildContext context,
-  Animation<double> animation,
-  Animation<double> secondaryAnimation,
-  Widget child,
-);
+typedef _ModalTransitionBuilder =
+    Widget Function(
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child,
+    );
 
 /// Displays a modal above the current contents of the app.
 ///
@@ -95,13 +96,12 @@ class _ModalRoute<T> extends PopupRoute<T> {
     this.barrierLabel,
     required this.transitionDuration,
     required this.reverseTransitionDuration,
-    required _ModalTransitionBuilder transitionBuilder,
+    required this._transitionBuilder,
     required this.builder,
     RouteSettings? routeSettings,
     super.filter,
-  })  : assert(!barrierDismissible || barrierLabel != null),
-        _transitionBuilder = transitionBuilder,
-        super(settings: routeSettings);
+  }) : assert(!barrierDismissible || barrierLabel != null),
+       super(settings: routeSettings);
 
   @override
   final Color? barrierColor;
@@ -151,12 +151,7 @@ class _ModalRoute<T> extends PopupRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return _transitionBuilder(
-      context,
-      animation,
-      secondaryAnimation,
-      child,
-    );
+    return _transitionBuilder(context, animation, secondaryAnimation, child);
   }
 }
 

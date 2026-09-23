@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,23 +17,18 @@ import 'route_data.dart';
 import 'state.dart';
 
 /// Signature of a go router builder function with navigator.
-typedef GoRouterBuilderWithNav = Widget Function(
-  BuildContext context,
-  Widget child,
-);
+typedef GoRouterBuilderWithNav = Widget Function(BuildContext context, Widget child);
 
-typedef _PageBuilderForAppType = Page<void> Function({
-  required LocalKey key,
-  required String? name,
-  required Object? arguments,
-  required String restorationId,
-  required Widget child,
-});
+typedef _PageBuilderForAppType =
+    Page<void> Function({
+      required LocalKey key,
+      required String? name,
+      required Object? arguments,
+      required String restorationId,
+      required Widget child,
+    });
 
-typedef _ErrorBuilderForAppType = Widget Function(
-  BuildContext context,
-  GoRouterState state,
-);
+typedef _ErrorBuilderForAppType = Widget Function(BuildContext context, GoRouterState state);
 
 /// Signature for a function that takes in a `route` to be popped with
 /// the `result` and returns a boolean decision on whether the pop
@@ -43,8 +38,8 @@ typedef _ErrorBuilderForAppType = Widget Function(
 /// associates with.
 ///
 /// Used by of [RouteBuilder.onPopPageWithRouteMatch].
-typedef PopPageWithRouteMatchCallback = bool Function(
-    Route<dynamic> route, dynamic result, RouteMatchBase match);
+typedef PopPageWithRouteMatchCallback =
+    bool Function(Route<dynamic> route, dynamic result, RouteMatchBase match);
 
 /// Builds the top-level Navigator for GoRouter.
 class RouteBuilder {
@@ -98,7 +93,8 @@ class RouteBuilder {
   Widget build(
     BuildContext context,
     RouteMatchList matchList,
-    bool routerNeglect,
+    bool routerNeglect, // TODO(tolo): This parameter is not used and should be
+    // removed in the next major version.
   ) {
     if (matchList.isEmpty && !matchList.isError) {
       // The build method can be called before async redirect finishes. Build a
@@ -109,15 +105,19 @@ class RouteBuilder {
     return builderWithNav(
       context,
       _CustomNavigator(
+        // The state needs to persist across rebuild.
+        key: GlobalObjectKey(configuration.navigatorKey.hashCode),
         navigatorKey: configuration.navigatorKey,
         observers: observers,
         navigatorRestorationId: restorationScopeId,
         onPopPageWithRouteMatch: onPopPageWithRouteMatch,
         matchList: matchList,
         matches: matchList.matches,
+        inheritedMetadata: const <String, dynamic>{},
         configuration: configuration,
         errorBuilder: errorBuilder,
         errorPageBuilder: errorPageBuilder,
+        requestFocus: requestFocus,
       ),
     );
   }
@@ -132,13 +132,29 @@ class _CustomNavigator extends StatefulWidget {
     required this.onPopPageWithRouteMatch,
     required this.matchList,
     required this.matches,
+    required this.inheritedMetadata,
     required this.configuration,
     required this.errorBuilder,
     required this.errorPageBuilder,
+    required this.requestFocus,
+    this.isShellNavigator = false,
   });
 
   final GlobalKey<NavigatorState> navigatorKey;
   final List<NavigatorObserver> observers;
+
+  /// Whether this navigator builds the nested Navigator for a
+  /// [ShellRoute]/[StatefulShellRoute] branch, as opposed to the root
+  /// [GoRouter] navigator.
+  ///
+  /// Shell navigators are wrapped in `Semantics(container: true)` so that
+  /// each route's [ModalBarrier] (which blocks the semantics of
+  /// previously-painted siblings up to the nearest semantics boundary)
+  /// cannot reach past the shell's Navigator and drop shell chrome that
+  /// paints before it (e.g. a side rail or app bar in a `Row`/`Column`
+  /// shell). The root navigator has no earlier-painted siblings by
+  /// construction, so it does not need the same containment.
+  final bool isShellNavigator;
 
   /// The actual [RouteMatchBase]s to be built.
   ///
@@ -146,12 +162,14 @@ class _CustomNavigator extends StatefulWidget {
   /// to build navigator in shell route. In this case, these matches come from
   /// the [ShellRouteMatch.matches].
   final List<RouteMatchBase> matches;
+  final Map<String, dynamic> inheritedMetadata;
   final RouteMatchList matchList;
   final RouteConfiguration configuration;
   final PopPageWithRouteMatchCallback onPopPageWithRouteMatch;
   final String? navigatorRestorationId;
   final GoRouterWidgetBuilder? errorBuilder;
   final GoRouterPageBuilder? errorPageBuilder;
+  final bool requestFocus;
 
   @override
   State<StatefulWidget> createState() => _CustomNavigatorState();
@@ -166,7 +184,8 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
   @override
   void didUpdateWidget(_CustomNavigator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.matchList != oldWidget.matchList) {
+    if (widget.matchList != oldWidget.matchList ||
+        widget.inheritedMetadata != oldWidget.inheritedMetadata) {
       _pages = null;
     }
   }
@@ -198,23 +217,30 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
 
   void _updatePages(BuildContext context) {
     assert(_pages == null);
-    final List<Page<Object?>> pages = <Page<Object?>>[];
-    final Map<Page<Object?>, RouteMatchBase> pageToRouteMatchBase =
-        <Page<Object?>, RouteMatchBase>{};
-    final Map<Page<Object?>, GoRouterState> registry =
-        <Page<Object?>, GoRouterState>{};
+    final pages = <Page<Object?>>[];
+    final pageToRouteMatchBase = <Page<Object?>, RouteMatchBase>{};
+    final registry = <Page<Object?>, GoRouterState>{};
     if (widget.matchList.isError) {
       pages.add(_buildErrorPage(context, widget.matchList));
     } else {
+      Map<String, dynamic> currentInheritedMetadata = widget.inheritedMetadata;
       for (final RouteMatchBase match in widget.matches) {
-        final Page<Object?>? page = _buildPage(context, match);
+        final Map<String, dynamic> metadata = match is ImperativeRouteMatch
+            ? match.matches.topRouteMetadata
+            : RouteMatchList.mergeMetadata(currentInheritedMetadata, match.route.metadata);
+        final GoRouterState state = match.buildState(
+          widget.configuration,
+          widget.matchList,
+          metadata: metadata,
+        );
+        final Page<Object?>? page = _buildPage(context, match, state);
+        currentInheritedMetadata = metadata;
         if (page == null) {
           continue;
         }
         pages.add(page);
         pageToRouteMatchBase[page] = match;
-        registry[page] =
-            match.buildState(widget.configuration, widget.matchList);
+        registry[page] = state;
       }
     }
     _pages = pages;
@@ -222,24 +248,22 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
     _pageToRouteMatchBase = pageToRouteMatchBase;
   }
 
-  Page<Object?>? _buildPage(BuildContext context, RouteMatchBase match) {
+  Page<Object?>? _buildPage(BuildContext context, RouteMatchBase match, GoRouterState state) {
     if (match is RouteMatch) {
       if (match is ImperativeRouteMatch && match.matches.isError) {
         return _buildErrorPage(context, match.matches);
       }
-      return _buildPageForGoRoute(context, match);
+      return _buildPageForGoRoute(context, match, state);
     }
     if (match is ShellRouteMatch) {
-      return _buildPageForShellRoute(context, match);
+      return _buildPageForShellRoute(context, match, state);
     }
     throw GoError('unknown match type ${match.runtimeType}');
   }
 
   /// Builds a [Page] for a [RouteMatch]
-  Page<Object?>? _buildPageForGoRoute(BuildContext context, RouteMatch match) {
+  Page<Object?>? _buildPageForGoRoute(BuildContext context, RouteMatch match, GoRouterState state) {
     final GoRouterPageBuilder? pageBuilder = match.route.pageBuilder;
-    final GoRouterState state =
-        match.buildState(widget.configuration, widget.matchList);
     if (pageBuilder != null) {
       final Page<Object?> page = pageBuilder(context, state);
       if (page is! NoOpPage) {
@@ -252,45 +276,65 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
     if (builder == null) {
       return null;
     }
-    return _buildPlatformAdapterPage(context, state,
-        Builder(builder: (BuildContext context) {
-      return builder(context, state);
-    }));
+    return _buildPlatformAdapterPage(
+      context,
+      state,
+      Builder(
+        builder: (BuildContext context) {
+          return builder(context, state);
+        },
+      ),
+    );
   }
 
   /// Builds a [Page] for a [ShellRouteMatch]
   Page<Object?> _buildPageForShellRoute(
     BuildContext context,
     ShellRouteMatch match,
+    GoRouterState state,
   ) {
-    final GoRouterState state =
-        match.buildState(widget.configuration, widget.matchList);
     final GlobalKey<NavigatorState> navigatorKey = match.navigatorKey;
-    final ShellRouteContext shellRouteContext = ShellRouteContext(
+    final shellRouteContext = ShellRouteContext(
       route: match.route,
       routerState: state,
       navigatorKey: navigatorKey,
+      match: match,
       routeMatchList: widget.matchList,
       navigatorBuilder:
-          (List<NavigatorObserver>? observers, String? restorationScopeId) {
-        return _CustomNavigator(
-          // The state needs to persist across rebuild.
-          key: GlobalObjectKey(navigatorKey.hashCode),
-          navigatorRestorationId: restorationScopeId,
-          navigatorKey: navigatorKey,
-          matches: match.matches,
-          matchList: widget.matchList,
-          configuration: widget.configuration,
-          observers: observers ?? const <NavigatorObserver>[],
-          onPopPageWithRouteMatch: widget.onPopPageWithRouteMatch,
-          // This is used to recursively build pages under this shell route.
-          errorBuilder: widget.errorBuilder,
-          errorPageBuilder: widget.errorPageBuilder,
-        );
-      },
+          (
+            GlobalKey<NavigatorState> navigatorKey,
+            ShellRouteMatch match,
+            RouteMatchList matchList,
+            List<NavigatorObserver>? observers,
+            String? restorationScopeId,
+          ) {
+            return PopScope(
+              // Prevent ShellRoute from being popped, for example
+              // by an iOS back gesture, when the route has active sub-routes.
+              // TODO(LukasMirbt): Remove when minimum flutter version includes
+              // https://github.com/flutter/flutter/pull/152330.
+              canPop: match.matches.length == 1,
+              child: _CustomNavigator(
+                // The state needs to persist across rebuild.
+                key: GlobalObjectKey(navigatorKey.hashCode),
+                navigatorRestorationId: restorationScopeId,
+                navigatorKey: navigatorKey,
+                matches: match.matches,
+                matchList: matchList,
+                inheritedMetadata: state.metadata,
+                configuration: widget.configuration,
+                observers: observers ?? const <NavigatorObserver>[],
+                onPopPageWithRouteMatch: widget.onPopPageWithRouteMatch,
+                // This is used to recursively build pages under this shell route.
+                errorBuilder: widget.errorBuilder,
+                errorPageBuilder: widget.errorPageBuilder,
+                requestFocus: widget.requestFocus,
+                isShellNavigator: true,
+              ),
+            );
+          },
     );
-    final Page<Object?>? page =
-        match.route.buildPage(context, state, shellRouteContext);
+    final Page<Object?>? page = match.route.buildPage(context, state, shellRouteContext);
     if (page != null && page is! NoOpPage) {
       return page;
     }
@@ -322,31 +366,29 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
       if (elem != null && isMaterialApp(elem)) {
         log('Using MaterialApp configuration');
         _pageBuilderForAppType = pageBuilderForMaterialApp;
-        _errorBuilderForAppType =
-            (BuildContext c, GoRouterState s) => MaterialErrorScreen(s.error);
+        _errorBuilderForAppType = (BuildContext c, GoRouterState s) => MaterialErrorScreen(s.error);
       } else if (elem != null && isCupertinoApp(elem)) {
         log('Using CupertinoApp configuration');
         _pageBuilderForAppType = pageBuilderForCupertinoApp;
-        _errorBuilderForAppType =
-            (BuildContext c, GoRouterState s) => CupertinoErrorScreen(s.error);
+        _errorBuilderForAppType = (BuildContext c, GoRouterState s) =>
+            CupertinoErrorScreen(s.error);
       } else {
         log('Using WidgetsApp configuration');
-        _pageBuilderForAppType = ({
-          required LocalKey key,
-          required String? name,
-          required Object? arguments,
-          required String restorationId,
-          required Widget child,
-        }) =>
-            NoTransitionPage<void>(
+        _pageBuilderForAppType =
+            ({
+              required LocalKey key,
+              required String? name,
+              required Object? arguments,
+              required String restorationId,
+              required Widget child,
+            }) => NoTransitionPage<void>(
               name: name,
               arguments: arguments,
               key: key,
               restorationId: restorationId,
               child: child,
             );
-        _errorBuilderForAppType =
-            (BuildContext c, GoRouterState s) => ErrorScreen(s.error);
+        _errorBuilderForAppType = (BuildContext c, GoRouterState s) => ErrorScreen(s.error);
       }
     }
 
@@ -355,20 +397,13 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
   }
 
   /// builds the page based on app type, i.e. MaterialApp vs. CupertinoApp
-  Page<Object?> _buildPlatformAdapterPage(
-    BuildContext context,
-    GoRouterState state,
-    Widget child,
-  ) {
+  Page<Object?> _buildPlatformAdapterPage(BuildContext context, GoRouterState state, Widget child) {
     // build the page based on app type
     _cacheAppType(context);
     return _pageBuilderForAppType!(
       key: state.pageKey,
       name: state.name ?? state.path,
-      arguments: <String, String>{
-        ...state.pathParameters,
-        ...state.uri.queryParameters
-      },
+      arguments: <String, String>{...state.pathParameters, ...state.uri.queryParameters},
       restorationId: state.pageKey.value,
       child: child,
     );
@@ -385,6 +420,7 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
       error: matchList.error,
       pageKey: ValueKey<String>('${matchList.uri}(error)'),
       topRoute: matchList.lastOrNull?.route,
+      metadata: matchList.topRouteMetadata,
     );
   }
 
@@ -411,7 +447,7 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
   }
 
   bool _handlePopPage(Route<Object?> route, Object? result) {
-    final Page<Object?> page = route.settings as Page<Object?>;
+    final page = route.settings as Page<Object?>;
     final RouteMatchBase match = _pageToRouteMatchBase[page]!;
     return widget.onPopPageWithRouteMatch(route, result, match);
   }
@@ -422,17 +458,24 @@ class _CustomNavigatorState extends State<_CustomNavigator> {
       _updatePages(context);
     }
     assert(_pages != null);
+    final navigator = Navigator(
+      key: widget.navigatorKey,
+      requestFocus: widget.requestFocus,
+      restorationScopeId: widget.navigatorRestorationId,
+      pages: _pages!,
+      observers: widget.observers,
+      onPopPage: _handlePopPage,
+    );
     return GoRouterStateRegistryScope(
       registry: _registry,
       child: HeroControllerScope(
         controller: _controller!,
-        child: Navigator(
-          key: widget.navigatorKey,
-          restorationScopeId: widget.navigatorRestorationId,
-          pages: _pages!,
-          observers: widget.observers,
-          onPopPage: _handlePopPage,
-        ),
+        // A Navigator does not establish a semantics boundary, so a route's
+        // ModalBarrier (wrapped in BlockSemantics) can otherwise drop the
+        // semantics of shell chrome painted before this navigator (e.g. a
+        // side rail in a Row-based ShellRoute shell). See
+        // https://github.com/flutter/flutter/issues/135656.
+        child: widget.isShellNavigator ? Semantics(container: true, child: navigator) : navigator,
       ),
     );
   }

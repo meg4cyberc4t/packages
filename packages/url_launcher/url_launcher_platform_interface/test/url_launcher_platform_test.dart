@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,9 +44,8 @@ class CapturingUrlLauncher extends UrlLauncherPlatform {
 }
 
 void main() {
-  test('launchUrl calls through to launch with default options for web URL',
-      () async {
-    final CapturingUrlLauncher launcher = CapturingUrlLauncher();
+  test('launchUrl calls through to launch with default options for web URL', () async {
+    final launcher = CapturingUrlLauncher();
 
     await launcher.launchUrl('https://flutter.dev', const LaunchOptions());
 
@@ -60,9 +59,8 @@ void main() {
     expect(launcher.webOnlyWindowName, null);
   });
 
-  test('launchUrl calls through to launch with default options for non-web URL',
-      () async {
-    final CapturingUrlLauncher launcher = CapturingUrlLauncher();
+  test('launchUrl calls through to launch with default options for non-web URL', () async {
+    final launcher = CapturingUrlLauncher();
 
     await launcher.launchUrl('tel:123456789', const LaunchOptions());
 
@@ -77,12 +75,12 @@ void main() {
   });
 
   test('launchUrl calls through to launch with universal links', () async {
-    final CapturingUrlLauncher launcher = CapturingUrlLauncher();
+    final launcher = CapturingUrlLauncher();
 
     await launcher.launchUrl(
-        'https://flutter.dev',
-        const LaunchOptions(
-            mode: PreferredLaunchMode.externalNonBrowserApplication));
+      'https://flutter.dev',
+      const LaunchOptions(mode: PreferredLaunchMode.externalNonBrowserApplication),
+    );
 
     expect(launcher.url, 'https://flutter.dev');
     expect(launcher.useSafariVC, false);
@@ -94,20 +92,21 @@ void main() {
     expect(launcher.webOnlyWindowName, null);
   });
 
-  test('launchUrl calls through to launch with all non-default options',
-      () async {
-    final CapturingUrlLauncher launcher = CapturingUrlLauncher();
+  test('launchUrl calls through to launch with all non-default options', () async {
+    final launcher = CapturingUrlLauncher();
 
     await launcher.launchUrl(
-        'https://flutter.dev',
-        const LaunchOptions(
-          mode: PreferredLaunchMode.externalApplication,
-          webViewConfiguration: InAppWebViewConfiguration(
-              enableJavaScript: false,
-              enableDomStorage: false,
-              headers: <String, String>{'foo': 'bar'}),
-          webOnlyWindowName: 'a_name',
-        ));
+      'https://flutter.dev',
+      const LaunchOptions(
+        mode: PreferredLaunchMode.externalApplication,
+        webViewConfiguration: InAppWebViewConfiguration(
+          enableJavaScript: false,
+          enableDomStorage: false,
+          headers: <String, String>{'foo': 'bar'},
+        ),
+        webOnlyWindowName: 'a_name',
+      ),
+    );
 
     expect(launcher.url, 'https://flutter.dev');
     expect(launcher.useSafariVC, false);
@@ -122,51 +121,33 @@ void main() {
   test('supportsMode defaults to true for platform default', () async {
     final UrlLauncherPlatform launcher = CapturingUrlLauncher();
 
-    expect(
-        await launcher.supportsMode(PreferredLaunchMode.platformDefault), true);
+    expect(await launcher.supportsMode(PreferredLaunchMode.platformDefault), true);
   });
 
   test('supportsMode defaults to false for all specific values', () async {
     final UrlLauncherPlatform launcher = CapturingUrlLauncher();
 
-    expect(await launcher.supportsMode(PreferredLaunchMode.externalApplication),
-        false);
-    expect(
-        await launcher
-            .supportsMode(PreferredLaunchMode.externalNonBrowserApplication),
-        false);
-    expect(await launcher.supportsMode(PreferredLaunchMode.inAppBrowserView),
-        false);
-    expect(
-        await launcher.supportsMode(PreferredLaunchMode.inAppWebView), false);
+    expect(await launcher.supportsMode(PreferredLaunchMode.externalApplication), false);
+    expect(await launcher.supportsMode(PreferredLaunchMode.externalNonBrowserApplication), false);
+    expect(await launcher.supportsMode(PreferredLaunchMode.inAppBrowserView), false);
+    expect(await launcher.supportsMode(PreferredLaunchMode.inAppWebView), false);
   });
 
   test('supportsCloseForMode defaults to true for in-app web views', () async {
     final UrlLauncherPlatform launcher = CapturingUrlLauncher();
 
-    expect(
-        await launcher.supportsCloseForMode(PreferredLaunchMode.inAppWebView),
-        true);
+    expect(await launcher.supportsCloseForMode(PreferredLaunchMode.inAppWebView), true);
   });
 
   test('supportsCloseForMode defaults to false for all other values', () async {
     final UrlLauncherPlatform launcher = CapturingUrlLauncher();
 
+    expect(await launcher.supportsCloseForMode(PreferredLaunchMode.externalApplication), false);
     expect(
-        await launcher
-            .supportsCloseForMode(PreferredLaunchMode.externalApplication),
-        false);
-    expect(
-        await launcher.supportsCloseForMode(
-            PreferredLaunchMode.externalNonBrowserApplication),
-        false);
-    expect(
-        await launcher
-            .supportsCloseForMode(PreferredLaunchMode.inAppBrowserView),
-        false);
-    expect(
-        await launcher
-            .supportsCloseForMode(PreferredLaunchMode.platformDefault),
-        false);
+      await launcher.supportsCloseForMode(PreferredLaunchMode.externalNonBrowserApplication),
+      false,
+    );
+    expect(await launcher.supportsCloseForMode(PreferredLaunchMode.inAppBrowserView), false);
+    expect(await launcher.supportsCloseForMode(PreferredLaunchMode.platformDefault), false);
   });
 }

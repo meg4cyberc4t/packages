@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,12 @@ const double _containerWidth = 640;
 const double _containerHeight = 480;
 
 /// The html.Element that will be rendered underneath the flutter UI.
-final web.Element _htmlElement =
-    (web.document.createElement('div') as web.HTMLDivElement)
-      ..style.width = '100%'
-      ..style.height = '100%'
-      ..style.backgroundColor = '#fabada'
-      ..style.cursor = 'auto'
-      ..id = 'background-html-view';
+final web.Element _htmlElement = (web.document.createElement('div') as web.HTMLDivElement)
+  ..style.width = '100%'
+  ..style.height = '100%'
+  ..style.backgroundColor = '#fabada'
+  ..style.cursor = 'auto'
+  ..id = 'background-html-view';
 
 // See other examples commented out below...
 
@@ -57,10 +56,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Stopping Clicks with PointerInterceptor',
-      home: MyHomePage(),
-    );
+    return const MaterialApp(title: 'Stopping Clicks with PointerInterceptor', home: MyHomePage());
   }
 }
 
@@ -113,10 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'Last click on: $_lastClick',
-              key: const Key('last-clicked'),
-            ),
+            Text('Last click on: $_lastClick', key: const Key('last-clicked')),
             Container(
               color: Colors.black,
               width: _containerWidth,
@@ -141,15 +134,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       ),
                       PointerInterceptorWeb().buildWidget(
-                          intercepting: false,
-                          child: ElevatedButton(
-                            key: const Key('wrapped-transparent-button'),
-                            child:
-                                const Text('Never calls onPressed transparent'),
-                            onPressed: () {
-                              _clickedOn('wrapped-transparent-button');
-                            },
-                          )),
+                        intercepting: false,
+                        child: ElevatedButton(
+                          key: const Key('wrapped-transparent-button'),
+                          child: const Text('Never calls onPressed transparent'),
+                          onPressed: () {
+                            _clickedOn('wrapped-transparent-button');
+                          },
+                        ),
+                      ),
                       PointerInterceptorPlatform.instance.buildWidget(
                         child: ElevatedButton(
                           key: const Key('clickable-button'),
@@ -224,8 +217,6 @@ class HtmlElement extends StatelessWidget {
       }.toJS,
     );
 
-    return const HtmlElementView(
-      viewType: _htmlElementViewType,
-    );
+    return const HtmlElementView(viewType: _htmlElementViewType);
   }
 }

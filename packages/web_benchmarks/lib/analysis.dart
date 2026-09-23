@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,14 +20,13 @@ BenchmarkResults computeAverage(List<BenchmarkResults> results) {
     (BenchmarkResults sum, BenchmarkResults next) => sum._sumWith(next),
   );
 
-  final BenchmarkResults average = totalSum;
+  final average = totalSum;
   for (final String benchmark in totalSum.scores.keys) {
     final List<BenchmarkScore> scoresForBenchmark = totalSum.scores[benchmark]!;
-    for (int i = 0; i < scoresForBenchmark.length; i++) {
+    for (var i = 0; i < scoresForBenchmark.length; i++) {
       final BenchmarkScore score = scoresForBenchmark[i];
       final double averageValue = score.value / results.length;
-      average.scores[benchmark]![i] =
-          BenchmarkScore(metric: score.metric, value: averageValue);
+      average.scores[benchmark]![i] = BenchmarkScore(metric: score.metric, value: averageValue);
     }
   }
   return average;
@@ -36,26 +35,19 @@ BenchmarkResults computeAverage(List<BenchmarkResults> results) {
 /// Computes the delta for each matching metric in [test] and [baseline], and
 /// returns a new [BenchmarkResults] object where each [BenchmarkScore] contains
 /// a [delta] value.
-BenchmarkResults computeDelta(
-  BenchmarkResults baseline,
-  BenchmarkResults test,
-) {
-  final Map<String, List<BenchmarkScore>> delta =
-      <String, List<BenchmarkScore>>{};
+BenchmarkResults computeDelta(BenchmarkResults baseline, BenchmarkResults test) {
+  final delta = <String, List<BenchmarkScore>>{};
   for (final String benchmarkName in test.scores.keys) {
     final List<BenchmarkScore> testScores = test.scores[benchmarkName]!;
     final List<BenchmarkScore>? baselineScores = baseline.scores[benchmarkName];
-    delta[benchmarkName] = testScores.map<BenchmarkScore>(
-      (BenchmarkScore testScore) {
-        final BenchmarkScore? baselineScore = baselineScores?.firstWhereOrNull(
-            (BenchmarkScore s) => s.metric == testScore.metric);
-        return testScore._copyWith(
-          delta: baselineScore == null
-              ? null
-              : (testScore.value - baselineScore.value).toDouble(),
-        );
-      },
-    ).toList();
+    delta[benchmarkName] = testScores.map<BenchmarkScore>((BenchmarkScore testScore) {
+      final BenchmarkScore? baselineScore = baselineScores?.firstWhereOrNull(
+        (BenchmarkScore s) => s.metric == testScore.metric,
+      );
+      return testScore._copyWith(
+        delta: baselineScore == null ? null : (testScore.value - baselineScore.value).toDouble(),
+      );
+    }).toList();
   }
   return BenchmarkResults(delta);
 }
@@ -69,12 +61,8 @@ extension _AnalysisExtension on BenchmarkResults {
   /// When [throwExceptionOnMismatch] is true (default), the set of benchmark
   /// names and metric names in [other] are expected to be identical to those in
   /// [scores], or else an [Exception] will be thrown.
-  BenchmarkResults _sumWith(
-    BenchmarkResults other, {
-    bool throwExceptionOnMismatch = true,
-  }) {
-    final Map<String, List<BenchmarkScore>> sum =
-        <String, List<BenchmarkScore>>{};
+  BenchmarkResults _sumWith(BenchmarkResults other, {bool throwExceptionOnMismatch = true}) {
+    final sum = <String, List<BenchmarkScore>>{};
     for (final String benchmark in scores.keys) {
       // Look up this benchmark in [other].
       final List<BenchmarkScore>? matchingBenchmark = other.scores[benchmark];
@@ -89,11 +77,11 @@ extension _AnalysisExtension on BenchmarkResults {
       }
 
       final List<BenchmarkScore> scoresForBenchmark = scores[benchmark]!;
-      sum[benchmark] =
-          scoresForBenchmark.map<BenchmarkScore>((BenchmarkScore score) {
+      sum[benchmark] = scoresForBenchmark.map<BenchmarkScore>((BenchmarkScore score) {
         // Look up this score in the [matchingBenchmark] from [other].
-        final BenchmarkScore? matchingScore = matchingBenchmark
-            .firstWhereOrNull((BenchmarkScore s) => s.metric == score.metric);
+        final BenchmarkScore? matchingScore = matchingBenchmark.firstWhereOrNull(
+          (BenchmarkScore s) => s.metric == score.metric,
+        );
         if (matchingScore == null && throwExceptionOnMismatch) {
           throw Exception(
             'Cannot sum benchmarks because benchmark "$benchmark" is missing '
@@ -101,9 +89,7 @@ extension _AnalysisExtension on BenchmarkResults {
           );
         }
         return score._copyWith(
-          value: matchingScore == null
-              ? score.value
-              : score.value + matchingScore.value,
+          value: matchingScore == null ? score.value : score.value + matchingScore.value,
         );
       }).toList();
     }
@@ -112,10 +98,9 @@ extension _AnalysisExtension on BenchmarkResults {
 }
 
 extension _CopyExtension on BenchmarkScore {
-  BenchmarkScore _copyWith({String? metric, num? value, num? delta}) =>
-      BenchmarkScore(
-        metric: metric ?? this.metric,
-        value: value ?? this.value,
-        delta: delta ?? this.delta,
-      );
+  BenchmarkScore _copyWith({String? metric, num? value, num? delta}) => BenchmarkScore(
+    metric: metric ?? this.metric,
+    value: value ?? this.value,
+    delta: delta ?? this.delta,
+  );
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,19 +15,10 @@ class NullFieldsSearchRequest {
   int identifier;
 }
 
-enum NullFieldsSearchReplyType {
-  success,
-  failure,
-}
+enum NullFieldsSearchReplyType { success, failure }
 
 class NullFieldsSearchReply {
-  NullFieldsSearchReply(
-    this.result,
-    this.error,
-    this.indices,
-    this.request,
-    this.type,
-  );
+  NullFieldsSearchReply(this.result, this.error, this.indices, this.request, this.type);
   String? result;
   String? error;
   List<int?>? indices;

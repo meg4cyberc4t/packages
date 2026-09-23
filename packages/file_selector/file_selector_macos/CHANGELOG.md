@@ -1,6 +1,42 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 0.9.5+1
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.9.5
+
+* Adds `getDirectoryPathWithOptions` and `getDirectoryPathsWithOptions` implementations.
+
+## 0.9.4+6
+
+* Updates to Pigeon 26.
+
+## 0.9.4+5
+
+* Updates minimum supported version to macOS 10.15.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 0.9.4+4
+
+* Updates to Pigeon 25.5.0.
+
+## 0.9.4+3
+
+* Updates configuration to not set `nameFieldStringValue` for `NSOpenPanel`.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 0.9.4+2
+
+* Updates Pigeon for non-nullable collection type support.
+
+## 0.9.4+1
+
+* Adds privacy manifest.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
 
 ## 0.9.4
 

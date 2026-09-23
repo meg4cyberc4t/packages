@@ -1,5 +1,20 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 0.10.1+3
+
+* Adopts `code-excerpt` for the README's Dart snippets so they are validated
+  against compilable, analyzed source.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+
+## 0.10.1+2
+
+* Adds performance warning about using multiple pointer interceptors on iOS.
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
 ## 0.10.1+1

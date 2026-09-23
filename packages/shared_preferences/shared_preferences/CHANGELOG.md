@@ -1,5 +1,65 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 2.5.5
+
+* Fixes dartdoc comments that accidentally used HTML.
+
+## 2.5.4
+
+* Updates dependencies for the `shared_preferences_tool` DevTools extension and fixes related deprecations.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+* Updates README to reflect currently supported OS versions for the latest
+  versions of the endorsed platform implementations.
+  * Applications built with older versions of Flutter will continue to
+    use compatible versions of the platform implementations.
+
+## 2.5.3
+
+* Fixes a bug in the example app.
+
+## 2.5.2
+
+* Fixes `setState` returning `Future` on `example/main.dart` error in example code.
+
+## 2.5.1
+
+* Exposes `SharedPreferencesOptions`.
+
+## 2.5.0
+
+* Adds shared preferences devtools extension.
+
+## 2.4.0
+
+* Adds migration tool to move from legacy `SharedPreferences` to `SharedPreferencesAsync`.
+* Adds clarifying comment about `allowList` handling with an updated prefix.
+
+## 2.3.5
+
+* Adds information about Android SharedPreferences support.
+
+## 2.3.4
+
+* Security update, requires shared_preferences_android to be 2.3.4.
+
+## 2.3.3
+
+* Clarifies scope of prefix handling in README.
+
+## 2.3.2
+
+* Removes outdated testing information from README.
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+
+## 2.3.1
+
+* Fixes `getStringList` bug with `List<Object?>` cast exception.
+
+## 2.3.0
+
+* Adds `SharedPreferencesAsync` and `SharedPreferencesWithCache` APIs.
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
 ## 2.2.3

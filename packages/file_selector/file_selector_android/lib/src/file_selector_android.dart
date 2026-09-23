@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,11 @@ import 'package:file_selector_platform_interface/file_selector_platform_interfac
 import 'package:flutter/cupertino.dart';
 
 import 'file_selector_api.g.dart';
+import 'types/native_illegal_argument_exception.dart';
 
 /// An implementation of [FileSelectorPlatform] for Android.
 class FileSelectorAndroid extends FileSelectorPlatform {
-  FileSelectorAndroid({@visibleForTesting FileSelectorApi? api})
-      : _api = api ?? FileSelectorApi();
+  FileSelectorAndroid({@visibleForTesting FileSelectorApi? api}) : _api = api ?? FileSelectorApi();
 
   final FileSelectorApi _api;
 
@@ -40,25 +40,22 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<FileResponse?> files = await _api.openFiles(
+    final List<FileResponse> files = await _api.openFiles(
       initialDirectory,
       _fileTypesFromTypeGroups(acceptedTypeGroups),
     );
-    return files
-        .cast<FileResponse>()
-        .map<XFile>(_xFileFromFileResponse)
-        .toList();
+    return files.map<XFile>(_xFileFromFileResponse).toList();
   }
 
   @override
-  Future<String?> getDirectoryPath({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) async {
+  Future<String?> getDirectoryPath({String? initialDirectory, String? confirmButtonText}) async {
     return _api.getDirectoryPath(initialDirectory);
   }
 
   XFile _xFileFromFileResponse(FileResponse file) {
+    if (file.fileSelectorNativeException != null) {
+      _resolveErrorCodeAndMaybeThrow(file.fileSelectorNativeException!);
+    }
     return XFile.fromData(
       file.bytes,
       // Note: The name parameter is not used by XFile. The XFile.name returns
@@ -75,13 +72,11 @@ class FileSelectorAndroid extends FileSelectorPlatform {
       return FileTypes(extensions: <String>[], mimeTypes: <String>[]);
     }
 
-    final Set<String> mimeTypes = <String>{};
-    final Set<String> extensions = <String>{};
+    final mimeTypes = <String>{};
+    final extensions = <String>{};
 
     for (final XTypeGroup group in typeGroups) {
-      if (!group.allowsAny &&
-          group.mimeTypes == null &&
-          group.extensions == null) {
+      if (!group.allowsAny && group.mimeTypes == null && group.extensions == null) {
         throw ArgumentError(
           'Provided type group $group does not allow all files, but does not '
           'set any of the Android supported filter categories. At least one of '
@@ -93,9 +88,19 @@ class FileSelectorAndroid extends FileSelectorPlatform {
       extensions.addAll(group.extensions ?? <String>{});
     }
 
-    return FileTypes(
-      mimeTypes: mimeTypes.toList(),
-      extensions: extensions.toList(),
-    );
+    return FileTypes(mimeTypes: mimeTypes.toList(), extensions: extensions.toList());
+  }
+
+  /// Translates a [FileSelectorExceptionCode] to its corresponding error and
+  /// handles throwing.
+  void _resolveErrorCodeAndMaybeThrow(FileSelectorNativeException fileSelectorNativeException) {
+    switch (fileSelectorNativeException.fileSelectorExceptionCode) {
+      case FileSelectorExceptionCode.illegalArgumentException:
+        throw NativeIllegalArgumentException(fileSelectorNativeException.message);
+      case (FileSelectorExceptionCode.illegalStateException ||
+          FileSelectorExceptionCode.ioException ||
+          FileSelectorExceptionCode.securityException):
+      // unused for now
+    }
   }
 }

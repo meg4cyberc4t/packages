@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,13 @@ import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:win32/win32.dart';
 
 import 'folders.dart';
+import 'guid.dart';
+import 'win32_wrappers.dart';
 
 /// Constant for en-US language used in VersionInfo keys.
 @visibleForTesting
@@ -35,7 +37,7 @@ class VersionInfoQuerier {
   /// language and encoding, or null if there is no such entry,
   /// or if versionInfo is null.
   ///
-  /// See https://docs.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource
+  /// See https://docs.microsoft.com/windows/win32/menurc/versioninfo-resource
   /// for list of possible language and encoding values.
   String? getStringValue(
     Pointer<Uint8>? versionInfo,
@@ -48,8 +50,7 @@ class VersionInfoQuerier {
     if (versionInfo == null) {
       return null;
     }
-    final Pointer<Utf16> keyPath =
-        TEXT('\\StringFileInfo\\$language$encoding\\$key');
+    final Pointer<Utf16> keyPath = '\\StringFileInfo\\$language$encoding\\$key'.toNativeUtf16();
     final Pointer<UINT> length = calloc<UINT>();
     final Pointer<Pointer<Utf16>> valueAddress = calloc<Pointer<Utf16>>();
     try {
@@ -89,7 +90,7 @@ class PathProviderWindows extends PathProviderPlatform {
 
       if (length == 0) {
         final int error = GetLastError();
-        throw WindowsException(error);
+        throw _createWin32Exception(error);
       } else {
         path = buffer.toDartString();
 
@@ -102,7 +103,7 @@ class PathProviderWindows extends PathProviderPlatform {
       }
 
       // Ensure that the directory exists, since GetTempPath doesn't.
-      final Directory directory = Directory(path);
+      final directory = Directory(path);
       if (!directory.existsSync()) {
         await directory.create(recursive: true);
       }
@@ -118,8 +119,7 @@ class PathProviderWindows extends PathProviderPlatform {
       _createApplicationSubdirectory(WindowsKnownFolder.RoamingAppData);
 
   @override
-  Future<String?> getApplicationDocumentsPath() =>
-      getPath(WindowsKnownFolder.Documents);
+  Future<String?> getApplicationDocumentsPath() => getPath(WindowsKnownFolder.Documents);
 
   @override
   Future<String?> getApplicationCachePath() =>
@@ -134,19 +134,14 @@ class PathProviderWindows extends PathProviderPlatform {
   /// [WindowsKnownFolder].
   Future<String?> getPath(String folderID) {
     final Pointer<Pointer<Utf16>> pathPtrPtr = calloc<Pointer<Utf16>>();
-    final Pointer<GUID> knownFolderID = calloc<GUID>()..ref.setGUID(folderID);
+    final Pointer<GUID> knownFolderID = calloc<GUID>()..ref.parse(folderID);
 
     try {
-      final int hr = SHGetKnownFolderPath(
-        knownFolderID,
-        KF_FLAG_DEFAULT,
-        NULL,
-        pathPtrPtr,
-      );
+      final int hr = SHGetKnownFolderPath(knownFolderID, KF_FLAG_DEFAULT, NULL, pathPtrPtr);
 
       if (FAILED(hr)) {
         if (hr == E_INVALIDARG || hr == E_FAIL) {
-          throw WindowsException(hr);
+          throw _createWin32Exception(hr);
         }
         return Future<String?>.value();
       }
@@ -160,10 +155,18 @@ class PathProviderWindows extends PathProviderPlatform {
   }
 
   String? _getStringValue(Pointer<Uint8>? infoBuffer, String key) =>
-      versionInfoQuerier.getStringValue(infoBuffer, key,
-          language: languageEn, encoding: encodingCP1252) ??
-      versionInfoQuerier.getStringValue(infoBuffer, key,
-          language: languageEn, encoding: encodingUnicode);
+      versionInfoQuerier.getStringValue(
+        infoBuffer,
+        key,
+        language: languageEn,
+        encoding: encodingCP1252,
+      ) ??
+      versionInfoQuerier.getStringValue(
+        infoBuffer,
+        key,
+        language: languageEn,
+        encoding: encodingUnicode,
+      );
 
   /// Returns the relative path string to append to the root directory returned
   /// by Win32 APIs for application storage (such as RoamingAppDir) to get a
@@ -179,40 +182,33 @@ class PathProviderWindows extends PathProviderPlatform {
     String? companyName;
     String? productName;
 
-    final Pointer<Utf16> moduleNameBuffer = wsalloc(MAX_PATH + 1);
+    final Pointer<Utf16> moduleNameBuffer = calloc<WCHAR>(MAX_PATH + 1).cast<Utf16>();
     final Pointer<DWORD> unused = calloc<DWORD>();
     Pointer<BYTE>? infoBuffer;
     try {
       // Get the module name.
-      final int moduleNameLength =
-          GetModuleFileName(0, moduleNameBuffer, MAX_PATH);
+      final int moduleNameLength = GetModuleFileName(0, moduleNameBuffer, MAX_PATH);
       if (moduleNameLength == 0) {
         final int error = GetLastError();
-        throw WindowsException(error);
+        throw _createWin32Exception(error);
       }
 
       // From that, load the VERSIONINFO resource
       final int infoSize = GetFileVersionInfoSize(moduleNameBuffer, unused);
       if (infoSize != 0) {
         infoBuffer = calloc<BYTE>(infoSize);
-        if (GetFileVersionInfo(moduleNameBuffer, 0, infoSize, infoBuffer) ==
-            0) {
+        if (GetFileVersionInfo(moduleNameBuffer, 0, infoSize, infoBuffer) == 0) {
           calloc.free(infoBuffer);
           infoBuffer = null;
         }
       }
-      companyName =
-          _sanitizedDirectoryName(_getStringValue(infoBuffer, 'CompanyName'));
-      productName =
-          _sanitizedDirectoryName(_getStringValue(infoBuffer, 'ProductName'));
+      companyName = _sanitizedDirectoryName(_getStringValue(infoBuffer, 'CompanyName'));
+      productName = _sanitizedDirectoryName(_getStringValue(infoBuffer, 'ProductName'));
 
       // If there was no product name, use the executable name.
-      productName ??=
-          path.basenameWithoutExtension(moduleNameBuffer.toDartString());
+      productName ??= path.basenameWithoutExtension(moduleNameBuffer.toDartString());
 
-      return companyName != null
-          ? path.join(companyName, productName)
-          : productName;
+      return companyName != null ? path.join(companyName, productName) : productName;
     } finally {
       calloc.free(moduleNameBuffer);
       calloc.free(unused);
@@ -223,7 +219,7 @@ class PathProviderWindows extends PathProviderPlatform {
   }
 
   /// Makes [rawString] safe as a directory component. See
-  /// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+  /// https://docs.microsoft.com/windows/win32/fileio/naming-a-file#naming-conventions
   ///
   /// If after sanitizing the string is empty, returns null.
   String? _sanitizedDirectoryName(String? rawString) {
@@ -237,7 +233,7 @@ class PathProviderWindows extends PathProviderPlatform {
         .trimRight()
         // Ensure that it does not end with a '.'.
         .replaceAll(RegExp(r'[.]+$'), '');
-    const int kMaxComponentLength = 255;
+    const kMaxComponentLength = 255;
     if (sanitized.length > kMaxComponentLength) {
       sanitized = sanitized.substring(0, kMaxComponentLength);
     }
@@ -249,8 +245,7 @@ class PathProviderWindows extends PathProviderPlatform {
     if (baseDir == null) {
       return null;
     }
-    final Directory directory =
-        Directory(path.join(baseDir, _getApplicationSpecificSubdirectory()));
+    final directory = Directory(path.join(baseDir, _getApplicationSpecificSubdirectory()));
     // Ensure that the directory exists if possible, since it will on other
     // platforms. If the name is longer than MAXPATH, creating will fail, so
     // skip that step; it's up to the client to decide what to do with the path
@@ -262,4 +257,17 @@ class PathProviderWindows extends PathProviderPlatform {
     }
     return directory.path;
   }
+}
+
+Exception _createWin32Exception(int errorCode) {
+  return PlatformException(
+    code: 'Win32 Error',
+    // TODO(stuartmorgan): Consider getting the system error message via
+    // FormatMessage if it turns out to be necessary for debugging issues.
+    // Plugin-client-level usability isn't a major consideration since per
+    // https://github.com/flutter/flutter/blob/master/docs/ecosystem/contributing/README.md#platform-exception-handling
+    // any case that comes up in practice should be handled and returned
+    // via a plugin-specific exception, not this fallback.
+    message: 'Error code 0x${errorCode.toRadixString(16)}',
+  );
 }

@@ -1,10 +1,13 @@
 # pointer_interceptor
+<?code-excerpt path-base="example/lib"?>
 
 |             | iOS     | Web |
 |-------------|---------|-----|
-| **Support** | iOS 12+ | Any |
+| **Support** | iOS 13+ | Any |
 
 `PointerInterceptor` is a widget that prevents mouse events from being captured by an underlying [`HtmlElementView`](https://api.flutter.dev/flutter/widgets/HtmlElementView-class.html) in web, or an underlying [`PlatformView`](https://api.flutter.dev/flutter/widgets/PlatformViewLink-class.html) on iOS.
+
+Using multiple `PointerInterceptor` instances on iOS can be slow and increases memory usage due to the performance overhead of the underlying platform view.
 
 ## What is the problem?
 
@@ -45,25 +48,27 @@ There's two ways that the `PointerInterceptor` widget can be used to solve the p
 
 1. Wrapping your button element directly (FAB, Custom Play/Pause button...):
 
-    ```dart
-    PointerInterceptor(
-      child: ElevatedButton(...),
-    )
-    ```
+<?code-excerpt "readme_excerpts.dart (WrapButton)"?>
+```dart
+PointerInterceptor(
+  child: ElevatedButton(
+    // ···
+  ),
+)
+```
 
 2. As a root container for a "layout" element, wrapping a bunch of other elements (like a Drawer):
 
-    ```dart
-    Scaffold(
-      ...
-      drawer: PointerInterceptor(
-        child: Drawer(
-          child: ...
-        ),
-      ),
-      ...
-    )
-    ```
+<?code-excerpt "readme_excerpts.dart (WrapSubtree)"?>
+```dart
+Scaffold(
+  drawer: PointerInterceptor(
+    child: Drawer(
+      // ···
+    ),
+  ),
+)
+```
 
 ### `intercepting`
 
@@ -74,24 +79,32 @@ The `intercepting` property allows the `PointerInterceptor` widget to render
 itself (or not) depending on a boolean value, instead of having to manually
 write an `if/else` on the Flutter App widget tree, so code like this:
 
-  ```dart
-  if (someCondition) {
-    return PointerInterceptor(
-      child: ElevatedButton(...),
-    )
-  } else {
-    return ElevatedButton(...),
-  }
-  ```
+<?code-excerpt "readme_excerpts.dart (InterceptingBefore)"?>
+```dart
+if (someCondition) {
+  return PointerInterceptor(
+    child: ElevatedButton(
+      // ···
+    ),
+  );
+} else {
+  return ElevatedButton(
+    // ···
+  );
+}
+```
 
 can be rewritten as:
 
-   ```dart
-    return PointerInterceptor(
-      intercepting: someCondition,
-      child: ElevatedButton(...),
-    )
-   ```
+<?code-excerpt "readme_excerpts.dart (InterceptingAfter)"?>
+```dart
+PointerInterceptor(
+  intercepting: someCondition,
+  child: ElevatedButton(
+    // ···
+  ),
+)
+```
 
 Note: when `intercepting` is false, the `PointerInterceptor` will not render
 _anything_ in flutter, and just return its `child`. The code is exactly

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ import 'tree.dart';
 ///
 ///   * [TreeViewNode.toggleNode], for controlling node expansion
 ///     programmatically.
-typedef TreeViewNodeCallback = void Function(TreeViewNode<Object?> node);
+typedef TreeViewNodeCallback<T> = void Function(TreeViewNode<T> node);
 
 /// A mixin for classes implementing a tree structure as expected by a
 /// [TreeViewController].
@@ -86,11 +86,7 @@ mixin TreeViewStateMixin<T> {
 /// Provided to [RenderTreeViewport] as part of
 /// [RenderTreeViewport.activeAnimations] by [TreeView] to properly offset
 /// animating children.
-typedef TreeViewNodesAnimation = ({
-  int fromIndex,
-  int toIndex,
-  double value,
-});
+typedef TreeViewNodesAnimation = ({int fromIndex, int toIndex, double value});
 
 /// The style of indentation for [TreeViewNode]s in a [TreeView], as handled
 /// by [RenderTreeViewport].
@@ -117,8 +113,7 @@ class TreeViewIndentationType {
   /// The default indentation of child [TreeViewNode]s in a [TreeView].
   ///
   /// Child nodes will be offset by 10 pixels for each level in the tree.
-  static const TreeViewIndentationType standard =
-      TreeViewIndentationType._internal(10.0);
+  static const TreeViewIndentationType standard = TreeViewIndentationType._internal(10.0);
 
   /// Configures no offsetting of child nodes in a [TreeView].
   ///
@@ -126,8 +121,7 @@ class TreeViewIndentationType {
   /// [TreeView.treeNodeBuilder] instead for more customization options.
   ///
   /// Child nodes will not be offset in the tree.
-  static const TreeViewIndentationType none =
-      TreeViewIndentationType._internal(0.0);
+  static const TreeViewIndentationType none = TreeViewIndentationType._internal(0.0);
 
   /// Configures a custom offset for indenting child nodes in a [TreeView].
   ///

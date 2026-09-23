@@ -1,3 +1,39 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 1.2.5
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+
+## 1.2.4
+
+* Adds support for UIScene lifecycle.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 1.2.3
+
+* Updates to Pigeon 26.
+
+## 1.2.2
+
+* Updates minimum supported version to iOS 13.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 1.2.1
+
+* Updates to Pigeon 25.5.0.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 1.2.0
+
+* Adds localizedSubtitle field for iOS quick actions.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
+## 1.1.1
+
+* Updates to a newer version of Pigeon.
+
 ## 1.1.0
 
 * Adds Swift Package Manager compatibility.

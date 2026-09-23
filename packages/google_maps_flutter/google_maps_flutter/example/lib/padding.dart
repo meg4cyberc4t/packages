@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'page.dart';
 
 class PaddingPage extends GoogleMapExampleAppPage {
-  const PaddingPage({Key? key})
-      : super(const Icon(Icons.map), 'Add padding to the map', key: key);
+  const PaddingPage({super.key}) : super(const Icon(Icons.map), 'Add padding to the map');
 
   @override
   Widget build(BuildContext context) {
@@ -34,25 +33,16 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
 
   @override
   Widget build(BuildContext context) {
-    final GoogleMap googleMap = GoogleMap(
+    final googleMap = GoogleMap(
       onMapCreated: _onMapCreated,
-      initialCameraPosition: const CameraPosition(
-        target: _kMapCenter,
-        zoom: 7.0,
-      ),
+      initialCameraPosition: const CameraPosition(target: _kMapCenter, zoom: 7.0),
       padding: _padding,
     );
 
-    final List<Widget> columnChildren = <Widget>[
+    final columnChildren = <Widget>[
       Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Center(
-          child: SizedBox(
-            width: 300.0,
-            height: 200.0,
-            child: googleMap,
-          ),
-        ),
+        child: Center(child: SizedBox(width: 300.0, height: 200.0, child: googleMap)),
       ),
       const Padding(
         padding: EdgeInsets.only(top: 20),
@@ -67,10 +57,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
 
     columnChildren.addAll(<Widget>[_paddingInput(), _buttons()]);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: columnChildren,
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: columnChildren);
   }
 
   void _onMapCreated(GoogleMapController controllerParam) {
@@ -95,9 +82,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
               controller: _topController,
               keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Top',
-              ),
+              decoration: const InputDecoration(hintText: 'Top'),
             ),
           ),
           const Spacer(),
@@ -107,9 +92,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
               controller: _bottomController,
               keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Bottom',
-              ),
+              decoration: const InputDecoration(hintText: 'Bottom'),
             ),
           ),
           const Spacer(),
@@ -119,9 +102,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
               controller: _leftController,
               keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Left',
-              ),
+              decoration: const InputDecoration(hintText: 'Left'),
             ),
           ),
           const Spacer(),
@@ -131,9 +112,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
               controller: _rightController,
               keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Right',
-              ),
+              decoration: const InputDecoration(hintText: 'Right'),
             ),
           ),
         ],
@@ -152,10 +131,11 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
             onPressed: () {
               setState(() {
                 _padding = EdgeInsets.fromLTRB(
-                    double.tryParse(_leftController.value.text) ?? 0,
-                    double.tryParse(_topController.value.text) ?? 0,
-                    double.tryParse(_rightController.value.text) ?? 0,
-                    double.tryParse(_bottomController.value.text) ?? 0);
+                  double.tryParse(_leftController.value.text) ?? 0,
+                  double.tryParse(_topController.value.text) ?? 0,
+                  double.tryParse(_rightController.value.text) ?? 0,
+                  double.tryParse(_bottomController.value.text) ?? 0,
+                );
               });
             },
           ),
@@ -170,7 +150,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
                 _padding = EdgeInsets.zero;
               });
             },
-          )
+          ),
         ],
       ),
     );

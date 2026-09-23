@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,11 @@ private class PigeonApiImplementation: ExampleHostApi {
     return a + b
   }
 
-  func sendMessage(message: MessageData, completion: @escaping (Result<Bool, Error>) -> Void) {
+  func sendMessage(message: MessageData) async throws -> Bool {
     if message.code == Code.one {
-      completion(.failure(PigeonError(code: "code", message: "message", details: "details")))
-      return
+      throw PigeonError(code: "code", message: "message", details: "details")
     }
-    completion(.success(true))
+    return true
   }
 }
 // #enddocregion swift-class
@@ -36,29 +35,71 @@ private class PigeonFlutterApi {
     flutterAPI = MessageFlutterApi(binaryMessenger: binaryMessenger)
   }
 
-  func callFlutterMethod(
-    aString aStringArg: String?, completion: @escaping (Result<String, Error>) -> Void
-  ) {
-    flutterAPI.flutterMethod(aString: aStringArg) {
-      completion(.success($0))
-    }
+  func callFlutterMethod(aString aStringArg: String?) async throws -> String {
+    return try await flutterAPI.flutterMethod(aString: aStringArg)
   }
 }
 // #enddocregion swift-class-flutter
 
-@UIApplicationMain
-@objc class AppDelegate: FlutterAppDelegate {
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
+// #docregion swift-class-event
+class EventListener: StreamEventsStreamHandler {
+  var eventSink: PigeonEventSink<PlatformEvent>?
 
-    let controller = window?.rootViewController as! FlutterViewController
+  override func onListen(withArguments arguments: Any?, sink: PigeonEventSink<PlatformEvent>) {
+    eventSink = sink
+  }
+
+  func onIntEvent(event: Int64) {
+    if let eventSink = eventSink {
+      eventSink.success(IntEvent(data: event))
+    }
+  }
+
+  func onStringEvent(event: String) {
+    if let eventSink = eventSink {
+      eventSink.success(StringEvent(data: event))
+    }
+  }
+
+  func onEventsDone() {
+    eventSink?.endOfStream()
+    eventSink = nil
+  }
+}
+// #enddocregion swift-class-event
+
+func sendEvents(_ eventListener: EventListener) {
+  var timer: Timer?
+  var count: Int64 = 0
+  timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+    DispatchQueue.main.async {
+      if count >= 100 {
+        eventListener.onEventsDone()
+        timer?.invalidate()
+      } else {
+        if (count % 2) == 0 {
+          eventListener.onIntEvent(event: Int64(count))
+        } else {
+          eventListener.onStringEvent(event: String(count))
+        }
+        count += 1
+      }
+    }
+  }
+}
+
+@main
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
     let api = PigeonApiImplementation()
-    ExampleHostApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: api)
-
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
+    let binaryMessenger = engineBridge.applicationRegistrar.messenger()
+    ExampleHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: api)
+    // #docregion swift-init-event
+    let eventListener = EventListener()
+    StreamEventsStreamHandler.register(with: binaryMessenger, streamHandler: eventListener)
+    // #enddocregion swift-init-event
+    sendEvents(eventListener)
   }
 }

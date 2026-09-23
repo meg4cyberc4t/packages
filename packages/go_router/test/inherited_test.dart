@@ -1,24 +1,19 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'test_helpers.dart';
 
 void main() {
   group('updateShouldNotify', () {
     test('does not update when goRouter does not change', () {
-      final GoRouter goRouter = GoRouter(
-        routes: <GoRoute>[
-          GoRoute(
-            path: '/',
-            builder: (_, __) => const Page1(),
-          ),
-        ],
+      final goRouter = GoRouter(
+        routes: <GoRoute>[GoRoute(path: '/', builder: (_, _) => const Page1())],
       );
       final bool shouldNotify = setupInheritedGoRouterChange(
         oldGoRouter: goRouter,
@@ -28,21 +23,11 @@ void main() {
     });
 
     test('does not update even when goRouter changes', () {
-      final GoRouter oldGoRouter = GoRouter(
-        routes: <GoRoute>[
-          GoRoute(
-            path: '/',
-            builder: (_, __) => const Page1(),
-          ),
-        ],
+      final oldGoRouter = GoRouter(
+        routes: <GoRoute>[GoRoute(path: '/', builder: (_, _) => const Page1())],
       );
-      final GoRouter newGoRouter = GoRouter(
-        routes: <GoRoute>[
-          GoRoute(
-            path: '/',
-            builder: (_, __) => const Page2(),
-          ),
-        ],
+      final newGoRouter = GoRouter(
+        routes: <GoRoute>[GoRoute(path: '/', builder: (_, _) => const Page2())],
       );
       final bool shouldNotify = setupInheritedGoRouterChange(
         oldGoRouter: oldGoRouter,
@@ -53,31 +38,24 @@ void main() {
   });
 
   test('adds [goRouter] as a diagnostics property', () {
-    final GoRouter goRouter = GoRouter(
-      routes: <GoRoute>[
-        GoRoute(
-          path: '/',
-          builder: (_, __) => const Page1(),
-        ),
-      ],
+    final goRouter = GoRouter(
+      routes: <GoRoute>[GoRoute(path: '/', builder: (_, _) => const Page1())],
     );
-    final InheritedGoRouter inheritedGoRouter = InheritedGoRouter(
-      goRouter: goRouter,
-      child: Container(),
-    );
-    final DiagnosticPropertiesBuilder properties =
-        DiagnosticPropertiesBuilder();
+    final inheritedGoRouter = InheritedGoRouter(goRouter: goRouter, child: Container());
+    final properties = DiagnosticPropertiesBuilder();
     inheritedGoRouter.debugFillProperties(properties);
     expect(properties.properties.length, 1);
     expect(properties.properties.first, isA<DiagnosticsProperty<GoRouter>>());
     expect(properties.properties.first.value, goRouter);
   });
 
-  testWidgets("mediates Widget's access to GoRouter.",
-      (WidgetTester tester) async {
-    final MockGoRouter router = MockGoRouter();
-    await tester.pumpWidget(MaterialApp(
-        home: InheritedGoRouter(goRouter: router, child: const _MyWidget())));
+  testWidgets("mediates Widget's access to GoRouter.", (WidgetTester tester) async {
+    final router = MockGoRouter();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: InheritedGoRouter(goRouter: router, child: const _MyWidget()),
+      ),
+    );
     await tester.tap(find.text('My Page'));
     expect(router.latestPushedName, 'my_page');
   });
@@ -85,25 +63,26 @@ void main() {
   testWidgets('builder can access GoRouter', (WidgetTester tester) async {
     // Regression test for https://github.com/flutter/flutter/issues/110512.
     late final GoRouter buildContextRouter;
-    final GoRouter router = GoRouter(
+    final router = GoRouter(
       initialLocation: '/',
       routes: <GoRoute>[
         GoRoute(
           path: '/',
-          builder: (BuildContext context, __) {
+          builder: (BuildContext context, _) {
             buildContextRouter = GoRouter.of(context);
             return const DummyScreen();
           },
-        )
+        ),
       ],
     );
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
       MaterialApp.router(
-          routeInformationProvider: router.routeInformationProvider,
-          routeInformationParser: router.routeInformationParser,
-          routerDelegate: router.routerDelegate),
+        routeInformationProvider: router.routeInformationProvider,
+        routeInformationParser: router.routeInformationParser,
+        routerDelegate: router.routerDelegate,
+      ),
     );
 
     expect(buildContextRouter, isNotNull);
@@ -111,21 +90,10 @@ void main() {
   });
 }
 
-bool setupInheritedGoRouterChange({
-  required GoRouter oldGoRouter,
-  required GoRouter newGoRouter,
-}) {
-  final InheritedGoRouter oldInheritedGoRouter = InheritedGoRouter(
-    goRouter: oldGoRouter,
-    child: Container(),
-  );
-  final InheritedGoRouter newInheritedGoRouter = InheritedGoRouter(
-    goRouter: newGoRouter,
-    child: Container(),
-  );
-  return newInheritedGoRouter.updateShouldNotify(
-    oldInheritedGoRouter,
-  );
+bool setupInheritedGoRouterChange({required GoRouter oldGoRouter, required GoRouter newGoRouter}) {
+  final oldInheritedGoRouter = InheritedGoRouter(goRouter: oldGoRouter, child: Container());
+  final newInheritedGoRouter = InheritedGoRouter(goRouter: newGoRouter, child: Container());
+  return newInheritedGoRouter.updateShouldNotify(oldInheritedGoRouter);
 }
 
 class Page1 extends StatelessWidget {
@@ -148,24 +116,27 @@ class _MyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-        onPressed: () => context.pushNamed('my_page'),
-        child: const Text('My Page'));
+      onPressed: () => context.pushNamed('my_page'),
+      child: const Text('My Page'),
+    );
   }
 }
 
 class MockGoRouter extends GoRouter {
   MockGoRouter()
-      : super.routingConfig(
-            routingConfig: const ConstantRoutingConfig(
-                RoutingConfig(routes: <RouteBase>[])));
+    : super.routingConfig(
+        routingConfig: const ConstantRoutingConfig(RoutingConfig(routes: <RouteBase>[])),
+      );
 
   late String latestPushedName;
 
   @override
-  Future<T?> pushNamed<T extends Object?>(String name,
-      {Map<String, String> pathParameters = const <String, String>{},
-      Map<String, dynamic> queryParameters = const <String, dynamic>{},
-      Object? extra}) {
+  Future<T?> pushNamed<T extends Object?>(
+    String name, {
+    Map<String, String> pathParameters = const <String, String>{},
+    Map<String, dynamic> queryParameters = const <String, dynamic>{},
+    Object? extra,
+  }) {
     latestPushedName = name;
     return Future<T?>.value();
   }

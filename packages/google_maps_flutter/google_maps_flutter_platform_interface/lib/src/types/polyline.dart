@@ -1,9 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart'
-    show VoidCallback, immutable, listEquals;
+import 'package:flutter/foundation.dart' show VoidCallback, immutable, listEquals;
 import 'package:flutter/material.dart' show Color, Colors;
 
 import 'types.dart';
@@ -66,7 +65,7 @@ class Polyline implements MapsObject<Polyline> {
   /// polyline except the start and end vertices. See [JointType] for supported joint types. The default value is
   /// mitered.
   ///
-  /// Supported on Android only.
+  /// Not supported on all platforms.
   final JointType jointType;
 
   /// The stroke pattern for the polyline.
@@ -86,17 +85,17 @@ class Polyline implements MapsObject<Polyline> {
   ///
   /// The default start cap is ButtCap.
   ///
-  /// Supported on Android only.
+  /// Not supported on all platforms.
   final Cap startCap;
 
   /// The cap at the end vertex of the polyline.
   ///
   /// The default end cap is ButtCap.
   ///
-  /// Supported on Android only.
+  /// Not supported on all platforms.
   final Cap endCap;
 
-  /// True if the marker is visible.
+  /// True if the polyline is visible.
   final bool visible;
 
   /// Width of the polyline, used to define the width of the line segment to be drawn.
@@ -161,7 +160,7 @@ class Polyline implements MapsObject<Polyline> {
   /// Converts this object to something serializable in JSON.
   @override
   Object toJson() {
-    final Map<String, Object> json = <String, Object>{};
+    final json = <String, Object>{};
 
     void addIfPresent(String fieldName, Object? value) {
       if (value != null) {
@@ -171,7 +170,7 @@ class Polyline implements MapsObject<Polyline> {
 
     addIfPresent('polylineId', polylineId.value);
     addIfPresent('consumeTapEvents', consumeTapEvents);
-    addIfPresent('color', color.value);
+    addIfPresent('color', color.toARGB32());
     addIfPresent('endCap', endCap.toJson());
     addIfPresent('geodesic', geodesic);
     addIfPresent('jointType', jointType.value);
@@ -214,7 +213,7 @@ class Polyline implements MapsObject<Polyline> {
   int get hashCode => polylineId.hashCode;
 
   Object _pointsToJson() {
-    final List<Object> result = <Object>[];
+    final result = <Object>[];
     for (final LatLng point in points) {
       result.add(point.toJson());
     }
@@ -222,7 +221,7 @@ class Polyline implements MapsObject<Polyline> {
   }
 
   Object _patternToJson() {
-    final List<Object> result = <Object>[];
+    final result = <Object>[];
     for (final PatternItem patternItem in patterns) {
       result.add(patternItem.toJson());
     }

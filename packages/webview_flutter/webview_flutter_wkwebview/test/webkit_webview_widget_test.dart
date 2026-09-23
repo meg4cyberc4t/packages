@@ -1,70 +1,59 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:webview_flutter_wkwebview/src/common/instance_manager.dart';
-import 'package:webview_flutter_wkwebview/src/foundation/foundation.dart';
-import 'package:webview_flutter_wkwebview/src/ui_kit/ui_kit.dart';
-import 'package:webview_flutter_wkwebview/src/web_kit/web_kit.dart';
-import 'package:webview_flutter_wkwebview/src/webkit_proxy.dart';
+import 'package:webview_flutter_wkwebview/src/common/web_kit.g.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'webkit_webview_controller_test.mocks.dart'
-    show MockUIScrollViewDelegate;
+
 import 'webkit_webview_widget_test.mocks.dart';
 
-@GenerateMocks(<Type>[WKUIDelegate, WKWebViewConfiguration])
+@GenerateMocks(<Type>[WKUIDelegate, WKWebViewConfiguration, UIScrollViewDelegate])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  setUp(() {
+    PigeonOverrides.pigeon_reset();
+  });
+
   group('WebKitWebViewWidget', () {
     testWidgets('build', (WidgetTester tester) async {
-      final InstanceManager testInstanceManager = InstanceManager(
-        onWeakReferenceRemoved: (_) {},
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+
+      final WebKitWebViewController controller = createTestWebViewController();
+
+      final widget = WebKitWebViewWidget(
+        WebKitWebViewWidgetCreationParams(key: const Key('keyValue'), controller: controller),
       );
 
-      final WebKitWebViewController controller =
-          createTestWebViewController(testInstanceManager);
+      await tester.pumpWidget(Builder(builder: (BuildContext context) => widget.build(context)));
 
-      final WebKitWebViewWidget widget = WebKitWebViewWidget(
-        WebKitWebViewWidgetCreationParams(
-          key: const Key('keyValue'),
-          controller: controller,
-          instanceManager: testInstanceManager,
-        ),
+      expect(
+        find.byType(defaultTargetPlatform == TargetPlatform.macOS ? AppKitView : UiKitView),
+        findsOneWidget,
       );
-
-      await tester.pumpWidget(
-        Builder(builder: (BuildContext context) => widget.build(context)),
-      );
-
-      expect(find.byType(UiKitView), findsOneWidget);
       expect(find.byKey(const Key('keyValue')), findsOneWidget);
+
+      debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('Key of the PlatformView changes when the controller changes',
-        (WidgetTester tester) async {
-      final InstanceManager testInstanceManager = InstanceManager(
-        onWeakReferenceRemoved: (_) {},
-      );
+    testWidgets('Key of the PlatformView changes when the controller changes', (
+      WidgetTester tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
       // Pump WebViewWidget with first controller.
-      final WebKitWebViewController controller1 =
-          createTestWebViewController(testInstanceManager);
-      final WebKitWebViewWidget webViewWidget = WebKitWebViewWidget(
-        WebKitWebViewWidgetCreationParams(
-          controller: controller1,
-          instanceManager: testInstanceManager,
-        ),
+      final WebKitWebViewController controller1 = createTestWebViewController();
+      final webViewWidget = WebKitWebViewWidget(
+        WebKitWebViewWidgetCreationParams(controller: controller1),
       );
 
       await tester.pumpWidget(
-        Builder(
-          builder: (BuildContext context) => webViewWidget.build(context),
-        ),
+        Builder(builder: (BuildContext context) => webViewWidget.build(context)),
       );
       await tester.pumpAndSettle();
 
@@ -78,19 +67,13 @@ void main() {
       );
 
       // Pump WebViewWidget with second controller.
-      final WebKitWebViewController controller2 =
-          createTestWebViewController(testInstanceManager);
-      final WebKitWebViewWidget webViewWidget2 = WebKitWebViewWidget(
-        WebKitWebViewWidgetCreationParams(
-          controller: controller2,
-          instanceManager: testInstanceManager,
-        ),
+      final WebKitWebViewController controller2 = createTestWebViewController();
+      final webViewWidget2 = WebKitWebViewWidget(
+        WebKitWebViewWidgetCreationParams(controller: controller2),
       );
 
       await tester.pumpWidget(
-        Builder(
-          builder: (BuildContext context) => webViewWidget2.build(context),
-        ),
+        Builder(builder: (BuildContext context) => webViewWidget2.build(context)),
       );
       await tester.pumpAndSettle();
 
@@ -111,29 +94,23 @@ void main() {
         ),
         findsOneWidget,
       );
+
+      debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets(
-        'Key of the PlatformView is the same when the creation params are equal',
-        (WidgetTester tester) async {
-      final InstanceManager testInstanceManager = InstanceManager(
-        onWeakReferenceRemoved: (_) {},
-      );
+    testWidgets('Key of the PlatformView is the same when the creation params are equal', (
+      WidgetTester tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
-      final WebKitWebViewController controller =
-          createTestWebViewController(testInstanceManager);
+      final WebKitWebViewController controller = createTestWebViewController();
 
-      final WebKitWebViewWidget webViewWidget = WebKitWebViewWidget(
-        WebKitWebViewWidgetCreationParams(
-          controller: controller,
-          instanceManager: testInstanceManager,
-        ),
+      final webViewWidget = WebKitWebViewWidget(
+        WebKitWebViewWidgetCreationParams(controller: controller),
       );
 
       await tester.pumpWidget(
-        Builder(
-          builder: (BuildContext context) => webViewWidget.build(context),
-        ),
+        Builder(builder: (BuildContext context) => webViewWidget.build(context)),
       );
       await tester.pumpAndSettle();
 
@@ -146,17 +123,12 @@ void main() {
         findsOneWidget,
       );
 
-      final WebKitWebViewWidget webViewWidget2 = WebKitWebViewWidget(
-        WebKitWebViewWidgetCreationParams(
-          controller: controller,
-          instanceManager: testInstanceManager,
-        ),
+      final webViewWidget2 = WebKitWebViewWidget(
+        WebKitWebViewWidgetCreationParams(controller: controller),
       );
 
       await tester.pumpWidget(
-        Builder(
-          builder: (BuildContext context) => webViewWidget2.build(context),
-        ),
+        Builder(builder: (BuildContext context) => webViewWidget2.build(context)),
       );
       await tester.pumpAndSettle();
 
@@ -169,55 +141,46 @@ void main() {
         ),
         findsOneWidget,
       );
+
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 }
 
-WebKitWebViewController createTestWebViewController(
-  InstanceManager testInstanceManager,
-) {
-  return WebKitWebViewController(
-    WebKitWebViewControllerCreationParams(
-      webKitProxy: WebKitProxy(createWebView: (
-        WKWebViewConfiguration configuration, {
-        void Function(
-          String keyPath,
-          NSObject object,
-          Map<NSKeyValueChangeKey, Object?> change,
-        )? observeValue,
-        InstanceManager? instanceManager,
+WebKitWebViewController createTestWebViewController() {
+  PigeonOverrides.uIViewWKWebView_new =
+      ({
+        required WKWebViewConfiguration initialConfiguration,
+        void Function(NSObject, String?, NSObject?, Map<KeyValueChangeKey, Object>?)? observeValue,
       }) {
-        final WKWebView webView = WKWebView.detached(
-          instanceManager: testInstanceManager,
-        );
-        testInstanceManager.addDartCreatedInstance(webView);
+        final webView = UIViewWKWebView.pigeon_detached();
+        PigeonInstanceManager.instance.addDartCreatedInstance(webView);
         return webView;
-      }, createWebViewConfiguration: ({InstanceManager? instanceManager}) {
-        return MockWKWebViewConfiguration();
-      }, createUIDelegate: ({
+      };
+  PigeonOverrides.wKWebViewConfiguration_new = ({dynamic observeValue}) {
+    return MockWKWebViewConfiguration();
+  };
+  PigeonOverrides.wKUIDelegate_new =
+      ({
         dynamic onCreateWebView,
         dynamic requestMediaCapturePermission,
-        dynamic runJavaScriptAlertDialog,
-        dynamic runJavaScriptConfirmDialog,
-        dynamic runJavaScriptTextInputDialog,
-        InstanceManager? instanceManager,
+        dynamic runJavaScriptAlertPanel,
+        dynamic runJavaScriptConfirmPanel,
+        dynamic runJavaScriptTextInputPanel,
+        dynamic observeValue,
       }) {
-        final MockWKUIDelegate mockWKUIDelegate = MockWKUIDelegate();
-        when(mockWKUIDelegate.copy()).thenReturn(MockWKUIDelegate());
+        final mockWKUIDelegate = MockWKUIDelegate();
+        when(mockWKUIDelegate.pigeon_copy()).thenReturn(MockWKUIDelegate());
 
-        testInstanceManager.addDartCreatedInstance(mockWKUIDelegate);
+        PigeonInstanceManager.instance.addDartCreatedInstance(mockWKUIDelegate);
         return mockWKUIDelegate;
-      }, createUIScrollViewDelegate: ({
-        void Function(UIScrollView, double, double)? scrollViewDidScroll,
-      }) {
-        final MockUIScrollViewDelegate mockScrollViewDelegate =
-            MockUIScrollViewDelegate();
-        when(mockScrollViewDelegate.copy())
-            .thenReturn(MockUIScrollViewDelegate());
+      };
+  PigeonOverrides.uIScrollViewDelegate_new = ({dynamic scrollViewDidScroll, dynamic observeValue}) {
+    final mockScrollViewDelegate = MockUIScrollViewDelegate();
+    when(mockScrollViewDelegate.pigeon_copy()).thenReturn(MockUIScrollViewDelegate());
 
-        testInstanceManager.addDartCreatedInstance(mockScrollViewDelegate);
-        return mockScrollViewDelegate;
-      }),
-    ),
-  );
+    PigeonInstanceManager.instance.addDartCreatedInstance(mockScrollViewDelegate);
+    return mockScrollViewDelegate;
+  };
+  return WebKitWebViewController(WebKitWebViewControllerCreationParams());
 }

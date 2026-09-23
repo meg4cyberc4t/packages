@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,7 @@ abstract class SharedPreferencesStorePlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  static SharedPreferencesStorePlatform _instance =
-      MethodChannelSharedPreferencesStore();
+  static SharedPreferencesStorePlatform _instance = MethodChannelSharedPreferencesStore();
 
   /// Only mock implementations should set this to true.
   ///
@@ -95,8 +94,7 @@ abstract class SharedPreferencesStorePlatform extends PlatformInterface {
   }
 
   /// Returns all key/value pairs persisting in this store that match [options].
-  Future<Map<String, Object>> getAllWithParameters(
-      GetAllParameters parameters) {
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) {
     throw UnimplementedError('getAllWithParameters is not implemented.');
   }
 }
@@ -110,35 +108,28 @@ class InMemorySharedPreferencesStore extends SharedPreferencesStorePlatform {
 
   /// Instantiates an in-memory preferences store containing a copy of [data].
   InMemorySharedPreferencesStore.withData(Map<String, Object> data)
-      : _data = Map<String, Object>.from(data);
+    : _data = Map<String, Object>.from(data);
 
   final Map<String, Object> _data;
   static const String _defaultPrefix = 'flutter.';
 
   @override
   Future<bool> clear() async {
-    return clearWithParameters(
-      ClearParameters(
-        filter: PreferencesFilter(prefix: _defaultPrefix),
-      ),
-    );
+    return clearWithParameters(ClearParameters(filter: PreferencesFilter(prefix: _defaultPrefix)));
   }
 
   @override
   Future<bool> clearWithPrefix(String prefix) async {
-    return clearWithParameters(
-      ClearParameters(
-        filter: PreferencesFilter(prefix: prefix),
-      ),
-    );
+    return clearWithParameters(ClearParameters(filter: PreferencesFilter(prefix: prefix)));
   }
 
   @override
   Future<bool> clearWithParameters(ClearParameters parameters) async {
     final PreferencesFilter filter = parameters.filter;
     if (filter.allowList != null) {
-      _data.removeWhere((String key, _) =>
-          key.startsWith(filter.prefix) && filter.allowList!.contains(key));
+      _data.removeWhere(
+        (String key, _) => key.startsWith(filter.prefix) && filter.allowList!.contains(key),
+      );
     } else {
       _data.removeWhere((String key, _) => key.startsWith(filter.prefix));
     }
@@ -148,29 +139,24 @@ class InMemorySharedPreferencesStore extends SharedPreferencesStorePlatform {
   @override
   Future<Map<String, Object>> getAll() async {
     return getAllWithParameters(
-      GetAllParameters(
-        filter: PreferencesFilter(prefix: _defaultPrefix),
-      ),
+      GetAllParameters(filter: PreferencesFilter(prefix: _defaultPrefix)),
     );
   }
 
   @override
   Future<Map<String, Object>> getAllWithPrefix(String prefix) async {
-    return getAllWithParameters(
-      GetAllParameters(
-        filter: PreferencesFilter(prefix: prefix),
-      ),
-    );
+    return getAllWithParameters(GetAllParameters(filter: PreferencesFilter(prefix: prefix)));
   }
 
   @override
-  Future<Map<String, Object>> getAllWithParameters(
-      GetAllParameters parameters) async {
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) async {
     final PreferencesFilter filter = parameters.filter;
-    final Map<String, Object> preferences = Map<String, Object>.from(_data);
-    preferences.removeWhere((String key, _) =>
-        !key.startsWith(filter.prefix) ||
-        (filter.allowList != null && !filter.allowList!.contains(key)));
+    final preferences = Map<String, Object>.from(_data);
+    preferences.removeWhere(
+      (String key, _) =>
+          !key.startsWith(filter.prefix) ||
+          (filter.allowList != null && !filter.allowList!.contains(key)),
+    );
     return preferences;
   }
 

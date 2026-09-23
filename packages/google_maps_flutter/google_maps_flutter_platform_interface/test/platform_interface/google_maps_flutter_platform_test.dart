@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // Store the initial instance before any tests change it.
-  final GoogleMapsFlutterPlatform initialInstance =
-      GoogleMapsFlutterPlatform.instance;
+  final GoogleMapsFlutterPlatform initialInstance = GoogleMapsFlutterPlatform.instance;
 
   group('$GoogleMapsFlutterPlatform', () {
     test('$MethodChannelGoogleMapsFlutter() is the default instance', () {
@@ -25,8 +24,7 @@ void main() {
 
     test('Cannot be implemented with `implements`', () {
       expect(() {
-        GoogleMapsFlutterPlatform.instance =
-            ImplementsGoogleMapsFlutterPlatform();
+        GoogleMapsFlutterPlatform.instance = ImplementsGoogleMapsFlutterPlatform();
         // In versions of `package:plugin_platform_interface` prior to fixing
         // https://github.com/flutter/flutter/issues/109339, an attempt to
         // implement a platform interface using `implements` would sometimes
@@ -38,8 +36,7 @@ void main() {
     });
 
     test('Can be mocked with `implements`', () {
-      final GoogleMapsFlutterPlatformMock mock =
-          GoogleMapsFlutterPlatformMock();
+      final mock = GoogleMapsFlutterPlatformMock();
       GoogleMapsFlutterPlatform.instance = mock;
     });
 
@@ -47,29 +44,23 @@ void main() {
       GoogleMapsFlutterPlatform.instance = ExtendsGoogleMapsFlutterPlatform();
     });
 
-    test(
-      'default implementation of `buildViewWithTextDirection` delegates to `buildView`',
-      () {
-        final GoogleMapsFlutterPlatform platform =
-            BuildViewGoogleMapsFlutterPlatform();
-        expect(
-          platform.buildViewWithTextDirection(
-            0,
-            (_) {},
-            initialCameraPosition:
-                const CameraPosition(target: LatLng(0.0, 0.0)),
-            textDirection: TextDirection.ltr,
-          ),
-          isA<Text>(),
-        );
-      },
-    );
+    test('default implementation of `buildViewWithTextDirection` delegates to `buildView`', () {
+      final GoogleMapsFlutterPlatform platform = BuildViewGoogleMapsFlutterPlatform();
+      expect(
+        platform.buildViewWithTextDirection(
+          0,
+          (_) {},
+          initialCameraPosition: const CameraPosition(target: LatLng(0.0, 0.0)),
+          textDirection: TextDirection.ltr,
+        ),
+        isA<Text>(),
+      );
+    });
 
     test(
       'default implementation of `buildViewWithConfiguration` delegates to `buildViewWithTextDirection`',
       () {
-        final GoogleMapsFlutterPlatform platform =
-            BuildViewGoogleMapsFlutterPlatform();
+        final GoogleMapsFlutterPlatform platform = BuildViewGoogleMapsFlutterPlatform();
         expect(
           platform.buildViewWithConfiguration(
             0,
@@ -84,41 +75,63 @@ void main() {
       },
     );
 
-    test(
-      'updateClusterManagers() throws UnimplementedError',
-      () {
-        expect(
-            () => BuildViewGoogleMapsFlutterPlatform().updateClusterManagers(
-                ClusterManagerUpdates.from(
-                  <ClusterManager>{
-                    const ClusterManager(
-                        clusterManagerId: ClusterManagerId('123'))
-                  },
-                  <ClusterManager>{
-                    const ClusterManager(
-                        clusterManagerId: ClusterManagerId('456'))
-                  },
-                ),
-                mapId: 0),
-            throwsUnimplementedError);
-      },
-    );
+    test('updateClusterManagers() throws UnimplementedError', () {
+      expect(
+        () => BuildViewGoogleMapsFlutterPlatform().updateClusterManagers(
+          ClusterManagerUpdates.from(
+            <ClusterManager>{const ClusterManager(clusterManagerId: ClusterManagerId('123'))},
+            <ClusterManager>{const ClusterManager(clusterManagerId: ClusterManagerId('456'))},
+          ),
+          mapId: 0,
+        ),
+        throwsUnimplementedError,
+      );
+    });
+
+    test('onClusterTap() throws UnimplementedError', () {
+      expect(
+        () => BuildViewGoogleMapsFlutterPlatform().onClusterTap(mapId: 0),
+        throwsUnimplementedError,
+      );
+    });
+
+    test('onPointOfInterestTap() returns empty stream', () async {
+      final Stream<PointOfInterestTapEvent> stream = BuildViewGoogleMapsFlutterPlatform()
+          .onPointOfInterestTap(mapId: 0);
+      expect(await stream.isEmpty, isTrue);
+    });
+
+    test('default implementation of `getStyleError` returns null', () async {
+      final GoogleMapsFlutterPlatform platform = BuildViewGoogleMapsFlutterPlatform();
+      expect(await platform.getStyleError(mapId: 0), null);
+    });
+
+    test('default implementation of isAdvancedMarkersAvailable returns false', () async {
+      final GoogleMapsFlutterPlatform platform = BuildViewGoogleMapsFlutterPlatform();
+      expect(await platform.isAdvancedMarkersAvailable(mapId: 0), isFalse);
+    });
 
     test(
-      'onClusterTap() throws UnimplementedError',
+      'default implementation of `animateCameraWithConfiguration` delegates to `animateCamera`',
       () {
-        expect(
-            () => BuildViewGoogleMapsFlutterPlatform().onClusterTap(mapId: 0),
-            throwsUnimplementedError);
-      },
-    );
+        final GoogleMapsFlutterPlatform platform = ExtendsGoogleMapsFlutterPlatform();
+        GoogleMapsFlutterPlatform.instance = platform;
 
-    test(
-      'default implementation of `getStyleError` returns null',
-      () async {
-        final GoogleMapsFlutterPlatform platform =
-            BuildViewGoogleMapsFlutterPlatform();
-        expect(await platform.getStyleError(mapId: 0), null);
+        const animationConfig = CameraUpdateAnimationConfiguration(duration: Duration(seconds: 2));
+        final CameraUpdate cameraUpdate = CameraUpdate.newCameraPosition(
+          const CameraPosition(target: LatLng(10.0, 15.0)),
+        );
+
+        expect(
+          () => platform.animateCameraWithConfiguration(cameraUpdate, animationConfig, mapId: 0),
+          throwsA(
+            isA<UnimplementedError>().having(
+              (UnimplementedError e) => e.message,
+              'message',
+              contains('animateCamera() has not been implemented'),
+            ),
+          ),
+        );
       },
     );
   });
@@ -128,8 +141,7 @@ class GoogleMapsFlutterPlatformMock extends Mock
     with MockPlatformInterfaceMixin
     implements GoogleMapsFlutterPlatform {}
 
-class ImplementsGoogleMapsFlutterPlatform extends Mock
-    implements GoogleMapsFlutterPlatform {}
+class ImplementsGoogleMapsFlutterPlatform extends Mock implements GoogleMapsFlutterPlatform {}
 
 class ExtendsGoogleMapsFlutterPlatform extends GoogleMapsFlutterPlatform {}
 
@@ -148,6 +160,7 @@ class BuildViewGoogleMapsFlutterPlatform extends GoogleMapsFlutterPlatform {
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers =
         const <Factory<OneSequenceGestureRecognizer>>{},
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
+    MarkerType markerType = MarkerType.marker,
   }) {
     return const Text('');
   }

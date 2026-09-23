@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,8 @@ final web.FilePropertyBag options = web.FilePropertyBag(
   lastModified: DateTime.utc(2017, 12, 13).millisecondsSinceEpoch,
 )..type = 'text/plain';
 
-final web.File textFile =
-    web.File(<JSUint8Array>[bytes.toJS].toJS, 'hello.txt', options);
-final web.File secondTextFile =
-    web.File(<JSUint8Array>[otherBytes.toJS].toJS, 'secondFile.txt');
+final web.File textFile = web.File(<JSUint8Array>[bytes.toJS].toJS, 'hello.txt', options);
+final web.File secondTextFile = web.File(<JSUint8Array>[otherBytes.toJS].toJS, 'secondFile.txt');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -37,26 +35,18 @@ void main() {
     plugin = ImagePickerPlugin();
   });
 
-  testWidgets('getImageFromSource can select a file', (
-    WidgetTester _,
-  ) async {
-    final web.HTMLInputElement mockInput = web.HTMLInputElement()
-      ..type = 'file';
-    final ImagePickerPluginTestOverrides overrides =
-        ImagePickerPluginTestOverrides()
-          ..createInputElement = ((_, __) => mockInput)
-          ..getMultipleFilesFromInput = ((_) => <web.File>[textFile]);
+  testWidgets('getImageFromSource can select a file', (WidgetTester _) async {
+    final mockInput = web.HTMLInputElement()..type = 'file';
+    final overrides = ImagePickerPluginTestOverrides()
+      ..createInputElement = ((_, _) => mockInput)
+      ..getMultipleFilesFromInput = ((_) => <web.File>[textFile]);
 
-    final ImagePickerPlugin plugin = ImagePickerPlugin(overrides: overrides);
+    final plugin = ImagePickerPlugin(overrides: overrides);
 
     // Init the pick file dialog...
-    final Future<XFile?> image = plugin.getImageFromSource(
-      source: ImageSource.camera,
-    );
+    final Future<XFile?> image = plugin.getImageFromSource(source: ImageSource.camera);
 
-    expect(
-        web.document.querySelector('flt-image-picker-inputs')?.children.length,
-        isNonZero);
+    expect(web.document.querySelector('flt-image-picker-inputs')?.children.length, isNonZero);
 
     // Mock the browser behavior of selecting a file...
     mockInput.dispatchEvent(web.Event('change'));
@@ -72,28 +62,20 @@ void main() {
     expect(file.length(), completion(textFile.size));
     expect(file.mimeType, textFile.type);
     expect(
-        file.lastModified(),
-        completion(
-          DateTime.fromMillisecondsSinceEpoch(textFile.lastModified),
-        ));
-    expect(
-        web.document.querySelector('flt-image-picker-inputs')?.children.length,
-        isZero);
+      file.lastModified(),
+      completion(DateTime.fromMillisecondsSinceEpoch(textFile.lastModified)),
+    );
+    expect(web.document.querySelector('flt-image-picker-inputs')?.children.length, isZero);
   });
 
-  testWidgets('getMultiImageWithOptions can select multiple files', (
-    WidgetTester _,
-  ) async {
-    final web.HTMLInputElement mockInput = web.HTMLInputElement()
-      ..type = 'file';
+  testWidgets('getMultiImageWithOptions can select multiple files', (WidgetTester _) async {
+    final mockInput = web.HTMLInputElement()..type = 'file';
 
-    final ImagePickerPluginTestOverrides overrides =
-        ImagePickerPluginTestOverrides()
-          ..createInputElement = ((_, __) => mockInput)
-          ..getMultipleFilesFromInput =
-              ((_) => <web.File>[textFile, secondTextFile]);
+    final overrides = ImagePickerPluginTestOverrides()
+      ..createInputElement = ((_, _) => mockInput)
+      ..getMultipleFilesFromInput = ((_) => <web.File>[textFile, secondTextFile]);
 
-    final ImagePickerPlugin plugin = ImagePickerPlugin(overrides: overrides);
+    final plugin = ImagePickerPlugin(overrides: overrides);
 
     // Init the pick file dialog...
     final Future<List<XFile>> files = plugin.getMultiImageWithOptions();
@@ -115,20 +97,46 @@ void main() {
   });
 
   testWidgets('getMedia can select multiple files', (WidgetTester _) async {
-    final web.HTMLInputElement mockInput = web.HTMLInputElement()
-      ..type = 'file';
+    final mockInput = web.HTMLInputElement()..type = 'file';
 
-    final ImagePickerPluginTestOverrides overrides =
-        ImagePickerPluginTestOverrides()
-          ..createInputElement = ((_, __) => mockInput)
-          ..getMultipleFilesFromInput =
-              ((_) => <web.File>[textFile, secondTextFile]);
+    final overrides = ImagePickerPluginTestOverrides()
+      ..createInputElement = ((_, _) => mockInput)
+      ..getMultipleFilesFromInput = ((_) => <web.File>[textFile, secondTextFile]);
 
-    final ImagePickerPlugin plugin = ImagePickerPlugin(overrides: overrides);
+    final plugin = ImagePickerPlugin(overrides: overrides);
 
     // Init the pick file dialog...
-    final Future<List<XFile>> files =
-        plugin.getMedia(options: const MediaOptions(allowMultiple: true));
+    final Future<List<XFile>> files = plugin.getMedia(
+      options: const MediaOptions(allowMultiple: true),
+    );
+
+    // Mock the browser behavior of selecting a file...
+    mockInput.dispatchEvent(web.Event('change'));
+
+    // Now the file should be available
+    expect(files, completes);
+
+    // And readable
+    expect((await files).first.readAsBytes(), completion(isNotEmpty));
+
+    // Peek into the second file...
+    final XFile secondFile = (await files).elementAt(1);
+    expect(secondFile.readAsBytes(), completion(isNotEmpty));
+    expect(secondFile.name, secondTextFile.name);
+    expect(secondFile.length(), completion(secondTextFile.size));
+  });
+
+  testWidgets('getMultiVideoWithOptions can select multiple files', (WidgetTester _) async {
+    final mockInput = web.HTMLInputElement()..type = 'file';
+
+    final overrides = ImagePickerPluginTestOverrides()
+      ..createInputElement = ((_, _) => mockInput)
+      ..getMultipleFilesFromInput = ((_) => <web.File>[textFile, secondTextFile]);
+
+    final plugin = ImagePickerPlugin(overrides: overrides);
+
+    // Init the pick file dialog...
+    final Future<List<XFile>> files = plugin.getMultiVideoWithOptions();
 
     // Mock the browser behavior of selecting a file...
     mockInput.dispatchEvent(web.Event('change'));
@@ -154,7 +162,7 @@ void main() {
     setUp(() {
       mockInput = web.HTMLInputElement()..type = 'file';
       overrides = ImagePickerPluginTestOverrides()
-        ..createInputElement = ((_, __) => mockInput)
+        ..createInputElement = ((_, _) => mockInput)
         ..getMultipleFilesFromInput = ((_) => <web.File>[textFile]);
       plugin = ImagePickerPlugin(overrides: overrides);
     });
@@ -173,18 +181,15 @@ void main() {
 
     testWidgets('getMedia - returns empty list', (WidgetTester _) async {
       final Future<List<XFile>?> files = plugin.getMedia(
-          options: const MediaOptions(
-        allowMultiple: true,
-      ));
+        options: const MediaOptions(allowMultiple: true),
+      );
       mockCancel();
 
       expect(files, completes);
       expect(await files, isEmpty);
     });
 
-    testWidgets('getMultiImageWithOptions - returns empty list', (
-      WidgetTester _,
-    ) async {
+    testWidgets('getMultiImageWithOptions - returns empty list', (WidgetTester _) async {
       final Future<List<XFile>?> files = plugin.getMultiImageWithOptions();
       mockCancel();
 
@@ -193,9 +198,7 @@ void main() {
     });
 
     testWidgets('getImageFromSource - returns null', (WidgetTester _) async {
-      final Future<XFile?> file = plugin.getImageFromSource(
-        source: ImageSource.gallery,
-      );
+      final Future<XFile?> file = plugin.getImageFromSource(source: ImageSource.gallery);
       mockCancel();
 
       expect(file, completes);
@@ -203,33 +206,27 @@ void main() {
     });
 
     testWidgets('getVideo - returns null', (WidgetTester _) async {
-      final Future<XFile?> file = plugin.getVideo(
-        source: ImageSource.gallery,
-      );
+      final Future<XFile?> file = plugin.getVideo(source: ImageSource.gallery);
       mockCancel();
 
       expect(file, completes);
       expect(await file, isNull);
     });
+
+    testWidgets('getMultiVideoWithOptions - returns empty list', (WidgetTester _) async {
+      final Future<List<XFile>?> files = plugin.getMultiVideoWithOptions();
+      mockCancel();
+
+      expect(files, completes);
+      expect(await files, isEmpty);
+    });
   });
 
   testWidgets('computeCaptureAttribute', (WidgetTester tester) async {
-    expect(
-      plugin.computeCaptureAttribute(ImageSource.gallery, CameraDevice.front),
-      isNull,
-    );
-    expect(
-      plugin.computeCaptureAttribute(ImageSource.gallery, CameraDevice.rear),
-      isNull,
-    );
-    expect(
-      plugin.computeCaptureAttribute(ImageSource.camera, CameraDevice.front),
-      'user',
-    );
-    expect(
-      plugin.computeCaptureAttribute(ImageSource.camera, CameraDevice.rear),
-      'environment',
-    );
+    expect(plugin.computeCaptureAttribute(ImageSource.gallery, CameraDevice.front), isNull);
+    expect(plugin.computeCaptureAttribute(ImageSource.gallery, CameraDevice.rear), isNull);
+    expect(plugin.computeCaptureAttribute(ImageSource.camera, CameraDevice.front), 'user');
+    expect(plugin.computeCaptureAttribute(ImageSource.camera, CameraDevice.rear), 'environment');
   });
 
   group('createInputElement', () {
@@ -249,20 +246,16 @@ void main() {
       expect(input.hasAttribute('multiple'), false);
     });
 
-    testWidgets('accept: any, capture: null, multi: true',
-        (WidgetTester tester) async {
-      final web.Element input =
-          plugin.createInputElement('any', null, multiple: true);
+    testWidgets('accept: any, capture: null, multi: true', (WidgetTester tester) async {
+      final web.Element input = plugin.createInputElement('any', null, multiple: true);
 
       expect(input.getAttribute('accept'), 'any');
       expect(input.hasAttribute('capture'), false);
       expect(input.hasAttribute('multiple'), true);
     });
 
-    testWidgets('accept: any, capture: something, multi: true',
-        (WidgetTester tester) async {
-      final web.Element input =
-          plugin.createInputElement('any', 'something', multiple: true);
+    testWidgets('accept: any, capture: something, multi: true', (WidgetTester tester) async {
+      final web.Element input = plugin.createInputElement('any', 'something', multiple: true);
 
       expect(input.getAttribute('accept'), 'any');
       expect(input.getAttribute('capture'), 'something');
@@ -278,7 +271,7 @@ void main() {
     setUp(() {
       mockInput = web.HTMLInputElement()..type = 'file';
       overrides = ImagePickerPluginTestOverrides()
-        ..createInputElement = ((_, __) => mockInput)
+        ..createInputElement = ((_, _) => mockInput)
         ..getMultipleFilesFromInput = ((_) => <web.File>[textFile]);
       plugin = ImagePickerPlugin(overrides: overrides);
     });
@@ -294,9 +287,7 @@ void main() {
     group('getImage', () {
       testWidgets('can select a file', (WidgetTester _) async {
         // ignore: deprecated_member_use
-        final Future<XFile?> image = plugin.getImage(
-          source: ImageSource.camera,
-        );
+        final Future<XFile?> image = plugin.getImage(source: ImageSource.camera);
 
         // Mock the browser behavior when selecting a file...
         mockChange();
@@ -312,17 +303,14 @@ void main() {
         expect(file.length(), completion(textFile.size));
         expect(file.mimeType, textFile.type);
         expect(
-            file.lastModified(),
-            completion(
-              DateTime.fromMillisecondsSinceEpoch(textFile.lastModified),
-            ));
+          file.lastModified(),
+          completion(DateTime.fromMillisecondsSinceEpoch(textFile.lastModified)),
+        );
       });
 
       testWidgets('returns null when canceled', (WidgetTester _) async {
         // ignore: deprecated_member_use
-        final Future<XFile?> file = plugin.getImage(
-          source: ImageSource.gallery,
-        );
+        final Future<XFile?> file = plugin.getImage(source: ImageSource.gallery);
         mockCancel();
 
         expect(file, completes);
@@ -333,8 +321,7 @@ void main() {
     group('getMultiImage', () {
       testWidgets('can select multiple files', (WidgetTester _) async {
         // Override the returned files...
-        overrides.getMultipleFilesFromInput =
-            (_) => <web.File>[textFile, secondTextFile];
+        overrides.getMultipleFilesFromInput = (_) => <web.File>[textFile, secondTextFile];
 
         // ignore: deprecated_member_use
         final Future<List<XFile>> files = plugin.getMultiImage();
@@ -355,9 +342,7 @@ void main() {
         expect(secondFile.length(), completion(secondTextFile.size));
       });
 
-      testWidgets('returns an empty list when canceled', (
-        WidgetTester _,
-      ) async {
+      testWidgets('returns an empty list when canceled', (WidgetTester _) async {
         // ignore: deprecated_member_use
         final Future<List<XFile>?> files = plugin.getMultiImage();
         mockCancel();

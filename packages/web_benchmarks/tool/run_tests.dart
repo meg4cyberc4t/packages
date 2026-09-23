@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,33 +22,23 @@ Future<void> main(List<String> args) async {
     exit(0);
   }
 
-  final Directory packageDir =
-      Directory(p.dirname(Platform.script.path)).parent;
-  final String testingAppDirPath =
-      p.join(packageDir.path, 'testing', 'test_app');
+  final Directory packageDir = Directory(p.dirname(Platform.script.path)).parent;
+  final String testingAppDirPath = p.join(packageDir.path, 'testing', 'test_app');
 
   // Fetch the test app's dependencies.
-  int status = await _runProcess(
-    'flutter',
-    <String>[
-      'pub',
-      'get',
-    ],
-    workingDirectory: testingAppDirPath,
-  );
+  int status = await _runProcess('flutter', <String>[
+    'pub',
+    'get',
+  ], workingDirectory: testingAppDirPath);
   if (status != 0) {
     exit(status);
   }
 
   // Run the tests.
-  status = await _runProcess(
-    'flutter',
-    <String>[
-      'test',
-      'testing',
-    ],
-    workingDirectory: packageDir.path,
-  );
+  status = await _runProcess('flutter', <String>[
+    'test',
+    'testing',
+  ], workingDirectory: packageDir.path);
 
   exit(status);
 }
@@ -62,15 +52,9 @@ Future<Process> _streamOutput(Future<Process> processFuture) async {
   return process;
 }
 
-Future<int> _runProcess(
-  String command,
-  List<String> arguments, {
-  String? workingDirectory,
-}) async {
-  final Process process = await _streamOutput(Process.start(
-    command,
-    arguments,
-    workingDirectory: workingDirectory,
-  ));
+Future<int> _runProcess(String command, List<String> arguments, {String? workingDirectory}) async {
+  final Process process = await _streamOutput(
+    Process.start(command, arguments, workingDirectory: workingDirectory),
+  );
   return process.exitCode;
 }

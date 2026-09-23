@@ -1,8 +1,8 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:html';
+import 'dart:js_interop';
 import 'dart:math';
 import 'dart:ui';
 
@@ -12,100 +12,87 @@ import 'package:camera_web/src/camera.dart';
 import 'package:camera_web/src/types/types.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:mockito/mockito.dart';
+import 'package:web/web.dart';
 
 import 'helpers/helpers.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const Size videoSize = Size(320, 240);
+  const videoSize = Size(320, 240);
 
   /// Draw some seconds of random video frames on canvas in realtime.
-  Future<void> simulateCamera(CanvasElement canvasElement) async {
-    const int fps = 15;
-    const int seconds = 3;
+  Future<void> simulateCamera(HTMLCanvasElement canvasElement) async {
+    const fps = 15;
+    const seconds = 3;
     const int frameDuration = 1000 ~/ fps;
-    final Random random = Random(0);
+    final random = Random(0);
 
-    for (int n = 0; n < fps * seconds; n++) {
+    for (var n = 0; n < fps * seconds; n++) {
       await Future<void>.delayed(const Duration(milliseconds: frameDuration));
       final int w = videoSize.width ~/ 20;
       final int h = videoSize.height ~/ 20;
-      for (int y = 0; y < videoSize.height; y += h) {
-        for (int x = 0; x < videoSize.width; x += w) {
-          canvasElement.context2D.setFillColorRgb(
-              random.nextInt(255), random.nextInt(255), random.nextInt(255));
+      for (var y = 0; y < videoSize.height; y += h) {
+        for (var x = 0; x < videoSize.width; x += w) {
+          final int r = random.nextInt(255);
+          final int g = random.nextInt(255);
+          final int b = random.nextInt(255);
+          canvasElement.context2D.fillStyle = 'rgba($r, $g, $b, 1)'.toJS;
           canvasElement.context2D.fillRect(x, y, w, h);
         }
       }
     }
   }
 
-  setUpAll(() {
-    registerFallbackValue(MockCameraOptions());
-  });
-
-  testWidgets('Camera allows to control video bitrate',
-      (WidgetTester tester) async {
+  testWidgets('Camera allows to control video bitrate', (WidgetTester tester) async {
     //const String supportedVideoType = 'video/webm';
-    const String supportedVideoType = 'video/webm;codecs="vp9,opus"';
+    const supportedVideoType = 'video/webm;codecs="vp9,opus"';
     bool isVideoTypeSupported(String type) => type == supportedVideoType;
 
     Future<int> recordVideo(int videoBitrate) async {
-      final Window window = MockWindow();
-      final Navigator navigator = MockNavigator();
-      final MediaDevices mediaDevices = MockMediaDevices();
+      final mockWindow = MockWindow();
+      final mockNavigator = MockNavigator();
+      final mockMediaDevices = MockMediaDevices();
 
-      when(() => window.navigator).thenReturn(navigator);
-      when(() => navigator.mediaDevices).thenReturn(mediaDevices);
+      final window = createJSInteropWrapper(mockWindow) as Window;
+      final navigator = createJSInteropWrapper(mockNavigator) as Navigator;
+      final mediaDevices = createJSInteropWrapper(mockMediaDevices) as MediaDevices;
 
-      final CanvasElement canvasElement = CanvasElement(
-        width: videoSize.width.toInt(),
-        height: videoSize.height.toInt(),
-      )..context2D.clearRect(0, 0, videoSize.width, videoSize.height);
+      mockWindow.navigator = navigator;
+      mockNavigator.mediaDevices = mediaDevices;
 
-      final VideoElement videoElement = VideoElement();
+      final canvasElement = HTMLCanvasElement()
+        ..width = videoSize.width.toInt()
+        ..height = videoSize.height.toInt()
+        ..context2D.clearRect(0, 0, videoSize.width, videoSize.height);
 
-      final MockCameraService cameraService = MockCameraService();
+      final videoElement = HTMLVideoElement();
 
-      CameraPlatform.instance = CameraPlugin(
-        cameraService: cameraService,
-      )..window = window;
+      final cameraService = MockCameraService();
 
-      final CameraOptions options = CameraOptions(
+      CameraPlatform.instance = CameraPlugin(cameraService: cameraService)..window = window;
+
+      final options = CameraOptions(
         audio: const AudioConstraints(),
         video: VideoConstraints(
-          width: VideoSizeConstraint(
-            ideal: videoSize.width.toInt(),
-          ),
-          height: VideoSizeConstraint(
-            ideal: videoSize.height.toInt(),
-          ),
+          width: VideoSizeConstraint(ideal: videoSize.width.toInt()),
+          height: VideoSizeConstraint(ideal: videoSize.height.toInt()),
         ),
       );
 
-      final int cameraId = videoBitrate;
+      final cameraId = videoBitrate;
 
       when(
-        () {
-          return cameraService.getMediaStreamForOptions(
-            options,
-            cameraId: cameraId,
-          );
-        },
-      ).thenAnswer(
-          (_) => Future<MediaStream>.value(canvasElement.captureStream()));
+        cameraService.getMediaStreamForOptions(options, cameraId: cameraId),
+      ).thenAnswer((_) async => canvasElement.captureStream());
 
-      final Camera camera = Camera(
-          textureId: cameraId,
-          cameraService: cameraService,
-          options: options,
-          recorderOptions: (
-            audioBitrate: null,
-            videoBitrate: videoBitrate,
-          ))
-        ..isVideoTypeSupported = isVideoTypeSupported;
+      final camera = Camera(
+        textureId: cameraId,
+        cameraService: cameraService,
+        options: options,
+        recorderOptions: (audioBitrate: null, videoBitrate: videoBitrate),
+      )..isVideoTypeSupported = isVideoTypeSupported;
 
       await camera.initialize();
       await camera.play();
@@ -133,7 +120,7 @@ void main() {
       return length;
     }
 
-    const int kilobits = 1024;
+    const kilobits = 1024;
     const int megabits = kilobits * kilobits;
 
     final int lengthSmall = await recordVideo(500 * kilobits);

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,11 +31,16 @@ extension TrustedInnerHTML on web.HTMLElement {
   external set trustedInnerHTML(web.TrustedHTML trustedHTML);
 }
 
+/// This extension allows supporting both web:0.5.1 and web:1.0.0.
+/// To be removed once we stop using web:0.5.1.
+extension InnerHTMLString on web.HTMLElement {
+  @JS('innerHTML')
+  external set innerHTMLString(String value);
+}
+
 /// Allows creating a TrustedHTML object from a string, with no arguments.
 extension CreateHTMLNoArgs on web.TrustedTypePolicy {
   /// Allows calling `createHTML` with only the `input` argument.
   @JS('createHTML')
-  external web.TrustedHTML createHTMLNoArgs(
-    String input,
-  );
+  external web.TrustedHTML createHTMLNoArgs(String input);
 }

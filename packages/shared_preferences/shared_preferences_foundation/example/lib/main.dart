@@ -1,13 +1,12 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // ignore_for_file: public_member_api_docs
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_foundation/shared_preferences_foundation.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,10 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'SharedPreferences Demo',
-      home: SharedPreferencesDemo(),
-    );
+    return const MaterialApp(title: 'SharedPreferences Demo', home: SharedPreferencesDemo());
   }
 }
 
@@ -33,22 +29,26 @@ class SharedPreferencesDemo extends StatefulWidget {
 }
 
 class SharedPreferencesDemoState extends State<SharedPreferencesDemo> {
-  final SharedPreferencesStorePlatform _prefs =
-      SharedPreferencesStorePlatform.instance;
+  final SharedPreferencesAsyncPlatform? _prefs = SharedPreferencesAsyncPlatform.instance;
+  SharedPreferencesAsyncFoundationOptions options = SharedPreferencesAsyncFoundationOptions();
+  static const String _counterKey = 'counter';
   late Future<int> _counter;
 
-  // Includes the prefix because this is using the platform interface directly,
-  // but the prefix (which the native code assumes is present) is added by the
-  // app-facing package.
-  static const String _prefKey = 'flutter.counter';
-
   Future<void> _incrementCounter() async {
-    final Map<String, Object> values = await _prefs.getAll();
-    final int counter = ((values[_prefKey] as int?) ?? 0) + 1;
+    final int? value = await _prefs!.getInt(_counterKey, options);
+    final int counter = (value ?? 0) + 1;
 
     setState(() {
-      _counter = _prefs.setValue('Int', _prefKey, counter).then((bool success) {
+      _counter = _prefs.setInt(_counterKey, counter, options).then((_) {
         return counter;
+      });
+    });
+  }
+
+  Future<void> _getAndSetCounter() async {
+    setState(() {
+      _counter = _prefs!.getInt(_counterKey, options).then((int? counter) {
+        return counter ?? 0;
       });
     });
   }
@@ -56,37 +56,35 @@ class SharedPreferencesDemoState extends State<SharedPreferencesDemo> {
   @override
   void initState() {
     super.initState();
-    _counter = _prefs.getAll().then((Map<String, Object> values) {
-      return (values[_prefKey] as int?) ?? 0;
-    });
+    _getAndSetCounter();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SharedPreferences Demo'),
-      ),
+      appBar: AppBar(title: const Text('SharedPreferences Demo')),
       body: Center(
-          child: FutureBuilder<int>(
-              future: _counter,
-              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                  case ConnectionState.waiting:
-                    return const CircularProgressIndicator();
-                  case ConnectionState.active:
-                  case ConnectionState.done:
-                    if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Text(
-                        'Button tapped ${snapshot.data} time${snapshot.data == 1 ? '' : 's'}.\n\n'
-                        'This should persist across restarts.',
-                      );
-                    }
+        child: FutureBuilder<int>(
+          future: _counter,
+          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return const CircularProgressIndicator();
+              case ConnectionState.active:
+              case ConnectionState.done:
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Text(
+                    'Button tapped ${snapshot.data} time${snapshot.data == 1 ? '' : 's'}.\n\n'
+                    'This should persist across restarts.',
+                  );
                 }
-              })),
+            }
+          },
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',

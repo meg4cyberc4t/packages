@@ -1,10 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-
-const ValueKey<String> backKey = ValueKey<String>('backKey');
+import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -13,16 +12,10 @@ class AboutPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(
-          key: backKey,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: BackButton(onPressed: () => context.canPop() ? context.pop() : context.go('/')),
       ),
       body: Center(
-        child: Text(
-          'This is a sample app.',
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
+        child: Text('This is a sample app.', style: Theme.of(context).textTheme.displaySmall),
       ),
     );
   }

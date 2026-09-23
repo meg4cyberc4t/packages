@@ -1,3 +1,35 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
+
+## 0.5.3+6
+
+* Updates pigeon dev_dependency to ^27.3.2 for analyzer 14 compatibility.
+
+## 0.5.3+5
+
+* Improves compatibility with `UIScene`.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.5.3+4
+
+* Updates to Pigeon 26.
+
+## 0.5.3+3
+
+* Updates minimum supported version to iOS 13.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 0.5.3+2
+
+* Updates to Pigeon 25.5.0.
+* Updates minimum supported SDK version to Flutter 3.27/Dart 3.6.
+
+## 0.5.3+1
+
+* Updates Pigeon for non-nullable collection type support.
+* Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+
 ## 0.5.3
 
 * Converts implementation to Swift.

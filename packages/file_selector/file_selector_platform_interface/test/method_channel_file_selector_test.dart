@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,13 +11,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('$MethodChannelFileSelector()', () {
-    final MethodChannelFileSelector plugin = MethodChannelFileSelector();
+    final plugin = MethodChannelFileSelector();
 
-    final List<MethodCall> log = <MethodCall>[];
+    final log = <MethodCall>[];
 
     setUp(() {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
         plugin.channel,
         (MethodCall methodCall) async {
           log.add(methodCall);
@@ -30,31 +29,28 @@ void main() {
 
     group('#openFile', () {
       test('passes the accepted type groups correctly', () async {
-        const XTypeGroup group = XTypeGroup(
+        const group = XTypeGroup(
           label: 'text',
           extensions: <String>['txt'],
           mimeTypes: <String>['text/plain'],
           uniformTypeIdentifiers: <String>['public.text'],
         );
 
-        const XTypeGroup groupTwo = XTypeGroup(
-            label: 'image',
-            extensions: <String>['jpg'],
-            mimeTypes: <String>['image/jpg'],
-            uniformTypeIdentifiers: <String>['public.image'],
-            webWildCards: <String>['image/*']);
+        const groupTwo = XTypeGroup(
+          label: 'image',
+          extensions: <String>['jpg'],
+          mimeTypes: <String>['image/jpg'],
+          uniformTypeIdentifiers: <String>['public.image'],
+          webWildCards: <String>['image/*'],
+        );
 
-        await plugin
-            .openFile(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
+        await plugin.openFile(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
 
         expectMethodCall(
           log,
           'openFile',
           arguments: <String, dynamic>{
-            'acceptedTypeGroups': <Map<String, dynamic>>[
-              group.toJSON(),
-              groupTwo.toJSON()
-            ],
+            'acceptedTypeGroups': <Map<String, dynamic>>[group.toJSON(), groupTwo.toJSON()],
             'initialDirectory': null,
             'confirmButtonText': null,
             'multiple': false,
@@ -92,31 +88,28 @@ void main() {
     });
     group('#openFiles', () {
       test('passes the accepted type groups correctly', () async {
-        const XTypeGroup group = XTypeGroup(
+        const group = XTypeGroup(
           label: 'text',
           extensions: <String>['txt'],
           mimeTypes: <String>['text/plain'],
           uniformTypeIdentifiers: <String>['public.text'],
         );
 
-        const XTypeGroup groupTwo = XTypeGroup(
-            label: 'image',
-            extensions: <String>['jpg'],
-            mimeTypes: <String>['image/jpg'],
-            uniformTypeIdentifiers: <String>['public.image'],
-            webWildCards: <String>['image/*']);
+        const groupTwo = XTypeGroup(
+          label: 'image',
+          extensions: <String>['jpg'],
+          mimeTypes: <String>['image/jpg'],
+          uniformTypeIdentifiers: <String>['public.image'],
+          webWildCards: <String>['image/*'],
+        );
 
-        await plugin
-            .openFiles(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
+        await plugin.openFiles(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
 
         expectMethodCall(
           log,
           'openFile',
           arguments: <String, dynamic>{
-            'acceptedTypeGroups': <Map<String, dynamic>>[
-              group.toJSON(),
-              groupTwo.toJSON()
-            ],
+            'acceptedTypeGroups': <Map<String, dynamic>>[group.toJSON(), groupTwo.toJSON()],
             'initialDirectory': null,
             'confirmButtonText': null,
             'multiple': true,
@@ -155,31 +148,28 @@ void main() {
 
     group('#getSavePath', () {
       test('passes the accepted type groups correctly', () async {
-        const XTypeGroup group = XTypeGroup(
+        const group = XTypeGroup(
           label: 'text',
           extensions: <String>['txt'],
           mimeTypes: <String>['text/plain'],
           uniformTypeIdentifiers: <String>['public.text'],
         );
 
-        const XTypeGroup groupTwo = XTypeGroup(
-            label: 'image',
-            extensions: <String>['jpg'],
-            mimeTypes: <String>['image/jpg'],
-            uniformTypeIdentifiers: <String>['public.image'],
-            webWildCards: <String>['image/*']);
+        const groupTwo = XTypeGroup(
+          label: 'image',
+          extensions: <String>['jpg'],
+          mimeTypes: <String>['image/jpg'],
+          uniformTypeIdentifiers: <String>['public.image'],
+          webWildCards: <String>['image/*'],
+        );
 
-        await plugin
-            .getSavePath(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
+        await plugin.getSavePath(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
 
         expectMethodCall(
           log,
           'getSavePath',
           arguments: <String, dynamic>{
-            'acceptedTypeGroups': <Map<String, dynamic>>[
-              group.toJSON(),
-              groupTwo.toJSON()
-            ],
+            'acceptedTypeGroups': <Map<String, dynamic>>[group.toJSON(), groupTwo.toJSON()],
             'initialDirectory': null,
             'suggestedName': null,
             'confirmButtonText': null,
@@ -255,8 +245,7 @@ void main() {
         );
       });
       test('passes confirmButtonText correctly', () async {
-        await plugin.getDirectoryPaths(
-            confirmButtonText: 'Select one or more Folders');
+        await plugin.getDirectoryPaths(confirmButtonText: 'Select one or more Folders');
 
         expectMethodCall(
           log,
@@ -271,10 +260,6 @@ void main() {
   });
 }
 
-void expectMethodCall(
-  List<MethodCall> log,
-  String methodName, {
-  Map<String, dynamic>? arguments,
-}) {
+void expectMethodCall(List<MethodCall> log, String methodName, {Map<String, dynamic>? arguments}) {
   expect(log, <Matcher>[isMethodCall(methodName, arguments: arguments)]);
 }

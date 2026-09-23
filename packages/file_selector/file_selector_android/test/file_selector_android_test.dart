@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,15 +36,15 @@ void main() {
         mockApi.openFile(
           'some/path/',
           argThat(
-            isA<FileTypes>().having(
-              (FileTypes types) => types.mimeTypes,
-              'mimeTypes',
-              <String>['text/plain', 'image/jpg'],
-            ).having(
-              (FileTypes types) => types.extensions,
-              'extensions',
-              <String>['txt', 'jpg'],
-            ),
+            isA<FileTypes>()
+                .having((FileTypes types) => types.mimeTypes, 'mimeTypes', <String>[
+                  'text/plain',
+                  'image/jpg',
+                ])
+                .having((FileTypes types) => types.extensions, 'extensions', <String>[
+                  'txt',
+                  'jpg',
+                ]),
           ),
         ),
       ).thenAnswer(
@@ -59,15 +59,9 @@ void main() {
         ),
       );
 
-      const XTypeGroup group = XTypeGroup(
-        extensions: <String>['txt'],
-        mimeTypes: <String>['text/plain'],
-      );
+      const group = XTypeGroup(extensions: <String>['txt'], mimeTypes: <String>['text/plain']);
 
-      const XTypeGroup group2 = XTypeGroup(
-        extensions: <String>['jpg'],
-        mimeTypes: <String>['image/jpg'],
-      );
+      const group2 = XTypeGroup(extensions: <String>['jpg'], mimeTypes: <String>['image/jpg']);
 
       final XFile? file = await plugin.openFile(
         acceptedTypeGroups: <XTypeGroup>[group, group2],
@@ -87,46 +81,33 @@ void main() {
         mockApi.openFiles(
           'some/path/',
           argThat(
-            isA<FileTypes>().having(
-              (FileTypes types) => types.mimeTypes,
-              'mimeTypes',
-              <String>['text/plain', 'image/jpg'],
-            ).having(
-              (FileTypes types) => types.extensions,
-              'extensions',
-              <String>['txt', 'jpg'],
-            ),
+            isA<FileTypes>()
+                .having((FileTypes types) => types.mimeTypes, 'mimeTypes', <String>[
+                  'text/plain',
+                  'image/jpg',
+                ])
+                .having((FileTypes types) => types.extensions, 'extensions', <String>[
+                  'txt',
+                  'jpg',
+                ]),
           ),
         ),
       ).thenAnswer(
-        (_) => Future<List<FileResponse>>.value(
-          <FileResponse>[
-            FileResponse(
-              path: 'some/path.txt',
-              size: 30,
-              bytes: Uint8List(0),
-              name: 'name',
-              mimeType: 'text/plain',
-            ),
-            FileResponse(
-              path: 'other/dir.jpg',
-              size: 40,
-              bytes: Uint8List(0),
-              mimeType: 'image/jpg',
-            ),
-          ],
-        ),
+        (_) => Future<List<FileResponse>>.value(<FileResponse>[
+          FileResponse(
+            path: 'some/path.txt',
+            size: 30,
+            bytes: Uint8List(0),
+            name: 'name',
+            mimeType: 'text/plain',
+          ),
+          FileResponse(path: 'other/dir.jpg', size: 40, bytes: Uint8List(0), mimeType: 'image/jpg'),
+        ]),
       );
 
-      const XTypeGroup group = XTypeGroup(
-        extensions: <String>['txt'],
-        mimeTypes: <String>['text/plain'],
-      );
+      const group = XTypeGroup(extensions: <String>['txt'], mimeTypes: <String>['text/plain']);
 
-      const XTypeGroup group2 = XTypeGroup(
-        extensions: <String>['jpg'],
-        mimeTypes: <String>['image/jpg'],
-      );
+      const group2 = XTypeGroup(extensions: <String>['jpg'], mimeTypes: <String>['image/jpg']);
 
       final List<XFile> files = await plugin.openFiles(
         acceptedTypeGroups: <XTypeGroup>[group, group2],
@@ -146,12 +127,11 @@ void main() {
   });
 
   test('getDirectoryPath', () async {
-    when(mockApi.getDirectoryPath('some/path'))
-        .thenAnswer((_) => Future<String?>.value('some/path/chosen/'));
+    when(
+      mockApi.getDirectoryPath('some/path'),
+    ).thenAnswer((_) => Future<String?>.value('some/path/chosen/'));
 
-    final String? path = await plugin.getDirectoryPath(
-      initialDirectory: 'some/path',
-    );
+    final String? path = await plugin.getDirectoryPath(initialDirectory: 'some/path');
 
     expect(path, 'some/path/chosen/');
   });

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     auth.isDeviceSupported().then(
-          (bool isSupported) => setState(() => _supportState = isSupported
-              ? _SupportState.supported
-              : _SupportState.unsupported),
-        );
+      (bool isSupported) => setState(
+        () => _supportState = isSupported ? _SupportState.supported : _SupportState.unsupported,
+      ),
+    );
   }
 
   Future<void> _checkBiometrics() async {
@@ -74,7 +74,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _authenticate() async {
-    bool authenticated = false;
+    var authenticated = false;
     try {
       setState(() {
         _isAuthenticating = true;
@@ -82,18 +82,27 @@ class _MyAppState extends State<MyApp> {
       });
       authenticated = await auth.authenticate(
         localizedReason: 'Let OS determine authentication method',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-        ),
+        persistAcrossBackgrounding: true,
       );
       setState(() {
         _isAuthenticating = false;
       });
+    } on LocalAuthException catch (e) {
+      print(e);
+      setState(() {
+        _isAuthenticating = false;
+        if (e.code != LocalAuthExceptionCode.userCanceled &&
+            e.code != LocalAuthExceptionCode.systemCanceled) {
+          _authorized =
+              'Error - ${e.code.name}${e.description != null ? ': ${e.description}' : ''}';
+        }
+      });
+      return;
     } on PlatformException catch (e) {
       print(e);
       setState(() {
         _isAuthenticating = false;
-        _authorized = 'Error - ${e.message}';
+        _authorized = 'Unexpected error - ${e.message}';
       });
       return;
     }
@@ -101,34 +110,41 @@ class _MyAppState extends State<MyApp> {
       return;
     }
 
-    setState(
-        () => _authorized = authenticated ? 'Authorized' : 'Not Authorized');
+    setState(() => _authorized = authenticated ? 'Authorized' : 'Not Authorized');
   }
 
   Future<void> _authenticateWithBiometrics() async {
-    bool authenticated = false;
+    var authenticated = false;
     try {
       setState(() {
         _isAuthenticating = true;
         _authorized = 'Authenticating';
       });
       authenticated = await auth.authenticate(
-        localizedReason:
-            'Scan your fingerprint (or face or whatever) to authenticate',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
+        localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
+        persistAcrossBackgrounding: true,
+        biometricOnly: true,
       );
       setState(() {
         _isAuthenticating = false;
         _authorized = 'Authenticating';
       });
+    } on LocalAuthException catch (e) {
+      print(e);
+      setState(() {
+        _isAuthenticating = false;
+        if (e.code != LocalAuthExceptionCode.userCanceled &&
+            e.code != LocalAuthExceptionCode.systemCanceled) {
+          _authorized =
+              'Error - ${e.code.name}${e.description != null ? ': ${e.description}' : ''}';
+        }
+      });
+      return;
     } on PlatformException catch (e) {
       print(e);
       setState(() {
         _isAuthenticating = false;
-        _authorized = 'Error - ${e.message}';
+        _authorized = 'Unexpected Error - ${e.message}';
       });
       return;
     }
@@ -136,7 +152,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
 
-    final String message = authenticated ? 'Authorized' : 'Not Authorized';
+    final message = authenticated ? 'Authorized' : 'Not Authorized';
     setState(() {
       _authorized = message;
     });
@@ -151,9 +167,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
+        appBar: AppBar(title: const Text('Plugin example app')),
         body: ListView(
           padding: const EdgeInsets.only(top: 30),
           children: <Widget>[
@@ -168,10 +182,7 @@ class _MyAppState extends State<MyApp> {
                   const Text('This device is not supported'),
                 const Divider(height: 100),
                 Text('Can check biometrics: $_canCheckBiometrics\n'),
-                ElevatedButton(
-                  onPressed: _checkBiometrics,
-                  child: const Text('Check biometrics'),
-                ),
+                ElevatedButton(onPressed: _checkBiometrics, child: const Text('Check biometrics')),
                 const Divider(height: 100),
                 Text('Available biometrics: $_availableBiometrics\n'),
                 ElevatedButton(
@@ -185,10 +196,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: _cancelAuthentication,
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text('Cancel Authentication'),
-                        Icon(Icons.cancel),
-                      ],
+                      children: <Widget>[Text('Cancel Authentication'), Icon(Icons.cancel)],
                     ),
                   )
                 else
@@ -209,9 +217,7 @@ class _MyAppState extends State<MyApp> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Text(_isAuthenticating
-                                ? 'Cancel'
-                                : 'Authenticate: biometrics only'),
+                            Text(_isAuthenticating ? 'Cancel' : 'Authenticate: biometrics only'),
                             const Icon(Icons.fingerprint),
                           ],
                         ),
@@ -227,8 +233,4 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-enum _SupportState {
-  unknown,
-  supported,
-  unsupported,
-}
+enum _SupportState { unknown, supported, unsupported }

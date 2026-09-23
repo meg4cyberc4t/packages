@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2013 The Flutter Authors. All rights reserved.
+# Copyright 2013 The Flutter Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 set -e
@@ -15,8 +15,7 @@ set -e
 # since only the packages changed by 'make-deps-path-based' need to be
 # re-checked.
 .ci/scripts/tool_runner.sh analyze --lib-only \
-    --skip-if-not-supporting-flutter-version="$CHANNEL" \
-    --custom-analysis=script/configs/custom_analysis.yaml
+    --skip-if-not-supporting-flutter-version="$CHANNEL"
 
 # Restore the tree to a clean state, to avoid accidental issues if
 # other script steps are added to the enclosing task.

@@ -1,10 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:math' as math;
 import 'dart:ui';
 import 'dart:ui_web' as ui_web;
 
@@ -18,6 +17,8 @@ import 'package:meta/meta.dart';
 import 'package:web/web.dart' as html;
 
 import 'common.dart';
+import 'computations.dart';
+import 'metrics.dart';
 
 /// The number of samples from warm-up iterations.
 ///
@@ -27,19 +28,9 @@ const int _kWarmUpSampleCount = 200;
 /// The total number of samples collected by a benchmark.
 const int kTotalSampleCount = _kWarmUpSampleCount + kMeasuredSampleCount;
 
-/// A benchmark metric that includes frame-related computations prior to
-/// submitting layer and picture operations to the underlying renderer, such as
-/// HTML and CanvasKit. During this phase we compute transforms, clips, and
-/// other information needed for rendering.
-const String kProfilePrerollFrame = 'preroll_frame';
-
-/// A benchmark metric that includes submitting layer and picture information
-/// to the renderer.
-const String kProfileApplyFrame = 'apply_frame';
-
 /// Measures the amount of time [action] takes.
 Duration timeAction(VoidCallback action) {
-  final Stopwatch stopwatch = Stopwatch()..start();
+  final stopwatch = Stopwatch()..start();
   action();
   stopwatch.stop();
   return stopwatch.elapsed;
@@ -143,7 +134,7 @@ abstract class Recorder {
 ///
 /// Example:
 ///
-/// ```
+/// ```dart
 /// class BenchForLoop extends RawRecorder {
 ///   BenchForLoop() : super(name: benchmarkName);
 ///
@@ -194,7 +185,7 @@ abstract class RawRecorder extends Recorder {
 ///
 /// Example:
 ///
-/// ```
+/// ```dart
 /// class BenchDrawCircle extends SceneBuilderRecorder {
 ///   BenchDrawCircle() : super(name: benchmarkName);
 ///
@@ -235,7 +226,7 @@ abstract class SceneBuilderRecorder extends Recorder {
 
   @override
   Future<Profile> run() {
-    final Completer<Profile> profileCompleter = Completer<Profile>();
+    final profileCompleter = Completer<Profile>();
     _profile = Profile(name: name);
 
     PlatformDispatcher.instance.onBeginFrame = (_) {
@@ -250,14 +241,13 @@ abstract class SceneBuilderRecorder extends Recorder {
     PlatformDispatcher.instance.onDrawFrame = () {
       final FlutterView? view = PlatformDispatcher.instance.implicitView;
       try {
-        _profile.record('drawFrameDuration', () {
-          final SceneBuilder sceneBuilder = SceneBuilder();
+        _profile.record(BenchmarkMetric.drawFrame.label, () {
+          final sceneBuilder = SceneBuilder();
           onDrawFrame(sceneBuilder);
           _profile.record('sceneBuildDuration', () {
             final Scene scene = sceneBuilder.build();
             _profile.record('windowRenderDuration', () {
-              assert(view != null,
-                  'Cannot profile windowRenderDuration on a null View.');
+              assert(view != null, 'Cannot profile windowRenderDuration on a null View.');
               view!.render(scene);
             }, reported: false);
           }, reported: false);
@@ -286,7 +276,7 @@ abstract class SceneBuilderRecorder extends Recorder {
 ///
 /// Example:
 ///
-/// ```
+/// ```dart
 /// class BenchListView extends WidgetRecorder {
 ///   BenchListView() : super(name: benchmarkName);
 ///
@@ -349,10 +339,7 @@ abstract class WidgetRecorder extends Recorder implements FrameRecorder {
   /// benchmark implementation instead of using a built-in strategy. The
   /// benchmark is expected to call [Profile.stopWarmingUp] to signal that
   /// the warm-up phase is finished.
-  WidgetRecorder({
-    required String name,
-    this.useCustomWarmUp = false,
-  }) : super._(name, true);
+  WidgetRecorder({required String name, this.useCustomWarmUp = false}) : super._(name, true);
 
   /// Creates a widget to be benchmarked.
   ///
@@ -390,8 +377,11 @@ abstract class WidgetRecorder extends Recorder implements FrameRecorder {
   @mustCallSuper
   void frameDidDraw() {
     endMeasureFrame();
-    profile.addDataPoint('drawFrameDuration', _drawFrameStopwatch.elapsed,
-        reported: true);
+    profile.addDataPoint(
+      BenchmarkMetric.drawFrame.label,
+      _drawFrameStopwatch.elapsed,
+      reported: true,
+    );
 
     if (shouldContinue()) {
       PlatformDispatcher.instance.scheduleFrame();
@@ -411,26 +401,47 @@ abstract class WidgetRecorder extends Recorder implements FrameRecorder {
   @override
   Future<Profile> run() async {
     _runCompleter = Completer<void>();
-    final Profile localProfile =
-        profile = Profile(name: name, useCustomWarmUp: useCustomWarmUp);
-    final _RecordingWidgetsBinding binding =
-        _RecordingWidgetsBinding.ensureInitialized();
+    final Profile localProfile = profile = Profile(name: name, useCustomWarmUp: useCustomWarmUp);
+    final _RecordingWidgetsBinding binding = _RecordingWidgetsBinding.ensureInitialized();
     final Widget widget = createWidget();
 
-    registerEngineBenchmarkValueListener(kProfilePrerollFrame, (num value) {
+    registerEngineBenchmarkValueListener(BenchmarkMetric.prerollFrame.label, (num value) {
       localProfile.addDataPoint(
-        kProfilePrerollFrame,
+        BenchmarkMetric.prerollFrame.label,
         Duration(microseconds: value.toInt()),
         reported: false,
       );
     });
-    registerEngineBenchmarkValueListener(kProfileApplyFrame, (num value) {
+    registerEngineBenchmarkValueListener(BenchmarkMetric.applyFrame.label, (num value) {
       localProfile.addDataPoint(
-        kProfileApplyFrame,
+        BenchmarkMetric.applyFrame.label,
         Duration(microseconds: value.toInt()),
         reported: false,
       );
     });
+
+    late void Function(List<FrameTiming> frameTimings) frameTimingsCallback;
+    binding.addTimingsCallback(
+      frameTimingsCallback = (List<FrameTiming> frameTimings) {
+        for (final frameTiming in frameTimings) {
+          localProfile.addDataPoint(
+            BenchmarkMetric.flutterFrameTotalTime.label,
+            frameTiming.totalSpan,
+            reported: false,
+          );
+          localProfile.addDataPoint(
+            BenchmarkMetric.flutterFrameBuildTime.label,
+            frameTiming.buildDuration,
+            reported: false,
+          );
+          localProfile.addDataPoint(
+            BenchmarkMetric.flutterFrameRasterTime.label,
+            frameTiming.rasterDuration,
+            reported: false,
+          );
+        }
+      },
+    );
 
     binding._beginRecording(this, widget);
 
@@ -438,8 +449,9 @@ abstract class WidgetRecorder extends Recorder implements FrameRecorder {
       await _runCompleter.future;
       return localProfile;
     } finally {
-      stopListeningToEngineBenchmarkValues(kProfilePrerollFrame);
-      stopListeningToEngineBenchmarkValues(kProfileApplyFrame);
+      stopListeningToEngineBenchmarkValues(BenchmarkMetric.prerollFrame.label);
+      stopListeningToEngineBenchmarkValues(BenchmarkMetric.applyFrame.label);
+      binding.removeTimingsCallback(frameTimingsCallback);
     }
   }
 }
@@ -508,8 +520,11 @@ abstract class WidgetBuildRecorder extends Recorder implements FrameRecorder {
     // Only record frames that show the widget.
     if (showWidget) {
       endMeasureFrame();
-      profile.addDataPoint('drawFrameDuration', _drawFrameStopwatch.elapsed,
-          reported: true);
+      profile.addDataPoint(
+        BenchmarkMetric.drawFrame.label,
+        _drawFrameStopwatch.elapsed,
+        reported: true,
+      );
     }
 
     if (shouldContinue()) {
@@ -532,8 +547,7 @@ abstract class WidgetBuildRecorder extends Recorder implements FrameRecorder {
   Future<Profile> run() async {
     _runCompleter = Completer<void>();
     final Profile localProfile = profile = Profile(name: name);
-    final _RecordingWidgetsBinding binding =
-        _RecordingWidgetsBinding.ensureInitialized();
+    final _RecordingWidgetsBinding binding = _RecordingWidgetsBinding.ensureInitialized();
     binding._beginRecording(this, _WidgetBuildRecorderHost(this));
 
     try {
@@ -569,258 +583,8 @@ class _WidgetBuildRecorderHostState extends State<_WidgetBuildRecorderHost> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: widget.recorder._getWidgetForFrame(),
-    );
+    return SizedBox.expand(child: widget.recorder._getWidgetForFrame());
   }
-}
-
-/// Series of time recordings indexed in time order.
-///
-/// It can calculate [average], [standardDeviation] and [noise]. If the amount
-/// of data collected is higher than [_kMeasuredSampleCount], then these
-/// calculations will only apply to the latest [_kMeasuredSampleCount] data
-/// points.
-class Timeseries {
-  /// Creates an empty timeseries.
-  ///
-  /// [name], [isReported], and [useCustomWarmUp] must not be null.
-  Timeseries(this.name, this.isReported, {this.useCustomWarmUp = false})
-      : _warmUpFrameCount = useCustomWarmUp ? 0 : null;
-
-  /// The label of this timeseries used for debugging and result inspection.
-  final String name;
-
-  /// Whether this timeseries is reported to the benchmark dashboard.
-  ///
-  /// If `true` a new benchmark card is created for the timeseries and is
-  /// visible on the dashboard.
-  ///
-  /// If `false` the data is stored but it does not show up on the dashboard.
-  /// Use unreported metrics for metrics that are useful for manual inspection
-  /// but that are too fine-grained to be useful for tracking on the dashboard.
-  final bool isReported;
-
-  /// Whether to delimit warm-up frames in a custom way.
-  final bool useCustomWarmUp;
-
-  /// The number of frames ignored as warm-up frames, used only
-  /// when [useCustomWarmUp] is true.
-  int? _warmUpFrameCount;
-
-  /// The number of frames ignored as warm-up frames.
-  int get warmUpFrameCount =>
-      useCustomWarmUp ? _warmUpFrameCount! : count - kMeasuredSampleCount;
-
-  /// List of all the values that have been recorded.
-  ///
-  /// This list has no limit.
-  final List<double> _allValues = <double>[];
-
-  /// The total amount of data collected, including ones that were dropped
-  /// because of the sample size limit.
-  int get count => _allValues.length;
-
-  /// Extracts useful statistics out of this timeseries.
-  ///
-  /// See [TimeseriesStats] for more details.
-  TimeseriesStats computeStats() {
-    final int finalWarmUpFrameCount = warmUpFrameCount;
-
-    assert(finalWarmUpFrameCount >= 0 && finalWarmUpFrameCount < count);
-
-    // The first few values we simply discard and never look at. They're from the warm-up phase.
-    final List<double> warmUpValues =
-        _allValues.sublist(0, finalWarmUpFrameCount);
-
-    // Values we analyze.
-    final List<double> candidateValues =
-        _allValues.sublist(finalWarmUpFrameCount);
-
-    // The average that includes outliers.
-    final double dirtyAverage = _computeAverage(name, candidateValues);
-
-    // The standard deviation that includes outliers.
-    final double dirtyStandardDeviation =
-        _computeStandardDeviationForPopulation(name, candidateValues);
-
-    // Any value that's higher than this is considered an outlier.
-    final double outlierCutOff = dirtyAverage + dirtyStandardDeviation;
-
-    // Candidates with outliers removed.
-    final Iterable<double> cleanValues =
-        candidateValues.where((double value) => value <= outlierCutOff);
-
-    // Outlier candidates.
-    final Iterable<double> outliers =
-        candidateValues.where((double value) => value > outlierCutOff);
-
-    // Final statistics.
-    final double cleanAverage = _computeAverage(name, cleanValues);
-    final double standardDeviation =
-        _computeStandardDeviationForPopulation(name, cleanValues);
-    final double noise =
-        cleanAverage > 0.0 ? standardDeviation / cleanAverage : 0.0;
-
-    // Compute outlier average. If there are no outliers the outlier average is
-    // the same as clean value average. In other words, in a perfect benchmark
-    // with no noise the difference between average and outlier average is zero,
-    // which the best possible outcome. Noise produces a positive difference
-    // between the two.
-    final double outlierAverage =
-        outliers.isNotEmpty ? _computeAverage(name, outliers) : cleanAverage;
-
-    final List<AnnotatedSample> annotatedValues = <AnnotatedSample>[
-      for (final double warmUpValue in warmUpValues)
-        AnnotatedSample(
-          magnitude: warmUpValue,
-          isOutlier: warmUpValue > outlierCutOff,
-          isWarmUpValue: true,
-        ),
-      for (final double candidate in candidateValues)
-        AnnotatedSample(
-          magnitude: candidate,
-          isOutlier: candidate > outlierCutOff,
-          isWarmUpValue: false,
-        ),
-    ];
-
-    return TimeseriesStats(
-      name: name,
-      average: cleanAverage,
-      outlierCutOff: outlierCutOff,
-      outlierAverage: outlierAverage,
-      standardDeviation: standardDeviation,
-      noise: noise,
-      cleanSampleCount: cleanValues.length,
-      outlierSampleCount: outliers.length,
-      samples: annotatedValues,
-    );
-  }
-
-  /// Adds a value to this timeseries.
-  void add(double value, {required bool isWarmUpValue}) {
-    if (value < 0.0) {
-      throw StateError(
-        'Timeseries $name: negative metric values are not supported. Got: $value',
-      );
-    }
-    _allValues.add(value);
-    if (useCustomWarmUp && isWarmUpValue) {
-      _warmUpFrameCount = warmUpFrameCount + 1;
-    }
-  }
-}
-
-/// Various statistics about a [Timeseries].
-///
-/// See the docs on the individual fields for more details.
-@sealed
-class TimeseriesStats {
-  /// Creates statistics for a time series.
-  const TimeseriesStats({
-    required this.name,
-    required this.average,
-    required this.outlierCutOff,
-    required this.outlierAverage,
-    required this.standardDeviation,
-    required this.noise,
-    required this.cleanSampleCount,
-    required this.outlierSampleCount,
-    required this.samples,
-  });
-
-  /// The label used to refer to the corresponding timeseries.
-  final String name;
-
-  /// The average value of the measured samples without outliers.
-  final double average;
-
-  /// The standard deviation in the measured samples without outliers.
-  final double standardDeviation;
-
-  /// The noise as a multiple of the [average] value takes from clean samples.
-  ///
-  /// This value can be multiplied by 100.0 to get noise as a percentage of
-  /// the average.
-  ///
-  /// If [average] is zero, treats the result as perfect score, returns zero.
-  final double noise;
-
-  /// The maximum value a sample can have without being considered an outlier.
-  ///
-  /// See [Timeseries.computeStats] for details on how this value is computed.
-  final double outlierCutOff;
-
-  /// The average of outlier samples.
-  ///
-  /// This value can be used to judge how badly we jank, when we jank.
-  ///
-  /// Another useful metrics is the difference between [outlierAverage] and
-  /// [average]. The smaller the value the more predictable is the performance
-  /// of the corresponding benchmark.
-  final double outlierAverage;
-
-  /// The number of measured samples after outlier are removed.
-  final int cleanSampleCount;
-
-  /// The number of outliers.
-  final int outlierSampleCount;
-
-  /// All collected samples, annotated with statistical information.
-  ///
-  /// See [AnnotatedSample] for more details.
-  final List<AnnotatedSample> samples;
-
-  /// Outlier average divided by clean average.
-  ///
-  /// This is a measure of performance consistency. The higher this number the
-  /// worse is jank when it happens. Smaller is better, with 1.0 being the
-  /// perfect score. If [average] is zero, this value defaults to 1.0.
-  double get outlierRatio => average > 0.0
-      ? outlierAverage / average
-      : 1.0; // this can only happen in perfect benchmark that reports only zeros
-
-  @override
-  String toString() {
-    final StringBuffer buffer = StringBuffer();
-    buffer.writeln(
-      '$name: (samples: $cleanSampleCount clean/$outlierSampleCount '
-      'outliers/${cleanSampleCount + outlierSampleCount} '
-      'measured/${samples.length} total)',
-    );
-    buffer.writeln(' | average: $average μs');
-    buffer.writeln(' | outlier average: $outlierAverage μs');
-    buffer.writeln(' | outlier/clean ratio: ${outlierRatio}x');
-    buffer.writeln(' | noise: ${_ratioToPercent(noise)}');
-    return buffer.toString();
-  }
-}
-
-/// Annotates a single measurement with statistical information.
-@sealed
-class AnnotatedSample {
-  /// Creates an annotated measurement sample.
-  const AnnotatedSample({
-    required this.magnitude,
-    required this.isOutlier,
-    required this.isWarmUpValue,
-  });
-
-  /// The non-negative raw result of the measurement.
-  final double magnitude;
-
-  /// Whether this sample was considered an outlier.
-  final bool isOutlier;
-
-  /// Whether this sample was taken during the warm-up phase.
-  ///
-  /// If this value is `true`, this sample does not participate in
-  /// statistical computations. However, the sample would still be
-  /// shown in the visualization of results so that the benchmark
-  /// can be inspected manually to make sure there's a predictable
-  /// warm-up regression slope.
-  final bool isWarmUpValue;
 }
 
 /// Base class for a profile collected from running a benchmark.
@@ -828,8 +592,7 @@ class Profile {
   /// Creates an empty profile.
   ///
   /// [name] and [useCustomWarmUp] must not be null.
-  Profile({required this.name, this.useCustomWarmUp = false})
-      : _isWarmingUp = useCustomWarmUp;
+  Profile({required this.name, this.useCustomWarmUp = false}) : _isWarmingUp = useCustomWarmUp;
 
   /// The name of the benchmark that produced this profile.
   final String name;
@@ -849,8 +612,7 @@ class Profile {
   /// Call this method only once for each profile.
   void stopWarmingUp() {
     if (!useCustomWarmUp) {
-      throw Exception(
-          '`stopWarmingUp` should be used only when `useCustomWarmUp` is true.');
+      throw Exception('`stopWarmingUp` should be used only when `useCustomWarmUp` is true.');
     } else if (!_isWarmingUp) {
       throw Exception('Warm-up already stopped.');
     } else {
@@ -879,10 +641,7 @@ class Profile {
   /// dashboard UI.
   void addDataPoint(String key, Duration duration, {required bool reported}) {
     scoreData
-        .putIfAbsent(
-          key,
-          () => Timeseries(key, reported, useCustomWarmUp: useCustomWarmUp),
-        )
+        .putIfAbsent(key, () => Timeseries(key, reported, useCustomWarmUp: useCustomWarmUp))
         .add(duration.inMicroseconds.toDouble(), isWarmUpValue: isWarmingUp);
   }
 
@@ -903,35 +662,34 @@ class Profile {
 
     // We have recorded something, but do we have enough samples? If every
     // timeseries has collected enough samples, stop the benchmark.
-    return !scoreData.keys
-        .every((String key) => scoreData[key]!.count >= kTotalSampleCount);
+    return !scoreData.keys.every((String key) => scoreData[key]!.count >= kTotalSampleCount);
   }
 
   /// Returns a JSON representation of the profile that will be sent to the
   /// server.
   Map<String, dynamic> toJson() {
-    final List<String> scoreKeys = <String>[];
-    final Map<String, dynamic> json = <String, dynamic>{
-      'name': name,
-      'scoreKeys': scoreKeys,
-    };
+    final scoreKeys = <String>[];
+    final json = <String, dynamic>{'name': name, 'scoreKeys': scoreKeys};
 
     for (final String key in scoreData.keys) {
       final Timeseries timeseries = scoreData[key]!;
 
       if (timeseries.isReported) {
-        scoreKeys.add('$key.average');
+        scoreKeys.add('$key.${BenchmarkMetricComputation.average.name}');
         // Report `outlierRatio` rather than `outlierAverage`, because
         // the absolute value of outliers is less interesting than the
         // ratio.
-        scoreKeys.add('$key.outlierRatio');
+        scoreKeys.add('$key.${BenchmarkMetricComputation.outlierRatio.name}');
       }
 
       final TimeseriesStats stats = timeseries.computeStats();
-      json['$key.average'] = stats.average;
-      json['$key.outlierAverage'] = stats.outlierAverage;
-      json['$key.outlierRatio'] = stats.outlierRatio;
-      json['$key.noise'] = stats.noise;
+      json['$key.${BenchmarkMetricComputation.average.name}'] = stats.average;
+      json['$key.${BenchmarkMetricComputation.outlierAverage.name}'] = stats.outlierAverage;
+      json['$key.${BenchmarkMetricComputation.outlierRatio.name}'] = stats.outlierRatio;
+      json['$key.${BenchmarkMetricComputation.noise.name}'] = stats.noise;
+      for (final PercentileMetricComputation metric in PercentileMetricComputation.values) {
+        json['$key.${metric.name}'] = stats.percentiles[metric.percentile];
+      }
     }
 
     json.addAll(extraData);
@@ -941,7 +699,7 @@ class Profile {
 
   @override
   String toString() {
-    final StringBuffer buffer = StringBuffer();
+    final buffer = StringBuffer();
     buffer.writeln('name: $name');
     for (final String key in scoreData.keys) {
       final Timeseries timeseries = scoreData[key]!;
@@ -952,7 +710,7 @@ class Profile {
       final dynamic value = extraData[key];
       if (value is List) {
         buffer.writeln('$key:');
-        for (final dynamic item in value) {
+        for (final Object? item in value) {
           buffer.writeln(' - $item');
         }
       } else {
@@ -961,42 +719,6 @@ class Profile {
     }
     return buffer.toString();
   }
-}
-
-/// Computes the arithmetic mean (or average) of given [values].
-double _computeAverage(String label, Iterable<double> values) {
-  if (values.isEmpty) {
-    throw StateError(
-        '$label: attempted to compute an average of an empty value list.');
-  }
-
-  final double sum = values.reduce((double a, double b) => a + b);
-  return sum / values.length;
-}
-
-/// Computes population standard deviation.
-///
-/// Unlike sample standard deviation, which divides by N - 1, this divides by N.
-///
-/// See also:
-///
-/// * https://en.wikipedia.org/wiki/Standard_deviation
-double _computeStandardDeviationForPopulation(
-    String label, Iterable<double> population) {
-  if (population.isEmpty) {
-    throw StateError(
-        '$label: attempted to compute the standard deviation of empty population.');
-  }
-  final double mean = _computeAverage(label, population);
-  final double sumOfSquaredDeltas = population.fold<double>(
-    0.0,
-    (double previous, double value) => previous += math.pow(value - mean, 2),
-  );
-  return math.sqrt(sumOfSquaredDeltas / population.length);
-}
-
-String _ratioToPercent(double value) {
-  return '${(value * 100).toStringAsFixed(2)}%';
 }
 
 /// Implemented by recorders that use [_RecordingWidgetsBinding] to receive
@@ -1040,8 +762,7 @@ class _RecordingWidgetsBinding extends BindingBase
     _instance = this;
   }
 
-  static _RecordingWidgetsBinding get instance =>
-      BindingBase.checkInstance(_instance);
+  static _RecordingWidgetsBinding get instance => BindingBase.checkInstance(_instance);
   static _RecordingWidgetsBinding? _instance;
 
   /// Makes an instance of [_RecordingWidgetsBinding] the current binding.
@@ -1062,9 +783,7 @@ class _RecordingWidgetsBinding extends BindingBase
 
   void _beginRecording(FrameRecorder recorder, Widget widget) {
     if (_recorder != null) {
-      throw Exception(
-        'Cannot call _RecordingWidgetsBinding._beginRecording more than once',
-      );
+      throw Exception('Cannot call _RecordingWidgetsBinding._beginRecording more than once');
     }
     final FlutterExceptionHandler? originalOnError = FlutterError.onError;
 
@@ -1180,8 +899,7 @@ void startMeasureFrame(Profile profile) {
 /// this function does nothing.
 void endMeasureFrame() {
   if (!_calledStartMeasureFrame) {
-    throw Exception(
-        '`startMeasureFrame` has not been called before calling `endMeasureFrame`');
+    throw Exception('`startMeasureFrame` has not been called before calling `endMeasureFrame`');
   }
 
   _calledStartMeasureFrame = false;
@@ -1212,10 +930,7 @@ final Map<String, EngineBenchmarkValueListener> _engineBenchmarkListeners =
 /// Registers a [listener] for engine benchmark values labeled by [name].
 ///
 /// If another listener is already registered, overrides it.
-void registerEngineBenchmarkValueListener(
-  String name,
-  EngineBenchmarkValueListener listener,
-) {
+void registerEngineBenchmarkValueListener(String name, EngineBenchmarkValueListener listener) {
   if (_engineBenchmarkListeners.containsKey(name)) {
     throw StateError(
       'A listener for "$name" is already registered.\n'
@@ -1244,8 +959,7 @@ void stopListeningToEngineBenchmarkValues(String name) {
 //
 // If there are no listeners registered for [name], ignores the value.
 void _dispatchEngineBenchmarkValue(String name, double value) {
-  final EngineBenchmarkValueListener? listener =
-      _engineBenchmarkListeners[name];
+  final EngineBenchmarkValueListener? listener = _engineBenchmarkListeners[name];
   if (listener != null) {
     listener(value);
   }
