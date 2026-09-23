@@ -15,6 +15,6 @@ FilterImage offset(FilterContext context, VectorFilter primitive) {
   final double dy = context.primitiveNumber(primitive.attributes['dy'] ?? '0', horizontal: false);
   return context.record(context.subregion(primitive, input.region), (Canvas canvas) {
     canvas.translate(dx, dy);
-    canvas.drawPicture(input.picture);
+    context.draw(canvas, input);
   });
 }

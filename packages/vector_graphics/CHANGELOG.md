@@ -1,26 +1,11 @@
-## NEXT
+## 1.2.4
 
+* Bounds repeated filter-graph playback, preserves source pixels outside kernel output regions and text anchoring across paint layers, and chooses filter resolution before the first widget or nested SVG render.
 * Preserves unpainted filter geometry and text layout, supports SVG region length units, and avoids resolution reloads for vector-only filters.
 * Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
 * Fixes deprecation lints.
 * Adds versioned filter decoding, bounded resource ownership, selective shader loading, cached intermediate textures, layout-aware filter resolution, and correct opacity, mask, and pattern composition.
-* Adds SVG `feOffset` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feColorMatrix` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feFlood` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feGaussianBlur` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feMerge` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feBlend` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feComposite` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feDropShadow` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feMorphology` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feComponentTransfer` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feTile` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feConvolveMatrix` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feDisplacementMap` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feImage` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feTurbulence` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feDiffuseLighting` support with parameter, pixel, and visual reference tests.
-* Adds SVG `feSpecularLighting` support with parameter, pixel, and visual reference tests.
+* Adds support for SVG filters `feOffset`, `feColorMatrix`, `feFlood`, `feGaussianBlur`, `feMerge`, `feBlend`, `feComposite`, `feDropShadow`, `feMorphology`, `feComponentTransfer`, `feTile`, `feConvolveMatrix`, `feDisplacementMap`, `feImage`, `feTurbulence`, `feDiffuseLighting`, `feSpecularLighting`, with parameter, pixel, and visual reference tests.
 
 ## 1.2.3
 

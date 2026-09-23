@@ -1,14 +1,12 @@
-## NEXT
+## 1.3.1
 
+* Fixes compilation of unpainted filtered paths with element opacity.
 * Preserves filter geometry independently of paint, ignores descriptive filter children, resolves SVG length units, and optimizes independent unfiltered subtrees.
 * Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
 * Adds isolated SVG filter commands, bounded image resources, and correct opacity, mask, and text composition.
 * Resolves inherited filter color spaces for feColorMatrix.
-* Resolves feFlood colors through styles, themes, and ColorMapper.
-* Resolves feDropShadow colors through styles, themes, and ColorMapper.
+* Resolves colors through styles, themes, and ColorMapper for `feFlood`, `feDropShadow`, `feDiffuseLighting`, `feSpecularLighting`.
 * Resolves SVG 2 image href precedence for feImage.
-* Resolves feDiffuseLighting colors through styles, themes, and ColorMapper.
-* Resolves feSpecularLighting colors through styles, themes, and ColorMapper.
 
 ## 1.3.0
 

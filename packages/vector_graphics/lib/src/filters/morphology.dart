@@ -25,13 +25,22 @@ FilterImage morphology(FilterContext context, VectorFilter primitive) {
   if (operator != 'erode' && operator != 'dilate') {
     throw FormatException('Invalid feMorphology operator: $operator');
   }
+  if (bounds.isEmpty) {
+    return context.record(bounds, (Canvas canvas) {});
+  }
+  final Rect domain = context.inputDomain(
+    input,
+    Rect.fromLTRB(
+      bounds.left - rx.abs(),
+      bounds.top - ry.abs(),
+      bounds.right + rx.abs(),
+      bounds.bottom + ry.abs(),
+    ),
+  );
   if ((rx == 0 && ry > 0) || (ry == 0 && rx > 0)) {
-    if (bounds.isEmpty) {
-      return context.record(bounds, (Canvas canvas) {});
-    }
-    final Image image = context.sample(input, context.region);
+    final Image image = context.sample(input, domain);
     final horizontal = ry == 0;
-    final double extent = horizontal ? context.region.width : context.region.height;
+    final double extent = horizontal ? domain.width : domain.height;
     final int pixels = horizontal ? image.width : image.height;
     final radius = horizontal ? rx : ry;
     final int steps = radius >= extent ? pixels : (radius * pixels / extent).floor();
@@ -40,10 +49,10 @@ FilterImage morphology(FilterContext context, VectorFilter primitive) {
     }
     return context.shade('morphology_axis', bounds, (FragmentShader shader) {
       shader
-        ..setFloat(4, context.region.left)
-        ..setFloat(5, context.region.top)
-        ..setFloat(6, context.region.width)
-        ..setFloat(7, context.region.height)
+        ..setFloat(4, domain.left)
+        ..setFloat(5, domain.top)
+        ..setFloat(6, domain.width)
+        ..setFloat(7, domain.height)
         ..setFloat(8, horizontal ? extent / pixels : 0)
         ..setFloat(9, horizontal ? 0 : extent / pixels)
         ..setFloat(10, steps.toDouble())
@@ -53,20 +62,23 @@ FilterImage morphology(FilterContext context, VectorFilter primitive) {
     });
   }
   if (rx < 0 || ry < 0 || (rx == 0 && ry == 0)) {
-    return context.record(bounds, (Canvas canvas) => canvas.drawPicture(input.picture));
+    return context.record(bounds, (Canvas canvas) => context.draw(canvas, input));
   }
+  // A separate input texture prevents native picture culling from dropping a
+  // source wholly outside the output clip before dilation brings it inside.
+  final FilterImage source = domain == input.region ? input : context.raster(input, domain);
   return context.recordColor(primitive, bounds, (Canvas canvas, bool linear) {
     final operation = operator == 'erode'
         ? ImageFilter.erode(radiusX: rx, radiusY: ry)
         : ImageFilter.dilate(radiusX: rx, radiusY: ry);
-    canvas.saveLayer(input.region, Paint()..imageFilter = operation);
+    canvas.saveLayer(domain, Paint()..imageFilter = operation);
     canvas.drawRect(
-      input.region,
+      domain,
       Paint()
         ..color = const Color(0x00000000)
         ..blendMode = BlendMode.src,
     );
-    context.drawInput(canvas, input, linear);
+    context.drawInput(canvas, source, linear, domain: domain);
     canvas.restore();
   });
 }

@@ -349,6 +349,11 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
   TextDirection? textDirection;
   Size? _displaySize;
   _PictureKey? _requestedKey;
+  Object? _bytesKey;
+  Future<ByteData>? _bytes;
+  Size? _metadataSize;
+  bool _awaitingLayout = false;
+  int _loadGeneration = 0;
 
   double _resolution() {
     if (widget.filterRasterScale != null) {
@@ -362,13 +367,9 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
     }
     final double dpr =
         MediaQuery.maybeDevicePixelRatioOf(context) ?? View.of(context).devicePixelRatio;
-    final Size? source = _pictureData?.pictureInfo.size;
+    final Size? source = _metadataSize ?? _pictureData?.pictureInfo.size;
     final Size? target = _displaySize;
-    if (source == null ||
-        source.isEmpty ||
-        target == null ||
-        target.isEmpty ||
-        _pictureData?.pictureInfo.requiresRasterResolution != true) {
+    if (source == null || source.isEmpty || target == null || target.isEmpty) {
       return dpr;
     }
     final FittedSizes sizes = applyBoxFit(widget.fit, source, target);
@@ -384,11 +385,12 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
   }
 
   void _updateFilterResolution(Size size) {
-    if (!mounted) {
+    if (!mounted || size.isEmpty) {
       return;
     }
     _displaySize = size;
-    if (_requestedKey?.filterRasterScale != _resolution()) {
+    if (_awaitingLayout || _requestedKey?.filterRasterScale != _resolution()) {
+      _awaitingLayout = false;
       unawaited(_loadAssetBytes());
     }
   }
@@ -396,9 +398,31 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
   static final Map<_PictureKey, _PictureData> _livePictureCache = <_PictureKey, _PictureData>{};
   static final Map<_PictureKey, Future<_PictureData>> _pendingPictures =
       <_PictureKey, Future<_PictureData>>{};
+  static final Map<Object, Future<ByteData>> _pendingBytes = <Object, Future<ByteData>>{};
+
+  Future<ByteData> _loadBytes(Object key, BytesLoader loader) {
+    final Future<ByteData>? pending = _pendingBytes[key];
+    if (pending != null) {
+      return pending;
+    }
+    final Future<ByteData> result = loader.loadBytes(context);
+    _pendingBytes[key] = result;
+    unawaited(
+      result.then<void>(
+        (_) {
+          _pendingBytes.remove(key);
+        },
+        onError: (Object error, StackTrace stack) {
+          _pendingBytes.remove(key);
+        },
+      ),
+    );
+    return result;
+  }
 
   @override
   void didChangeDependencies() {
+    _bytes = null;
     locale = Localizations.maybeLocaleOf(context);
     textDirection = Directionality.maybeOf(context);
     unawaited(_loadAssetBytes());
@@ -411,6 +435,7 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
         oldWidget.clipViewbox != widget.clipViewbox ||
         oldWidget.filterRasterScale != widget.filterRasterScale) {
       if (oldWidget.loader != widget.loader) {
+        _bytes = null;
         _displaySize = null;
       }
       unawaited(_loadAssetBytes());
@@ -436,23 +461,19 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
     }
   }
 
-  Future<_PictureData> _loadPicture(BuildContext context, _PictureKey key, BytesLoader loader) {
+  Future<_PictureData> _loadPicture(_PictureKey key, BytesLoader loader, ByteData bytes) {
     if (_pendingPictures.containsKey(key)) {
       return _pendingPictures[key]!;
     }
-    final Future<_PictureData> result = loader
-        .loadBytes(context)
-        .then((ByteData data) {
-          return decodeVectorGraphics(
-            data,
-            locale: key.locale,
-            textDirection: key.textDirection,
-            clipViewbox: key.clipViewbox,
-            filterRasterScale: key.filterRasterScale,
-            loader: loader,
-          );
-        })
-        .then((PictureInfo pictureInfo) {
+    final Future<_PictureData> result =
+        decodeVectorGraphics(
+          bytes,
+          locale: key.locale,
+          textDirection: key.textDirection,
+          clipViewbox: key.clipViewbox,
+          filterRasterScale: key.filterRasterScale,
+          loader: loader,
+        ).then((PictureInfo pictureInfo) {
           return _PictureData(pictureInfo, 0, key);
         });
     _pendingPictures[key] = result;
@@ -483,9 +504,17 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
   }
 
   Future<void> _loadAssetBytes() async {
+    final int generation = ++_loadGeneration;
     // First check if we have an available picture and use this immediately.
     final Object loaderKey = widget.loader.cacheKey(context);
-    final key = _PictureKey(loaderKey, locale, textDirection, widget.clipViewbox, _resolution());
+    if (_bytesKey != loaderKey) {
+      _bytesKey = loaderKey;
+      _bytes = null;
+      _metadataSize = null;
+      _displaySize = null;
+      _awaitingLayout = false;
+    }
+    var key = _PictureKey(loaderKey, locale, textDirection, widget.clipViewbox, _resolution());
     _requestedKey = key;
     final _PictureData? data = _livePictureCache[key];
     if (data != null) {
@@ -502,12 +531,33 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
     final BytesLoader loader = widget.loader;
 
     try {
-      final _PictureData data = await _loadPicture(context, key, loader);
+      final ByteData bytes = await (_bytes ??= _loadBytes(loaderKey, loader));
+      if (!mounted || generation != _loadGeneration) {
+        return;
+      }
+      if (widget.filterRasterScale == null && bytes.lengthInBytes > 4 && bytes.getUint8(4) == 2) {
+        if (_metadataSize == null) {
+          final VectorGraphicsMetadata metadata = const VectorGraphicsCodec().readMetadata(bytes);
+          _metadataSize = Size(metadata.width, metadata.height);
+        }
+        if (!_metadataSize!.isEmpty && _displaySize == null) {
+          // Establish the actual fitted size before any filter allocates a texture.
+          setState(() {
+            _awaitingLayout = true;
+            _error = null;
+            _stackTrace = null;
+          });
+          return;
+        }
+        key = _PictureKey(loaderKey, locale, textDirection, widget.clipViewbox, _resolution());
+        _requestedKey = key;
+      }
+      final _PictureData data = _livePictureCache[key] ?? await _loadPicture(key, loader, bytes);
       data.count += 1;
 
       // The widget may have changed, requesting a new vector graphic before
       // this operation could complete.
-      if (!mounted || key != _requestedKey) {
+      if (!mounted || generation != _loadGeneration || key != _requestedKey) {
         _maybeReleasePicture(data);
         return;
       }
@@ -523,7 +573,8 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
         _stackTrace = null;
       });
     } catch (error, stackTrace) {
-      if (key == _requestedKey) {
+      if (generation == _loadGeneration && key == _requestedKey) {
+        _bytes = null;
         _handleError(error, stackTrace);
       }
     }
@@ -536,7 +587,7 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
     final PictureInfo? pictureInfo = _pictureData?.pictureInfo;
 
     Widget child;
-    if (pictureInfo != null) {
+    if (pictureInfo != null && !_awaitingLayout) {
       // If the caller did not specify a width or height, fall back to the
       // size of the graphic.
       // If the caller did specify a width or height, preserve the aspect ratio
@@ -614,6 +665,29 @@ class _VectorGraphicWidgetState extends State<VectorGraphic> {
       child =
           widget.placeholderBuilder?.call(context) ??
           SizedBox(width: widget.width, height: widget.height);
+      if (_awaitingLayout) {
+        final Size source = _metadataSize!;
+        double? width = widget.width;
+        double? height = widget.height;
+        if (height != null) {
+          width = height / source.height * source.width;
+        } else if (width != null) {
+          height = width / source.width * source.height;
+        }
+        child = SizedBox(
+          width: width,
+          height: height,
+          child: _FilterResolutionObserver(
+            onSize: _updateFilterResolution,
+            child: FittedBox(
+              fit: widget.fit,
+              alignment: widget.alignment,
+              clipBehavior: widget.clipBehavior,
+              child: SizedBox.fromSize(size: source, child: child),
+            ),
+          ),
+        );
+      }
     }
 
     if (widget.transitionDuration != null) {

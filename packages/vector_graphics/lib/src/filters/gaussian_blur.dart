@@ -18,6 +18,15 @@ FilterImage gaussianBlur(FilterContext context, VectorFilter primitive) {
   final double sigmaX = context.primitiveNumber(values.first.toString(), horizontal: true);
   final double sigmaY = context.primitiveNumber(values.last.toString(), horizontal: false);
   final Rect bounds = context.subregion(primitive, input.region);
+  final Rect domain = context.inputDomain(
+    input,
+    Rect.fromLTRB(
+      bounds.left - sigmaX.abs() * 3 - 1,
+      bounds.top - sigmaY.abs() * 3 - 1,
+      bounds.right + sigmaX.abs() * 3 + 1,
+      bounds.bottom + sigmaY.abs() * 3 + 1,
+    ),
+  );
   final TileMode tileMode = switch (primitive.attributes['edgeMode'] ?? 'none') {
     'none' => TileMode.decal,
     'duplicate' => TileMode.clamp,
@@ -26,11 +35,11 @@ FilterImage gaussianBlur(FilterContext context, VectorFilter primitive) {
   };
   return context.record(bounds, (Canvas canvas) {
     if (sigmaX < 0 || sigmaY < 0 || (sigmaX == 0 && sigmaY == 0)) {
-      canvas.drawPicture(input.picture);
+      context.draw(canvas, input);
       return;
     }
     canvas.saveLayer(
-      input.region,
+      domain,
       Paint()
         ..imageFilter = context.inColorSpace(
           primitive,
@@ -40,12 +49,12 @@ FilterImage gaussianBlur(FilterContext context, VectorFilter primitive) {
     // Define the complete input surface, including transparent space, so the
     // edge mode does not mistake a shape's own bounds for the input domain.
     canvas.drawRect(
-      input.region,
+      domain,
       Paint()
         ..color = const Color(0x00000000)
         ..blendMode = BlendMode.src,
     );
-    canvas.drawPicture(input.picture);
+    context.draw(canvas, input);
     canvas.restore();
   });
 }

@@ -33,7 +33,7 @@ FilterImage displacementMap(FilterContext context, VectorFilter primitive) {
   final int cy = channel('yChannelSelector');
   final bool linear = context.linearColor(primitive);
   if (bounds.isEmpty || (sx == 0 && sy == 0)) {
-    return context.record(bounds, (Canvas canvas) => canvas.drawPicture(input.picture));
+    return context.record(bounds, (Canvas canvas) => context.draw(canvas, input));
   }
   if (input.region.isEmpty) {
     return context.record(bounds, (Canvas canvas) {});

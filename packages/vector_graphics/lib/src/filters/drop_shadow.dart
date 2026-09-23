@@ -41,7 +41,7 @@ FilterImage dropShadow(FilterContext context, VectorFilter primitive) {
     canvas.save();
     canvas.translate(dx, dy);
     canvas.saveLayer(input.region, paint);
-    canvas.drawPicture(input.picture);
+    context.draw(canvas, input);
     canvas.restore();
     canvas.restore();
     context.drawInput(canvas, input, linear);

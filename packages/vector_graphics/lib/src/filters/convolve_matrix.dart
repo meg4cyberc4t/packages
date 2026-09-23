@@ -22,7 +22,7 @@ FilterImage convolveMatrix(FilterContext context, VectorFilter primitive) {
   final int rows = order.last.toInt();
   final List<double> kernel = FilterContext.numbers(a['kernelMatrix'] ?? '');
   if (kernel.length != columns * rows) {
-    return context.record(bounds, (Canvas canvas) => canvas.drawPicture(input.picture));
+    return context.record(bounds, (Canvas canvas) => context.draw(canvas, input));
   }
   int target(String name, int order) {
     if (a[name] == null) {
@@ -76,8 +76,29 @@ FilterImage convolveMatrix(FilterContext context, VectorFilter primitive) {
   if (bounds.isEmpty) {
     return context.record(bounds, (Canvas canvas) {});
   }
-  final Rect domain = input.region.isEmpty ? bounds : input.region;
-  final Image image = context.sample(input, domain, pixelSize: pixelSize);
+  final Rect originalDomain = input.region.isEmpty ? bounds : input.region;
+  final Size textureSize = context.sampleSize(originalDomain, pixelSize: pixelSize);
+  final grid = Size(
+    originalDomain.width / textureSize.width,
+    originalDomain.height / textureSize.height,
+  );
+  final Rect expanded = context.inputDomain(
+    input,
+    Rect.fromLTRB(
+      bounds.left - (tx + 1) * grid.width,
+      bounds.top - (ty + 1) * grid.height,
+      bounds.right + (columns - tx) * grid.width,
+      bounds.bottom + (rows - ty) * grid.height,
+    ),
+  );
+  final Rect domain = expanded == input.region
+      ? originalDomain
+      : FilterContext.alignToGrid(expanded, originalDomain, grid);
+  final Image image = context.sample(
+    input,
+    domain,
+    pixelSize: domain == originalDomain ? pixelSize : grid,
+  );
   final step = Size(domain.width / image.width, domain.height / image.height);
   final Rect rasterBounds = pixelSize == null
       ? bounds

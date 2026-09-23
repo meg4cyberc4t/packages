@@ -21,7 +21,9 @@ import 'package:vector_graphics_codec/vector_graphics_codec.dart';
 import 'filters/filter_context.dart';
 import 'filters/filter_executor.dart';
 import 'filters/filter_shaders.dart';
+import 'listener_adapter.dart';
 import 'loader.dart';
+import 'text_layout.dart';
 import 'vector_image.dart';
 
 const VectorGraphicsCodec _codec = VectorGraphicsCodec();
@@ -150,6 +152,7 @@ Future<PictureInfo> _decodeVectorGraphics(
               filterShaders: shaders,
             )
             .._budget = budget
+            .._encodedData = data
             .._imageDepth = imageDepth
             .._limitImageResources =
                 imageDepth > 0 || (data.lengthInBytes > 4 && data.getUint8(4) == 2);
@@ -386,6 +389,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
   _DecodeBudget _budget = _DecodeBudget();
   int _imageDepth = 0;
   bool _limitImageResources = false;
+  bool _ownsImages = true;
 
   final PictureRecorder _recorder;
   Canvas _canvas;
@@ -408,6 +412,10 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
   bool _done = false;
   bool _hasFilters = false;
   bool _requiresRasterResolution = false;
+  int _replayCost = 1;
+  ByteData? _encodedData;
+  List<double>? _textAnchorOffsets;
+  int _textDrawIndex = 0;
 
   double? _accumulatedTextPositionX;
   double _textPositionY = 0;
@@ -462,11 +470,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       source.dispose();
       return;
     }
-    final Float64List t = frame.transform;
-    final double transformScale = math.max(
-      math.sqrt(t[0] * t[0] + t[1] * t[1]),
-      math.sqrt(t[4] * t[4] + t[5] * t[5]),
-    );
+    final double transformScale = _transformScale(frame.transform);
     final context = FilterContext(
       frame.filter,
       source,
@@ -476,6 +480,8 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       shaders: _filterShaders,
       rasterBudget: _budget.raster,
       images: _images,
+      sourceBounds: frame.sourceBounds ?? Rect.zero,
+      sourceReplayCost: frame.replayCost,
     );
     try {
       final FilterImage result = executeFilter(context);
@@ -484,7 +490,12 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       _canvas.transform(frame.transform);
       _canvas.drawPicture(result.picture);
       _canvas.restore();
+      _includeReplayCost(result.replayCost);
       _includeFilterBounds(frame.bounds ?? Rect.zero, frame.transform);
+      _includeFilterPath(
+        (Path()..addRect(result.region)).transform(frame.transform),
+        painted: true,
+      );
     } finally {
       context.dispose();
     }
@@ -499,7 +510,7 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
     _includeFilterPath(transformed);
   }
 
-  void _includeFilterPath(Path path) {
+  void _includeFilterPath(Path path, {bool painted = false}) {
     if (_filterFrames.isEmpty) {
       return;
     }
@@ -513,7 +524,19 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
     }
     final Rect bounds = path.transform(_canvas.getTransform()).getBounds();
     final _FilterFrame frame = _filterFrames.last;
-    frame.bounds = frame.bounds?.expandToInclude(bounds) ?? bounds;
+    if (painted) {
+      frame.sourceBounds = frame.sourceBounds?.expandToInclude(bounds) ?? bounds;
+    } else {
+      frame.bounds = frame.bounds?.expandToInclude(bounds) ?? bounds;
+    }
+  }
+
+  void _includeReplayCost(int cost) {
+    if (_filterFrames.isEmpty) {
+      _replayCost += cost;
+    } else {
+      _filterFrames.last.replayCost += cost;
+    }
   }
 
   /// Convert the vector graphics asset this listener decoded into a [Picture].
@@ -571,8 +594,10 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
   }
 
   void _disposeResources() {
-    for (final VectorImage image in _images.values) {
-      image.dispose();
+    if (_ownsImages) {
+      for (final VectorImage image in _images.values) {
+        image.dispose();
+      }
     }
     _images.clear();
     for (final _PatternState pattern in _patterns.values) {
@@ -610,6 +635,15 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
         paint = newPaint;
       }
     }
+    Rect paintedBounds = path.getBounds();
+    if (paint?.style == PaintingStyle.stroke) {
+      paintedBounds = paintedBounds.inflate(
+        paint!.strokeWidth *
+            (paint.strokeJoin == StrokeJoin.miter ? paint.strokeMiterLimit : 1) /
+            2,
+      );
+    }
+    _includeFilterPath(Path()..addRect(paintedBounds), painted: true);
     _canvas.drawPath(path, paint ?? _emptyPaint);
   }
 
@@ -970,6 +1004,13 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
   @override
   Future<void> onDrawText(int textId, int? fillId, int? strokeId, int? patternId) async {
     final _TextConfig textConfig = _textConfig[textId];
+    if (_textDrawIndex == 0 &&
+        _encodedData != null &&
+        _textConfig.any((_TextConfig config) => config.xAnchorMultiplier != 0)) {
+      _textAnchorOffsets = VectorTextLayout.read(_encodedData!, _locale, _textDirection);
+    }
+    final double? anchorOffset = _textAnchorOffsets?[_textDrawIndex];
+    _textDrawIndex++;
     final double dx = _accumulatedTextPositionX ?? 0;
     final double dy = _textPositionY;
 
@@ -1018,17 +1059,30 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
     if (fillId == null && strokeId == null) {
       final Paragraph p = buildParagraph(null);
       paragraphWidth = p.maxIntrinsicWidth;
-      _pendingChunk.add(_PendingTextDraw(p, _chunkAdvance, dy, _textTransform, paint: false));
+      _pendingChunk.add(
+        _PendingTextDraw(
+          p,
+          _chunkAdvance,
+          dy,
+          _textTransform,
+          paint: false,
+          anchorOffset: anchorOffset,
+        ),
+      );
     }
     if (fillId != null) {
       final Paragraph p = buildParagraph(fillId);
       paragraphWidth = p.maxIntrinsicWidth;
-      _pendingChunk.add(_PendingTextDraw(p, _chunkAdvance, dy, _textTransform));
+      _pendingChunk.add(
+        _PendingTextDraw(p, _chunkAdvance, dy, _textTransform, anchorOffset: anchorOffset),
+      );
     }
     if (strokeId != null) {
       final Paragraph p = buildParagraph(strokeId);
       paragraphWidth = p.maxIntrinsicWidth;
-      _pendingChunk.add(_PendingTextDraw(p, _chunkAdvance, dy, _textTransform));
+      _pendingChunk.add(
+        _PendingTextDraw(p, _chunkAdvance, dy, _textTransform, anchorOffset: anchorOffset),
+      );
     }
 
     _chunkAdvance += paragraphWidth;
@@ -1040,8 +1094,8 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       return;
     }
     final double originX = _chunkOriginX ?? 0;
-    final double anchorOffset = _chunkAdvance * _chunkAnchorMultiplier;
     for (final _PendingTextDraw draw in _pendingChunk) {
+      final double anchorOffset = draw.anchorOffset ?? _chunkAdvance * _chunkAnchorMultiplier;
       final Paragraph paragraph = draw.paragraph;
       if (draw.transform != null) {
         _canvas.save();
@@ -1056,6 +1110,17 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
         ),
       );
       if (draw.paint) {
+        _includeFilterPath(
+          Path()..addRect(
+            Rect.fromLTWH(
+              originX + draw.offsetWithinChunk - anchorOffset,
+              draw.dy - paragraph.alphabeticBaseline,
+              paragraph.maxIntrinsicWidth,
+              paragraph.height,
+            ),
+          ),
+          painted: true,
+        );
         _canvas.drawParagraph(
           paragraph,
           Offset(
@@ -1081,28 +1146,32 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
 
   @override
   void onImage(int imageId, int format, Uint8List data, {VectorGraphicsErrorListener? onError}) {
+    if (!_ownsImages) {
+      return;
+    }
     if (_limitImageResources || format == ImageFormatTypes.vector) {
       _budget.reserveImage(data.length);
     }
     if (format == ImageFormatTypes.vector) {
       final Future<void> pending =
-          _decodeVectorGraphics(
+          _PreparedVectorGraphics.load(
             data.buffer.asByteData(data.offsetInBytes, data.lengthInBytes),
             locale: _locale,
             textDirection: _textDirection,
-            clipViewbox: false,
             loader: _EmbeddedVectorLoader(data),
-            filterRasterScale: _filterRasterScale,
             budget: _budget,
             imageDepth: _imageDepth + 1,
             onError: onError ?? this.onError,
-          ).then((PictureInfo info) {
+          ).then((_PreparedVectorGraphics prepared) {
             if (_done) {
-              info.picture.dispose();
+              prepared.dispose();
             } else {
-              _hasFilters |= info.hasFilters;
-              _requiresRasterResolution |= info.requiresRasterResolution;
-              _images[imageId] = VectorImage.vector(info.picture, info.size);
+              _hasFilters |= prepared.hasFilters;
+              _images[imageId] = VectorImage.deferred(
+                prepared.size,
+                render: prepared.render,
+                dispose: prepared.dispose,
+              );
             }
           });
       _pendingImages.add(pending);
@@ -1214,7 +1283,13 @@ class FlutterVectorGraphicsListener extends VectorGraphicsCodecListener {
       _canvas.transform(transform);
     }
     _includeFilterBounds(Rect.fromLTWH(x, y, width, height));
-    image.draw(_canvas, Rect.fromLTWH(x, y, width, height));
+    _includeFilterPath(Path()..addRect(Rect.fromLTWH(x, y, width, height)), painted: true);
+    _requiresRasterResolution |= image.draw(
+      _canvas,
+      Rect.fromLTWH(x, y, width, height),
+      filterRasterScale: _filterRasterScale * (transform == null ? 1 : _transformScale(transform)),
+    );
+    _includeReplayCost(image.replayCost);
     if (transform != null) {
       _canvas.restore();
     }
@@ -1261,9 +1336,11 @@ class _PendingTextDraw {
     this.dy,
     this.transform, {
     this.paint = true,
+    this.anchorOffset,
   });
 
   final bool paint;
+  final double? anchorOffset;
 
   final Paragraph paragraph;
   final double offsetWithinChunk;
@@ -1337,6 +1414,8 @@ class _FilterFrame {
   late final Float64List inverse;
   late final bool singular;
   Rect? bounds;
+  Rect? sourceBounds;
+  int replayCost = 1;
 }
 
 class _DecodeBudget {
@@ -1369,4 +1448,109 @@ class _EmbeddedVectorLoader extends BytesLoader {
 
   @override
   String toString() => 'Embedded vector image (${bytes.length} bytes)';
+}
+
+double _transformScale(Float64List t) =>
+    math.max(math.sqrt(t[0] * t[0] + t[1] * t[1]), math.sqrt(t[4] * t[4] + t[5] * t[5]));
+
+// Resource preparation is asynchronous; command playback is synchronous once
+// feImage knows its placement and the corresponding filter resolution.
+class _PreparedVectorGraphics {
+  _PreparedVectorGraphics(this.data, this.metadata, this.shaders, this.owner);
+
+  final ByteData data;
+  final VectorGraphicsMetadata metadata;
+  final FilterShaders shaders;
+  final FlutterVectorGraphicsListener owner;
+
+  Size get size => Size(metadata.width, metadata.height);
+  bool get hasFilters => metadata.filters.isNotEmpty || owner._hasFilters;
+
+  static Future<_PreparedVectorGraphics> load(
+    ByteData data, {
+    required Locale? locale,
+    required TextDirection? textDirection,
+    required BytesLoader loader,
+    required _DecodeBudget budget,
+    required int imageDepth,
+    VectorGraphicsErrorListener? onError,
+  }) async {
+    if (imageDepth > 16) {
+      throw StateError('Nested vector images exceed the depth limit of 16');
+    }
+    final VectorGraphicsMetadata metadata = _codec.readMetadata(data);
+    final owner =
+        FlutterVectorGraphicsListener(
+            id: loader.hashCode,
+            locale: locale,
+            textDirection: textDirection,
+            clipViewbox: false,
+            onError: onError,
+          )
+          .._budget = budget
+          .._imageDepth = imageDepth
+          .._limitImageResources = true;
+    try {
+      final collector = _ImageResourceCollector(owner);
+      DecodeResponse? response;
+      do {
+        response = _codec.decode(data, collector, response: response);
+      } while (!response.complete);
+      if (owner._pendingImages.isNotEmpty) {
+        await owner.waitForImageDecode();
+      }
+      final FilterShaders shaders = await FilterShaders.load(
+        FilterShaders.requiredBy(metadata.filters),
+      );
+      return _PreparedVectorGraphics(data, metadata, shaders, owner);
+    } catch (_) {
+      owner.abort();
+      rethrow;
+    }
+  }
+
+  VectorImagePicture render(double scale) {
+    final listener =
+        FlutterVectorGraphicsListener(
+            id: owner._id,
+            locale: owner._locale,
+            textDirection: owner._textDirection,
+            clipViewbox: false,
+            onError: owner.onError,
+            filterRasterScale: scale,
+            filterShaders: shaders,
+          )
+          .._budget = owner._budget
+          .._encodedData = data
+          .._ownsImages = false
+          .._hasFilters = hasFilters
+          .._images.addAll(owner._images);
+    try {
+      DecodeResponse? response;
+      do {
+        response = _codec.decode(data, listener, response: response);
+      } while (!response.complete);
+      final PictureInfo info = listener.toPicture();
+      return (
+        picture: info.picture,
+        requiresRasterResolution: info.requiresRasterResolution,
+        replayCost: listener._replayCost,
+      );
+    } catch (_) {
+      listener.abort();
+      rethrow;
+    }
+  }
+
+  void dispose() => owner.abort();
+}
+
+class _ImageResourceCollector extends VectorGraphicsListenerAdapter {
+  _ImageResourceCollector(this.owner);
+  final FlutterVectorGraphicsListener owner;
+
+  @override
+  void onImage(int imageId, int format, Uint8List data, {VectorGraphicsErrorListener? onError}) {
+    owner.onImage(imageId, format, data, onError: onError);
+  }
 }

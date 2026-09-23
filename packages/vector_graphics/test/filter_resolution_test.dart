@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -54,6 +55,7 @@ void main() {
     double dpr = 1,
     double? resolution,
     BoxFit fit = BoxFit.contain,
+    BytesLoader? asset,
   }) async {
     await tester.pumpWidget(
       MediaQuery(
@@ -65,7 +67,7 @@ void main() {
               width: width,
               height: height,
               child: createCompatVectorGraphic(
-                loader: loader,
+                loader: asset ?? loader,
                 fit: fit,
                 filterRasterScale: resolution,
               ),
@@ -149,6 +151,92 @@ void main() {
     await mount(tester, width: 240, height: 240, dpr: 3, resolution: 32);
     expect(info(tester).picture, isNot(same(first)));
   });
+
+  for (final replace in <bool>[false, true]) {
+    testWidgets('first decode fits a large source before allocating textures, replacing=$replace', (
+      WidgetTester tester,
+    ) async {
+      if (replace) {
+        await mount(tester, width: 32, height: 32);
+      }
+      final large = _Loader(
+        encodeSvg(
+          xml: source.replaceAll('24', '4096'),
+          debugName: 'large source in small widget',
+          enableClippingOptimizer: false,
+          enableMaskingOptimizer: false,
+          enableOverdrawOptimizer: false,
+        ).buffer.asByteData(),
+      );
+      await mount(tester, width: 32, height: 32, asset: large);
+      expect(info(tester).size, const Size(4096, 4096));
+      expect(info(tester).filterRasterScale, 1 / 128);
+      expect(info(tester).requiresRasterResolution, isTrue);
+    });
+  }
+
+  testWidgets('initial layout preserves intrinsic dimensions and imageBuilder timing', (
+    WidgetTester tester,
+  ) async {
+    var builds = 0;
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: IntrinsicWidth(
+            child: IntrinsicHeight(
+              child: createCompatVectorGraphic(
+                loader: loader,
+                imageBuilder: (BuildContext context, Widget child) {
+                  builds++;
+                  return child;
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(builds, 0);
+    await settle(tester);
+    expect(builds, greaterThan(0));
+    expect(tester.getSize(find.byType(FittedBox)), const Size(24, 24));
+  });
+
+  testWidgets('a late byte load cannot replace the current asset or its metadata', (
+    WidgetTester tester,
+  ) async {
+    final pending = Completer<ByteData>();
+    await mount(tester, width: 32, height: 32, asset: _DelayedLoader(pending.future));
+    await mount(tester, width: 32, height: 32);
+    final ui.Picture current = info(tester).picture;
+    pending.complete(
+      encodeSvg(
+        xml: source.replaceAll('24', '4096'),
+        debugName: 'stale large source',
+        enableClippingOptimizer: false,
+        enableMaskingOptimizer: false,
+        enableOverdrawOptimizer: false,
+      ).buffer.asByteData(),
+    );
+    await settle(tester);
+    expect(info(tester).picture, same(current));
+    expect(info(tester).size, const Size(24, 24));
+  });
+
+  testWidgets('an initially empty layout waits until it becomes visible', (
+    WidgetTester tester,
+  ) async {
+    await mount(tester, width: 0, height: 0);
+    expect(
+      find.byElementPredicate(
+        (Element e) => e is RenderObjectElement && e.renderObject is RenderPictureVectorGraphic,
+      ),
+      findsNothing,
+    );
+    await mount(tester, width: 48, height: 48);
+    expect(info(tester).filterRasterScale, 2);
+  });
 }
 
 class _Loader extends BytesLoader {
@@ -156,4 +244,11 @@ class _Loader extends BytesLoader {
   final ByteData data;
   @override
   Future<ByteData> loadBytes(BuildContext? context) async => data;
+}
+
+class _DelayedLoader extends BytesLoader {
+  const _DelayedLoader(this.data);
+  final Future<ByteData> data;
+  @override
+  Future<ByteData> loadBytes(BuildContext? context) => data;
 }

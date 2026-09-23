@@ -68,7 +68,7 @@ FilterImage componentTransfer(FilterContext context, VectorFilter primitive) {
   }
   final bool linear = context.linearColor(primitive);
   if (identity) {
-    return context.record(bounds, (Canvas canvas) => canvas.drawPicture(input.picture));
+    return context.record(bounds, (Canvas canvas) => context.draw(canvas, input));
   }
   final Image source = context.sample(input, bounds);
   final Image table = floatTexture(context, tables);

@@ -12,7 +12,7 @@ import 'filter_shaders.dart';
 /// A picture and the finite region in which its pixels are defined.
 class FilterImage {
   /// Creates a filter intermediate. Its context owns the picture.
-  const FilterImage(this.picture, this.region);
+  const FilterImage(this.picture, this.region, {this.replayCost = 1});
 
   /// Commands representing this intermediate.
   final Picture picture;
@@ -20,6 +20,9 @@ class FilterImage {
   /// The default primitive domain. Recorded intermediate pixels outside it are
   /// transparent; original SourceGraphic/SourceAlpha retain pixels for offset.
   final Rect region;
+
+  /// Number of leaf pictures replayed by this intermediate, including reuse.
+  final int replayCost;
 }
 
 /// A cumulative allocation budget shared by all filter invocations in a decode.
@@ -51,15 +54,18 @@ class FilterContext {
     this.rasterScale = 1,
     this.shaders,
     this.images = const <int, VectorImage>{},
+    Rect? sourceBounds,
+    int sourceReplayCost = 1,
     FilterRasterBudget? rasterBudget,
-  }) : _rasterBudget = rasterBudget ?? FilterRasterBudget() {
+  }) : _sourceBounds = sourceBounds ?? objectBounds,
+       _rasterBudget = rasterBudget ?? FilterRasterBudget() {
     try {
       if (!rasterScale.isFinite || rasterScale <= 0) {
         throw ArgumentError.value(rasterScale, 'rasterScale', 'must be finite and positive');
       }
       // Keep the source picture intact; like browsers, offset can bring pixels
       // from outside the filter region into its clipped output.
-      sourceGraphic = FilterImage(source, region);
+      sourceGraphic = FilterImage(source, region, replayCost: sourceReplayCost);
     } catch (_) {
       source.dispose();
       rethrow;
@@ -90,6 +96,8 @@ class FilterContext {
   /// Image resources whose handles remain owned by the containing decoder.
   final Map<int, VectorImage> images;
   final FilterRasterBudget _rasterBudget;
+  final Rect _sourceBounds;
+  final Map<Canvas, int> _recordingCosts = <Canvas, int>{};
   bool _disposed = false;
 
   /// The original source graphic.
@@ -105,10 +113,8 @@ class FilterContext {
   final List<FragmentShader> _shaders = <FragmentShader>[];
   FilterImage? _sourceAlpha;
 
-  /// Rasterizes a finite input domain, retaining ownership of the image handle.
-  Image sample(FilterImage input, Rect domain, {double? scale, Size? pixelSize}) {
-    _checkActive();
-    _requiresRasterResolution = true;
+  /// Validates a sampling domain and computes its bounded texture dimensions.
+  Size sampleSize(Rect domain, {double? scale, Size? pixelSize}) {
     if (!domain.isFinite || domain.isEmpty) {
       throw ArgumentError.value(domain, 'domain', 'must be finite and nonempty');
     }
@@ -153,6 +159,16 @@ class FilterContext {
     }
     final int width = scaledWidth < 1 ? 1 : scaledWidth.ceil();
     final int height = scaledHeight < 1 ? 1 : scaledHeight.ceil();
+    return Size(width.toDouble(), height.toDouble());
+  }
+
+  /// Rasterizes a finite input domain, retaining ownership of the image handle.
+  Image sample(FilterImage input, Rect domain, {double? scale, Size? pixelSize}) {
+    _checkActive();
+    _requiresRasterResolution = true;
+    final Size size = sampleSize(domain, scale: scale, pixelSize: pixelSize);
+    final int width = size.width.toInt();
+    final int height = size.height.toInt();
     final key = (input, domain, width, height);
     final Image? cached = _samples[key];
     if (cached != null) {
@@ -279,14 +295,49 @@ class FilterContext {
     FilterImage input,
     bool linear, {
     BlendMode mode = BlendMode.srcOver,
+    Rect? domain,
   }) {
     final paint = Paint()..blendMode = mode;
     if (linear) {
       paint.colorFilter = const ColorFilter.srgbToLinearGamma();
     }
-    canvas.saveLayer(region, paint);
-    canvas.drawPicture(input.picture);
+    canvas.saveLayer(domain ?? region, paint);
+    draw(canvas, input);
     canvas.restore();
+  }
+
+  /// Draws an intermediate while accounting for repeated picture playback.
+  void draw(Canvas canvas, FilterImage input) {
+    _recordingCosts[canvas] = (_recordingCosts[canvas] ?? 0) + input.replayCost;
+    canvas.drawPicture(input.picture);
+  }
+
+  /// Draws an image resource at the filter's eventual device resolution.
+  void drawImage(
+    Canvas canvas,
+    VectorImage image,
+    Rect destination, {
+    bool clipSource = true,
+    FilterQuality filterQuality = FilterQuality.none,
+  }) {
+    _requiresRasterResolution |= image.draw(
+      canvas,
+      destination,
+      clipSource: clipSource,
+      filterQuality: filterQuality,
+      filterRasterScale: rasterScale,
+    );
+    _recordingCosts[canvas] = (_recordingCosts[canvas] ?? 0) + image.replayCost;
+  }
+
+  /// Extends original inputs to include the source pixels needed by a kernel.
+  /// Intermediate images keep the clipping established by their primitive.
+  Rect inputDomain(FilterImage input, Rect requested) {
+    if (!isSource(input)) {
+      return input.region;
+    }
+    final Rect extra = requested.intersect(_sourceBounds);
+    return extra.isEmpty ? input.region : input.region.expandToInclude(extra);
   }
 
   /// Whether primitive lengths are fractions of the geometry bounds.
@@ -406,7 +457,7 @@ class FilterContext {
               0,
             ]),
         );
-        canvas.drawPicture(sourceGraphic.picture);
+        draw(canvas, sourceGraphic);
         canvas.restore();
       }, clip: false);
     }
@@ -429,6 +480,7 @@ class FilterContext {
     _checkActive();
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
+    _recordingCosts[canvas] = 0;
     if (clip) {
       canvas.clipRect(bounds, doAntiAlias: false);
     }
@@ -437,12 +489,17 @@ class FilterContext {
         paint(canvas);
       }
     } catch (_) {
+      _recordingCosts.remove(canvas);
       recorder.endRecording().dispose();
       rethrow;
     }
     final Picture picture = recorder.endRecording();
     _owned.add(picture);
-    return FilterImage(picture, bounds);
+    final int cost = _recordingCosts.remove(canvas)!;
+    final result = FilterImage(picture, bounds, replayCost: cost == 0 ? 1 : cost);
+    // Bound the expanded graph rather than just its number of SVG primitives.
+    // Linear vector chains retain their resolution-independent pictures.
+    return clip && !bounds.isEmpty && cost > 128 ? raster(result, bounds) : result;
   }
 
   /// The subregion limits each primitive before it is used by another one.

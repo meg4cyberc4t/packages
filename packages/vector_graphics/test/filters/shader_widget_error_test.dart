@@ -60,6 +60,7 @@ void main() {
       ),
     );
     await tester.pumpWidget(picture());
+    await tester.pumpAndSettle();
     await tester.runAsync(() => vg.waitForPendingDecodes());
     await tester.pumpAndSettle();
     expect(find.text('shader unavailable'), findsOneWidget);

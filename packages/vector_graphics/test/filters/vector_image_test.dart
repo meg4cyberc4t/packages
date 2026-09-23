@@ -261,7 +261,7 @@ void main() {
           filterSvg('<feComposite operator="arithmetic" k2="1"/>').replaceAll('128', '512'),
         );
         await expectLater(
-          decoded(wrapped(asset, copies: 33)),
+          decoded(wrapped(asset, copies: 33, destination: const ui.Rect.fromLTWH(0, 0, 512, 512))),
           throwsA(
             isA<Object>().having(
               (Object e) => e.toString(),

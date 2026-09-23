@@ -24,8 +24,9 @@ FilterImage filterImage(FilterContext context, VectorFilter primitive) {
     final double sx = context.usesObjectUnits ? context.objectBounds.width : 1;
     final double sy = context.usesObjectUnits ? context.objectBounds.height : 1;
     return context.record(bounds, (Canvas canvas) {
-      image.draw(
+      context.drawImage(
         canvas,
+        image,
         Rect.fromLTWH(placement.left, placement.top, image.size.width * sx, image.size.height * sy),
         clipSource: false,
       );
@@ -99,6 +100,6 @@ FilterImage filterImage(FilterContext context, VectorFilter primitive) {
     });
   }
   return context.record(bounds, (Canvas canvas) {
-    image.draw(canvas, target, filterQuality: FilterQuality.low);
+    context.drawImage(canvas, image, target, filterQuality: FilterQuality.low);
   });
 }

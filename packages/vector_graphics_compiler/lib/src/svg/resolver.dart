@@ -192,14 +192,17 @@ class ResolvingVisitor extends Visitor<Node, AffineMatrix> {
         pathNode.attributes,
       );
     }
-    return _filterDepth > 0
-        ? ResolvedPathNode(
-            paint: const Paint(),
-            bounds: newBounds,
-            path: transformedPath,
-            geometryOnly: true,
-          )
-        : _withOpacity(Node.empty, pathNode.attributes);
+    return _withOpacity(
+      _filterDepth > 0
+          ? ResolvedPathNode(
+              paint: const Paint(),
+              bounds: newBounds,
+              path: transformedPath,
+              geometryOnly: true,
+            )
+          : Node.empty,
+      pathNode.attributes,
+    );
   }
 
   @override

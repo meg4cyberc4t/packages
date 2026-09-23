@@ -19,6 +19,9 @@ honor his memory by continuing to publish and maintain this package.
 textures. Only filters that actually create raster intermediates follow layout, `BoxFit` and device pixel ratio in power-of-two
 buckets. After a resize the previous picture remains visible until replacement
 decoding completes. Vector-only filters such as `feOffset` keep one picture across layout and DPR changes.
+The first filtered decode waits for layout so a large SVG displayed as an icon
+does not allocate textures at its intrinsic size. Embedded SVG filters use the
+scale of their `feImage` or image placement, including the outer filter resolution.
 Ancestor paint transforms require an explicit override.
 Low-level `vg.loadPicture`/`decodeVectorGraphics` callers must choose the resolution
 for their eventual Canvas scale; the decoder does not know that scale.
@@ -26,6 +29,8 @@ for their eventual Canvas scale; the decoder does not know that scale.
 Shader outputs are rasterized once at that resolution, and repeated sampling of
 an identical input rectangle/grid reuses its texture. This bounds repeated shader
 work during picture playback but trades vector scaling for a chosen resolution.
+Branching filter graphs also materialize intermediates when repeated picture
+references exceed 128 leaf replays; linear vector chains remain scalable.
 Memory and computation limits do not guarantee a frame-time budget. First-render
 cost must be measured on the target device; static, expensive graphics can also
 use the final-image raster rendering strategy.
@@ -56,6 +61,6 @@ these are not pixel-identical guarantees across renderers.
 
 This unreleased series changes the codec, compiler, runtime and flutter_svg
 together. Source checkouts must resolve all four packages from the same revision.
-Before publishing, their NEXT entries need coordinated release versions and
-dependency lower bounds that include the new APIs; existing pub versions cannot
+Before publishing, they need coordinated release versions and dependency lower
+bounds that include the new APIs; existing pub versions cannot
 be mixed with this series.

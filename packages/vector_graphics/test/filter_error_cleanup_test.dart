@@ -65,6 +65,7 @@ void main() {
             ),
           );
           await tester.pumpWidget(widgets());
+          await tester.pumpAndSettle();
           await tester.runAsync(() => vg.waitForPendingDecodes());
           await tester.pumpAndSettle();
           expect(find.text('load failed'), findsNWidgets(copies));

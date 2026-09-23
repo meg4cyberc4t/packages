@@ -7,11 +7,13 @@ import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
 
 const String defs = '<defs><filter id="f"><feFlood/></filter></defs>';
 void main() {
-  for (final kind in <String>['path', 'group', 'text', 'use', 'root']) {
+  for (final kind in <String>['path', 'unpainted path', 'group', 'text', 'use', 'root']) {
     for (final opacity in <double>[0, .5, 1]) {
       test('$kind opacity $opacity surrounds exactly one filter', () {
         final String shape = switch (kind) {
           'path' => '<rect width="32" height="32" opacity="$opacity" filter="url(#f)"/>',
+          'unpainted path' =>
+            '<rect width="32" height="32" fill="none" opacity="$opacity" filter="url(#f)"/>',
           'group' => '<g opacity="$opacity" filter="url(#f)"><rect width="32" height="32"/></g>',
           'text' => '<text x="4" y="24" opacity="$opacity" filter="url(#f)">Hello</text>',
           'use' =>
